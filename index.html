@@ -13,9 +13,9 @@
     :root {
       --primary-color: #1a1a1a;
       --accent-color: #4CAF50;
-      --pool-a-color: #4CAF50;
-      --pool-b-color: #2196F3;
-      --pool-c-color: #FF9800;
+      --pool-a-color: #4CAF50; /* Green */
+      --pool-b-color: #2196F3; /* Blue */
+      --pool-c-color: #FFEB3B; /* Yellow */
 
       --shadow: 0 4px 10px rgba(0,0,0,0.08);
       --border-radius: 10px;
@@ -158,10 +158,14 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0,0,0,0.05);
     }
+
+    /* Removed background-color for "current" so no green highlight */
     .match.current {
-      background-color: #e6ffe6;
+      /* If you still want a subtle style for "in-progress," customize below:
       border-left-color: var(--accent-color);
+      */
     }
+
     .match.completed {
       opacity: 0.8;
     }
@@ -233,9 +237,10 @@
       margin-top: 5px;
       width: fit-content;
     }
+    /* Removed green highlight from in-progress status */
     .match-status.current {
-      background-color: #e6ffe6;
-      color: var(--accent-color);
+      /* background-color: #e6ffe6; */
+      /* color: var(--accent-color); */
     }
     .match-status.completed {
       color: #666;
@@ -303,7 +308,7 @@
       border-radius: 50%;
     }
 
-    /* AUTO-REFRESH */
+    /* AUTO-REFRESH BLOCK */
     .auto-refresh {
       text-align: center;
       color: #666;
@@ -326,7 +331,6 @@
       background-color: #f8f8f8;
       padding: 20px;
       border-radius: var(--border-radius);
-      /* Use accent color for bracket border */
       border-left: 4px solid var(--accent-color);
       box-shadow: var(--shadow);
     }
@@ -384,16 +388,8 @@
       color: #666;
     }
 
-    /* FLASH ANIMATION */
-    .update-flash {
-      animation: flash 0.5s;
-    }
-    @keyframes flash {
-      0%   { background-color: #ffffff; }
-      50%  { background-color: #e6ffe6; }
-      100% { background-color: #ffffff; }
-    }
-
+    /* Removed update flash (green) animation completely */
+    
     /* RESPONSIVE */
     @media (max-width: 768px) {
       .header-content {
@@ -716,18 +712,19 @@
           </div>
         `;
 
+        let statusContent = '';
         if (current) {
-          matchContent += `<div class="match-status current">In Progress</div>`;
+          statusContent = `<div class="match-status current">In Progress</div>`;
         } else if (completed && (!result || (result.score1 === 0 && result.score2 === 0))) {
-          matchContent += `<div class="match-status completed">Not Started</div>`;
+          statusContent = `<div class="match-status completed">Not Started</div>`;
         } else if (result && (result.score1 > 0 || result.score2 > 0)) {
-          matchContent += `
+          statusContent = `
             <div class="match-status completed">
               ${result.winner ? `${result.winner} wins` : 'Draw'}
             </div>
           `;
         } else {
-          matchContent += `<div class="match-status">Not Started</div>`;
+          statusContent = `<div class="match-status">Not Started</div>`;
         }
 
         return `
@@ -739,19 +736,14 @@
             <div class="match-details">
               ${matchContent}
               <div class="pool-label">Pool ${match.pool}</div>
+              ${statusContent}
             </div>
           </div>
         `;
       }).join('');
     }
 
-    function flashUpdate() {
-      const elements = document.querySelectorAll('.section');
-      elements.forEach(el => {
-        el.classList.add('update-flash');
-        setTimeout(() => el.classList.remove('update-flash'), 500);
-      });
-    }
+    /* Removed the flashUpdate function and references to it. */
 
     function updateData(data) {
       // 1. Update Pools and Rankings
@@ -763,7 +755,6 @@
 
       // Update timestamp
       document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
-      flashUpdate();
     }
 
     function fetchData() {
