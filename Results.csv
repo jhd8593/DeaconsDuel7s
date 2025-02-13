@@ -1,21 +1,21 @@
 Team 1,Score 1,Team 2,Score 2
-Duke,20,Belmont Abbey,10
-VTech I,10,UVA,5
-Queens,20,UNCW,20
-VTech II,10,USC,10
-App State,20,Clemson,0
-Wake,10,UNC Charlotte,10
-Duke,20,VTech I,10
-Belmont Abbey,10,UVA,20
-Queens,10,VTech II,10
-UNCW,20,USC,20
-App State,10,Wake,10
-Clemson,0,UNC Charlotte,10
-Duke,10,UVA,20
-Belmont Abbey,20,VTech I,10
-Queens,10,USC,20
-UNCW,100,VTech II,10
-App State,0,UNC Charlotte,6
-Clemson,2,Wake,5
+Duke,0,Belmont Abbey,0
+VTech I,0,UVA,0
+Queens,0,UNCW,0
+VTech II,0,USC,0
+App State,0,Clemson,0
+Wake,10,UNC Charlotte,0
+Duke,0,VTech I,0
+Belmont Abbey,0,UVA,0
+Queens,0,VTech II,0
+UNCW,0,USC,0
+App State,0,Wake,10
+Clemson,0,UNC Charlotte,0
+Duke,0,UVA,0
+Belmont Abbey,0,VTech I,0
+Queens,0,USC,0
+UNCW,0,VTech II,0
+App State,0,UNC Charlotte,0
+Clemson,0,Wake,0
 
  "Update scores for latest matches"
