@@ -3,66 +3,66 @@
     "A": [
       {
         "name": "App State",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "Belmont Abbey",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "Clemson",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "Duke",
-        "points": 6,
+        "points": 0,
         "pd": 0
       }
     ],
     "B": [
       {
         "name": "Queens",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "UNC Charlotte",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "UNCW",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "USC",
-        "points": 6,
+        "points": 0,
         "pd": 0
       }
     ],
     "C": [
       {
         "name": "UVA",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "VTech I",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "VTech II",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "name": "Wake",
-        "points": 6,
+        "points": 0,
         "pd": 0
       }
     ]
@@ -72,87 +72,87 @@
       {
         "pool": "A",
         "team": "App State",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "pool": "B",
         "team": "Queens",
-        "points": 6,
+        "points": 0,
         "pd": 0
       },
       {
         "pool": "C",
         "team": "UVA",
-        "points": 6,
+        "points": 0,
         "pd": 0
       }
     ],
     "fourthSeed": {
       "team": "Belmont Abbey",
-      "points": 6,
+      "points": 0,
       "pd": 0
     }
   },
   "teams": [
     {
-      "name": "Clemson",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "VTech I",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "Duke",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "UVA",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "UNCW",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "USC",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "App State",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 6,
+      "name": "Wake",
+      "points": 0,
       "pd": 0
     },
     {
       "name": "VTech II",
-      "points": 6,
+      "points": 0,
       "pd": 0
     },
     {
-      "name": "Wake",
-      "points": 6,
+      "name": "UNCW",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "App State",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Clemson",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "UNC Charlotte",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "UVA",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "VTech I",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Duke",
+      "points": 0,
       "pd": 0
     },
     {
       "name": "Belmont Abbey",
-      "points": 6,
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "USC",
+      "points": 0,
       "pd": 0
     },
     {
       "name": "Queens",
-      "points": 6,
+      "points": 0,
       "pd": 0
     }
   ],
