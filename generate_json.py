@@ -42,33 +42,34 @@ def calculate_pool_standings(results):
     for team in all_teams:
         teams[team] = {'name': team, 'points': 0, 'pd': 0}
     
-    # Calculate points and PD
+    # Calculate points and PD only if scores are not 0-0
     for result in results:
         team1, team2 = result['team1'], result['team2']
         score1, score2 = result['score1'], result['score2']
         
-        # Update points differential
-        teams[team1]['pd'] += score1 - score2
-        teams[team2]['pd'] += score2 - score1
-        
-        # Award points
-        if score1 > score2:
-            teams[team1]['points'] += 4  # Win
-            if score1 - score2 <= 7:  # Losing bonus point
-                teams[team2]['points'] += 1
-        elif score2 > score1:
-            teams[team2]['points'] += 4  # Win
-            if score2 - score1 <= 7:  # Losing bonus point
+        if score1 > 0 or score2 > 0:
+            # Update points differential
+            teams[team1]['pd'] += score1 - score2
+            teams[team2]['pd'] += score2 - score1
+            
+            # Award points
+            if score1 > score2:
+                teams[team1]['points'] += 4  # Win
+                if score1 - score2 <= 7:  # Losing bonus point
+                    teams[team2]['points'] += 1
+            elif score2 > score1:
+                teams[team2]['points'] += 4  # Win
+                if score2 - score1 <= 7:  # Losing bonus point
+                    teams[team1]['points'] += 1
+            else:
+                teams[team1]['points'] += 2  # Draw
+                teams[team2]['points'] += 2  # Draw
+            
+            # Try bonus points (assuming 5 points per try, 20+ points means 4+ tries)
+            if score1 >= 20:
                 teams[team1]['points'] += 1
-        else:
-            teams[team1]['points'] += 2  # Draw
-            teams[team2]['points'] += 2  # Draw
-        
-        # Try bonus points (assuming 5 points per try, 20+ points means 4+ tries)
-        if score1 >= 20:
-            teams[team1]['points'] += 1
-        if score2 >= 20:
-            teams[team2]['points'] += 1
+            if score2 >= 20:
+                teams[team2]['points'] += 1
     
     return list(teams.values())
 
