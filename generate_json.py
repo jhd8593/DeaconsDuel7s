@@ -2,22 +2,32 @@ import json
 import os
 from datetime import datetime
 import csv
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def read_results_file(file_path):
     results = []
     if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            reader = csv.reader(f)
-            next(reader)  # Skip header
-            for row in reader:
-                if len(row) >= 4:
-                    team1, score1, team2, score2 = row[:4]
-                    results.append({
-                        'team1': team1.strip(),
-                        'score1': int(score1),
-                        'team2': team2.strip(),
-                        'score2': int(score2)
-                    })
+        try:
+            with open(file_path, 'r') as f:
+                reader = csv.reader(f)
+                next(reader)  # Skip header
+                for row in reader:
+                    if len(row) >= 4:
+                        team1, score1, team2, score2 = row[:4]
+                        results.append({
+                            'team1': team1.strip(),
+                            'score1': int(score1),
+                            'team2': team2.strip(),
+                            'score2': int(score2)
+                        })
+            logging.info(f"Successfully read {len(results)} results from {file_path}")
+        except Exception as e:
+            logging.error(f"Error reading results file: {str(e)}")
+    else:
+        logging.warning(f"Results file not found: {file_path}")
     return results
 
 def calculate_pool_standings(results):
@@ -172,7 +182,8 @@ def generate_pool_schedule():
     ]
 
 def generate_tournament_data():
-    results = read_results_file('../Desktop/Rugby/Results.csv')
+    results_file = os.environ.get('RESULTS_FILE', 'Results.csv')
+    results = read_results_file(results_file)
     teams = calculate_pool_standings(results)
     pools = assign_pools(teams)
     playoffs = determine_playoffs(pools)
@@ -188,9 +199,12 @@ def generate_tournament_data():
         'poolSchedule': pool_schedule
     }
     
-    with open('tournament_data.json', 'w') as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open('tournament_data.json', 'w') as f:
+            json.dump(data, f, indent=2)
+        logging.info('Tournament data updated successfully')
+    except Exception as e:
+        logging.error(f"Error writing tournament data: {str(e)}")
 
 if __name__ == '__main__':
     generate_tournament_data()
-    print('Tournament data updated successfully')
