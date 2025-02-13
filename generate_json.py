@@ -8,18 +8,6 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def read_results_file(file_path):
-    """
-    Reads the 'Results.csv' file, returning a list of match results in the format:
-    [
-      {
-        'team1': <str>,
-        'score1': <int>,
-        'team2': <str>,
-        'score2': <int>
-      },
-      ...
-    ]
-    """
     results = []
     if os.path.exists(file_path):
         try:
@@ -43,57 +31,41 @@ def read_results_file(file_path):
     return results
 
 def calculate_pool_standings(results):
-    """
-    Takes a list of match results and calculates the following for each team:
-      - points: (4 win / 2 draw / 0 loss) + bonus points
-      - pd:     (points scored - points conceded)
-    """
     teams = {}
     
-    # Collect all unique team names
+    # Initialize teams
     all_teams = set()
     for result in results:
         all_teams.add(result['team1'])
         all_teams.add(result['team2'])
     
-    # Initialize each team with 0 points and 0 PD
-    for team_name in all_teams:
-        teams[team_name] = {
-            'name': team_name,
-            'points': 0,
-            'pd': 0  # Point differential
-        }
+    for team in all_teams:
+        teams[team] = {'name': team, 'points': 0, 'pd': 0}
     
-    # Award competition points and track PD only if at least one team scored > 0
+    # Calculate points and PD only if scores are not 0-0
     for result in results:
         team1, team2 = result['team1'], result['team2']
         score1, score2 = result['score1'], result['score2']
         
-        # Ignore matches that look unplayed (both scores 0)
         if score1 > 0 or score2 > 0:
-            # Update each team's PD
-            teams[team1]['pd'] += (score1 - score2)
-            teams[team2]['pd'] += (score2 - score1)
+            # Update points differential
+            teams[team1]['pd'] += score1 - score2
+            teams[team2]['pd'] += score2 - score1
             
-            # Win/loss/draw
+            # Award points
             if score1 > score2:
-                # team1 wins
-                teams[team1]['points'] += 4
-                # Losing bonus if within 7
-                if (score1 - score2) <= 7:
+                teams[team1]['points'] += 4  # Win
+                if score1 - score2 <= 7:  # Losing bonus point
                     teams[team2]['points'] += 1
             elif score2 > score1:
-                # team2 wins
-                teams[team2]['points'] += 4
-                # Losing bonus if within 7
-                if (score2 - score1) <= 7:
+                teams[team2]['points'] += 4  # Win
+                if score2 - score1 <= 7:  # Losing bonus point
                     teams[team1]['points'] += 1
             else:
-                # Draw
-                teams[team1]['points'] += 2
-                teams[team2]['points'] += 2
+                teams[team1]['points'] += 2  # Draw
+                teams[team2]['points'] += 2  # Draw
             
-            # Bonus point for scoring >= 20 points
+            # Try bonus points (assuming 5 points per try, 20+ points means 4+ tries)
             if score1 >= 20:
                 teams[team1]['points'] += 1
             if score2 >= 20:
@@ -102,79 +74,34 @@ def calculate_pool_standings(results):
     return list(teams.values())
 
 def assign_pools(teams):
-    """
-    Assigns each team's full data (points, pd, etc.) to the correct pool
-    based on predefined mappings. Returns a dict like:
-      {
-        'A': [ {teamData1}, {teamData2}, ... ],
-        'B': [...],
-        'C': [...]
-      }
-    """
-    pool_definitions = {
+    pools = {
         'A': ['Duke', 'Belmont Abbey', 'VTech I', 'UVA'],
         'B': ['Queens', 'UNCW', 'VTech II', 'USC'],
         'C': ['App State', 'Clemson', 'Wake', 'UNC Charlotte']
     }
     
-    # Build a dict of pool => list of team dictionaries
-    assigned_pools = {}
-    for pool_name, team_names in pool_definitions.items():
-        assigned_pools[pool_name] = [
-            t for t in teams
-            if t['name'] in team_names
-        ]
-    return assigned_pools
+    pool_teams = {pool: [team for team in teams if team['name'] in pool_teams] 
+                  for pool, pool_teams in pools.items()}
+    
+    return pool_teams
 
 def determine_playoffs(pools):
-    """
-    Sorts the teams in each pool by (points desc, pd desc), 
-    then identifies the 3 pool winners and the best second-place team
-    as the 'fourthSeed'.
-    """
-    # Sort teams within each pool
-    for pool_name, team_list in pools.items():
-        team_list.sort(key=lambda x: (-x['points'], -x['pd']))
+    # Sort teams in each pool by points, then PD
+    for pool in pools.values():
+        pool.sort(key=lambda x: (-x['points'], -x['pd']))
     
-    # Extract winners
+    # Get pool winners
     pool_winners = [
-        {
-            'pool': 'A',
-            'team': pools['A'][0]['name'],
-            'points': pools['A'][0]['points'],
-            'pd': pools['A'][0]['pd']
-        },
-        {
-            'pool': 'B',
-            'team': pools['B'][0]['name'],
-            'points': pools['B'][0]['points'],
-            'pd': pools['B'][0]['pd']
-        },
-        {
-            'pool': 'C',
-            'team': pools['C'][0]['name'],
-            'points': pools['C'][0]['points'],
-            'pd': pools['C'][0]['pd']
-        }
+        {'pool': 'A', 'team': pools['A'][0]['name'], 'points': pools['A'][0]['points'], 'pd': pools['A'][0]['pd']},
+        {'pool': 'B', 'team': pools['B'][0]['name'], 'points': pools['B'][0]['points'], 'pd': pools['B'][0]['pd']},
+        {'pool': 'C', 'team': pools['C'][0]['name'], 'points': pools['C'][0]['points'], 'pd': pools['C'][0]['pd']}
     ]
     
-    # Identify second-place teams, then pick the best among them
+    # Get 4th seed (best second place team)
     second_place_teams = [
-        {
-            'team': pools['A'][1]['name'],
-            'points': pools['A'][1]['points'],
-            'pd': pools['A'][1]['pd']
-        },
-        {
-            'team': pools['B'][1]['name'],
-            'points': pools['B'][1]['points'],
-            'pd': pools['B'][1]['pd']
-        },
-        {
-            'team': pools['C'][1]['name'],
-            'points': pools['C'][1]['points'],
-            'pd': pools['C'][1]['pd']
-        }
+        {'team': pools['A'][1]['name'], 'points': pools['A'][1]['points'], 'pd': pools['A'][1]['pd']},
+        {'team': pools['B'][1]['name'], 'points': pools['B'][1]['points'], 'pd': pools['B'][1]['pd']},
+        {'team': pools['C'][1]['name'], 'points': pools['C'][1]['points'], 'pd': pools['C'][1]['pd']}
     ]
     second_place_teams.sort(key=lambda x: (-x['points'], -x['pd']))
     fourth_seed = second_place_teams[0]
@@ -185,10 +112,6 @@ def determine_playoffs(pools):
     }
 
 def generate_finals_schedule():
-    """
-    Returns a list of dictionaries describing the final round matches
-    (Consolation, Bowl, Shield, Plate, Semifinals, 3rd place, Cup Final).
-    """
     return [
         {
             'time': '2:45-2:59',
@@ -233,66 +156,90 @@ def generate_finals_schedule():
     ]
 
 def generate_pool_schedule(pools):
-    """
-    Returns a static list of pool matches (time, match ID, pool label, teams).
-    Note: Currently not using `pools` to generate anything dynamic, but 
-    it's there for consistency in case you want to automate references.
-    """
     schedule = [
-        {'time': '9:00-9:14', 'match': 'M1',  'pool': 'A', 'teams': 'Duke vs Belmont Abbey'},
-        {'time': '9:16-9:30', 'match': 'M2',  'pool': 'A', 'teams': 'VTech I vs UVA'},
-        {'time': '9:32-9:46', 'match': 'M3',  'pool': 'B', 'teams': 'Queens vs UNCW'},
-        {'time': '9:48-10:02', 'match': 'M4',  'pool': 'B', 'teams': 'VTech II vs USC'},
-        {'time': '10:04-10:18', 'match': 'M5',  'pool': 'C', 'teams': 'App State vs Clemson'},
-        {'time': '10:20-10:34', 'match': 'M6',  'pool': 'C', 'teams': 'Wake vs UNC Charlotte'},
-        {'time': '10:36-10:50', 'match': 'M7',  'pool': 'A', 'teams': 'Duke vs VTech I'},
-        {'time': '10:52-11:06', 'match': 'M8',  'pool': 'A', 'teams': 'Belmont Abbey vs UVA'},
-        {'time': '11:08-11:22', 'match': 'M9',  'pool': 'B', 'teams': 'Queens vs VTech II'},
+        {'time': '9:00-9:14', 'match': 'M1', 'pool': 'A', 'teams': 'Duke vs Belmont Abbey'},
+        {'time': '9:16-9:30', 'match': 'M2', 'pool': 'A', 'teams': 'VTech I vs UVA'},
+        {'time': '9:32-9:46', 'match': 'M3', 'pool': 'B', 'teams': 'Queens vs UNCW'},
+        {'time': '9:48-10:02', 'match': 'M4', 'pool': 'B', 'teams': 'VTech II vs USC'},
+        {'time': '10:04-10:18', 'match': 'M5', 'pool': 'C', 'teams': 'App State vs Clemson'},
+        {'time': '10:20-10:34', 'match': 'M6', 'pool': 'C', 'teams': 'Wake vs UNC Charlotte'},
+        {'time': '10:36-10:50', 'match': 'M7', 'pool': 'A', 'teams': 'Duke vs VTech I'},
+        {'time': '10:52-11:06', 'match': 'M8', 'pool': 'A', 'teams': 'Belmont Abbey vs UVA'},
+        {'time': '11:08-11:22', 'match': 'M9', 'pool': 'B', 'teams': 'Queens vs VTech II'},
         {'time': '11:24-11:38', 'match': 'M10', 'pool': 'B', 'teams': 'UNCW vs USC'},
         {'time': '11:40-11:54', 'match': 'M11', 'pool': 'C', 'teams': 'App State vs Wake'},
         {'time': '11:56-12:10', 'match': 'M12', 'pool': 'C', 'teams': 'Clemson vs UNC Charlotte'},
         {'time': '12:12-12:26', 'match': 'M13', 'pool': 'A', 'teams': 'Duke vs UVA'},
         {'time': '12:28-12:42', 'match': 'M14', 'pool': 'A', 'teams': 'Belmont Abbey vs VTech I'},
         {'time': '12:44-12:58', 'match': 'M15', 'pool': 'B', 'teams': 'Queens vs USC'},
-        {'time': '1:00 PM',     'match': 'LUNCH','pool': None, 'teams': 'Break for Lunch'},
-        {'time': '1:30-1:44',   'match': 'M16', 'pool': 'B', 'teams': 'UNCW vs VTech II'},
-        {'time': '1:46-2:00',   'match': 'M17', 'pool': 'C', 'teams': 'App State vs UNC Charlotte'},
-        {'time': '2:02-2:16',   'match': 'M18', 'pool': 'C', 'teams': 'Clemson vs Wake'}
+        {'time': '1:00 PM', 'match': 'LUNCH', 'pool': None, 'teams': 'Break for Lunch'},
+        {'time': '1:30-1:44', 'match': 'M16', 'pool': 'B', 'teams': 'UNCW vs VTech II'},
+        {'time': '1:46-2:00', 'match': 'M17', 'pool': 'C', 'teams': 'App State vs UNC Charlotte'},
+        {'time': '2:02-2:16', 'match': 'M18', 'pool': 'C', 'teams': 'Clemson vs Wake'}
     ]
     return schedule
 
+def generate_rankings(teams, playoffs):
+    # Sort all teams by points and then by PD
+    sorted_teams = sorted(teams, key=lambda x: (-x['points'], -x['pd']))
+    
+    # Assign rankings
+    rankings = {
+        'championship': [],
+        'plateShield': [],
+        'bowlConsolation': []
+    }
+    
+    # Championship bracket (top 4 teams)
+    for i, team in enumerate(sorted_teams[:4]):
+        rankings['championship'].append({
+            'rank': i + 1,
+            'name': team['name'],
+            'points': team['points'],
+            'pd': team['pd'],
+            'status': 'Pool Winner' if team['name'] in [w['team'] for w in playoffs['poolWinners']] else '4th Seed'
+        })
+    
+    # Plate & Shield (next 4 teams)
+    for i, team in enumerate(sorted_teams[4:8]):
+        rankings['plateShield'].append({
+            'rank': i + 5,
+            'name': team['name'],
+            'points': team['points'],
+            'pd': team['pd']
+        })
+    
+    # Bowl & Consolation (remaining 4 teams)
+    for i, team in enumerate(sorted_teams[8:]):
+        rankings['bowlConsolation'].append({
+            'rank': i + 9,
+            'name': team['name'],
+            'points': team['points'],
+            'pd': team['pd']
+        })
+    
+    return rankings
+
 def generate_tournament_data():
-    """
-    Main function to read the results, compute standings, 
-    assign pools, determine playoffs, and output everything to JSON.
-    """
     results_file = os.environ.get('RESULTS_FILE', 'Results.csv')
     results = read_results_file(results_file)
-    
-    # Calculate each team's overall points + PD
     teams = calculate_pool_standings(results)
-    
-    # Assign each team to the appropriate pool
     pools = assign_pools(teams)
-    
-    # Identify pool winners and best second-place team
     playoffs = determine_playoffs(pools)
-    
-    # Build final schedules
     finals_schedule = generate_finals_schedule()
     pool_schedule = generate_pool_schedule(pools)
+    rankings = generate_rankings(teams, playoffs)
     
-    # Combine all data
     data = {
         'pools': pools,
         'playoffs': playoffs,
         'teams': teams,
         'matchResults': results,
         'finalsSchedule': finals_schedule,
-        'poolSchedule': pool_schedule
+        'poolSchedule': pool_schedule,
+        'rankings': rankings
     }
     
-    # Write out to JSON file
     try:
         with open('tournament_data.json', 'w') as f:
             json.dump(data, f, indent=2)
@@ -302,3 +249,4 @@ def generate_tournament_data():
 
 if __name__ == '__main__':
     generate_tournament_data()
+
