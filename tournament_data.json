@@ -96,9 +96,19 @@
   },
   "teams": [
     {
-      "name": "UVA",
-      "points": 8,
-      "pd": 1
+      "name": "Duke",
+      "points": 5,
+      "pd": -21
+    },
+    {
+      "name": "Belmont Abbey",
+      "points": 9,
+      "pd": 15
+    },
+    {
+      "name": "VTech II",
+      "points": 9,
+      "pd": -4
     },
     {
       "name": "Wake",
@@ -111,19 +121,19 @@
       "pd": -28
     },
     {
-      "name": "VTech I",
-      "points": 7,
-      "pd": 5
+      "name": "UVA",
+      "points": 8,
+      "pd": 1
     },
     {
-      "name": "Belmont Abbey",
+      "name": "Clemson",
       "points": 9,
-      "pd": 15
+      "pd": -11
     },
     {
-      "name": "Duke",
+      "name": "Queens",
       "points": 5,
-      "pd": -21
+      "pd": -27
     },
     {
       "name": "USC",
@@ -136,19 +146,9 @@
       "pd": -12
     },
     {
-      "name": "VTech II",
-      "points": 9,
-      "pd": -4
-    },
-    {
-      "name": "Clemson",
-      "points": 9,
-      "pd": -11
-    },
-    {
-      "name": "Queens",
-      "points": 5,
-      "pd": -27
+      "name": "VTech I",
+      "points": 7,
+      "pd": 5
     },
     {
       "name": "UNCW",
