@@ -538,6 +538,12 @@
     }
 
     function updateRankings(data) {
+      // Sort all teams by points and then by PD
+      const sortedTeams = data.teams.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        return b.pd - a.pd;
+      });
+
       // Update Championship teams (1st-4th)
       const championshipTeams = document.getElementById('championship-teams');
       championshipTeams.innerHTML = `
@@ -561,25 +567,25 @@
         </div>
       `;
 
+      // Get teams for Plate & Shield and Bowl & Consolation
+      const remainingTeams = sortedTeams.filter(team =>
+        !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+        team.name !== data.playoffs.fourthSeed.team
+      );
+
       // Update Plate & Shield teams (5th-8th)
       const plateShieldTeams = document.getElementById('plate-shield-teams');
       plateShieldTeams.innerHTML = `
         <div class="ranking-list">
-          ${data.teams
-            .filter(team =>
-              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
-              team.name !== data.playoffs.fourthSeed.team
-            )
-            .slice(0, 4)
-            .map((team, index) => `
-              <div class="ranking-item">
-                <span class="rank">${index + 5}</span>
-                <div class="team-info">
-                  <span class="team-name">${team.name}</span>
-                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
-                </div>
+          ${remainingTeams.slice(0, 4).map((team, index) => `
+            <div class="ranking-item">
+              <span class="rank">${index + 5}</span>
+              <div class="team-info">
+                <span class="team-name">${team.name}</span>
+                <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
               </div>
-            `).join('')}
+            </div>
+          `).join('')}
         </div>
       `;
 
@@ -587,21 +593,15 @@
       const bowlConsolationTeams = document.getElementById('bowl-consolation-teams');
       bowlConsolationTeams.innerHTML = `
         <div class="ranking-list">
-          ${data.teams
-            .filter(team =>
-              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
-              team.name !== data.playoffs.fourthSeed.team
-            )
-            .slice(4)
-            .map((team, index) => `
-              <div class="ranking-item">
-                <span class="rank">${index + 9}</span>
-                <div class="team-info">
-                  <span class="team-name">${team.name}</span>
-                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
-                </div>
+          ${remainingTeams.slice(4).map((team, index) => `
+            <div class="ranking-item">
+              <span class="rank">${index + 9}</span>
+              <div class="team-info">
+                <span class="team-name">${team.name}</span>
+                <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
               </div>
-            `).join('')}
+            </div>
+          `).join('')}
         </div>
       `;
     }
