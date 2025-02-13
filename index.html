@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Deacons Duel 7's Tournament</title>
+  <title>Deacons Duel Tournament</title>
 
   <!-- Google Fonts (Poppins) -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -13,6 +13,8 @@
     :root {
       --primary-color: #1a1a1a;
       --accent-color: #4CAF50;
+
+      /* Pool colors */
       --pool-a-color: #4CAF50; /* Green */
       --pool-b-color: #2196F3; /* Blue */
       --pool-c-color: #FFEB3B; /* Yellow */
@@ -159,13 +161,9 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.05);
     }
 
-    /* Removed background-color for "current" so no green highlight */
     .match.current {
-      /* If you still want a subtle style for "in-progress," customize below:
-      border-left-color: var(--accent-color);
-      */
+      /* Optional style if you want a subtle highlight for in-progress */
     }
-
     .match.completed {
       opacity: 0.8;
     }
@@ -237,10 +235,8 @@
       margin-top: 5px;
       width: fit-content;
     }
-    /* Removed green highlight from in-progress status */
     .match-status.current {
-      /* background-color: #e6ffe6; */
-      /* color: var(--accent-color); */
+      /* Optional style if you want a subtle highlight for in-progress */
     }
     .match-status.completed {
       color: #666;
@@ -253,7 +249,7 @@
       margin-top: 5px;
     }
 
-    /* POOL BORDER COLORS */
+    /* POOL BORDER COLORS FOR MATCH CARDS */
     .pool-A { border-left-color: var(--pool-a-color); }
     .pool-B { border-left-color: var(--pool-b-color); }
     .pool-C { border-left-color: var(--pool-c-color); }
@@ -388,8 +384,6 @@
       color: #666;
     }
 
-    /* Removed update flash (green) animation completely */
-    
     /* RESPONSIVE */
     @media (max-width: 768px) {
       .header-content {
@@ -414,6 +408,30 @@
         width: 100%;
       }
     }
+
+    /* POOL-SPECIFIC COLORS FOR HEADINGS & TABLE HEADERS */
+    .section.pool-A h2 {
+      color: var(--pool-a-color);
+    }
+    .section.pool-B h2 {
+      color: var(--pool-b-color);
+    }
+    .section.pool-C h2 {
+      color: var(--pool-c-color);
+    }
+
+    .section.pool-A table th {
+      background-color: var(--pool-a-color);
+      color: #fff; /* White text on green */
+    }
+    .section.pool-B table th {
+      background-color: var(--pool-b-color);
+      color: #fff; /* White text on blue */
+    }
+    .section.pool-C table th {
+      background-color: var(--pool-c-color);
+      color: #333; /* Dark text on yellow for contrast */
+    }
   </style>
 </head>
 <body>
@@ -422,7 +440,6 @@
     <div class="header-content">
       <h1>Deacons Duel Tournament</h1>
       <nav class="nav">
-        <!-- Removed Finals link -->
         <a href="#standings">Standings</a>
         <a href="#schedule">Pool Play</a>
         <a href="#playoffs">Playoffs</a>
@@ -513,9 +530,11 @@
       const poolsContainer = document.getElementById('pools');
       poolsContainer.innerHTML = '';
 
+      // For each pool (A, B, or C), add the corresponding class "pool-A", "pool-B", or "pool-C"
       Object.entries(pools).forEach(([poolName, teams]) => {
         const poolDiv = document.createElement('div');
-        poolDiv.className = 'section';
+        poolDiv.className = `section pool-${poolName}`; // e.g., "section pool-A"
+
         poolDiv.innerHTML = `
           <h2>Pool ${poolName}</h2>
           <table>
@@ -538,12 +557,6 @@
     }
 
     function updateRankings(data) {
-      // Sort all teams by points and then by PD
-      const sortedTeams = data.teams.sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        return b.pd - a.pd;
-      });
-
       // Update Championship teams (1st-4th)
       const championshipTeams = document.getElementById('championship-teams');
       championshipTeams.innerHTML = `
@@ -567,25 +580,25 @@
         </div>
       `;
 
-      // Get teams for Plate & Shield and Bowl & Consolation
-      const remainingTeams = sortedTeams.filter(team =>
-        !data.playoffs.poolWinners.some(w => w.team === team.name) &&
-        team.name !== data.playoffs.fourthSeed.team
-      );
-
       // Update Plate & Shield teams (5th-8th)
       const plateShieldTeams = document.getElementById('plate-shield-teams');
       plateShieldTeams.innerHTML = `
         <div class="ranking-list">
-          ${remainingTeams.slice(0, 4).map((team, index) => `
-            <div class="ranking-item">
-              <span class="rank">${index + 5}</span>
-              <div class="team-info">
-                <span class="team-name">${team.name}</span>
-                <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(0, 4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 5}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
               </div>
-            </div>
-          `).join('')}
+            `).join('')}
         </div>
       `;
 
@@ -593,15 +606,21 @@
       const bowlConsolationTeams = document.getElementById('bowl-consolation-teams');
       bowlConsolationTeams.innerHTML = `
         <div class="ranking-list">
-          ${remainingTeams.slice(4).map((team, index) => `
-            <div class="ranking-item">
-              <span class="rank">${index + 9}</span>
-              <div class="team-info">
-                <span class="team-name">${team.name}</span>
-                <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 9}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
               </div>
-            </div>
-          `).join('')}
+            `).join('')}
         </div>
       `;
     }
@@ -615,7 +634,7 @@
       let [startHour, startMinute] = startStr.split(':').map(Number);
       let [endHour, endMinute] = endStr.split(':').map(Number);
 
-      // Adjust for PM times if needed (assuming matches are in the morning/afternoon)
+      // Simple logic for AM/PM adjustment, if needed:
       if (startHour < 8) startHour += 12;
       if (endHour < 8) endHour += 12;
 
@@ -652,7 +671,7 @@
       );
       if (!result) return null;
 
-      // If teams are reversed, swap scores
+      // If teams are reversed in the data, swap scores
       if (result.team1 === team2) {
         return {
           score1: result.score2,
@@ -727,6 +746,7 @@
           statusContent = `<div class="match-status">Not Started</div>`;
         }
 
+        // Add "pool-<PoolName>" class for the colored left border
         return `
           <div class="match pool-${match.pool} ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
             <div class="time">
@@ -742,8 +762,6 @@
         `;
       }).join('');
     }
-
-    /* Removed the flashUpdate function and references to it. */
 
     function updateData(data) {
       // 1. Update Pools and Rankings
