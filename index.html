@@ -555,6 +555,24 @@
         </div>
 
 
+        <div class="section" id="finals">
+            <h2>Finals Overview</h2>
+            <div class="finals-grid">
+                <div class="finals-block">
+                    <h3>Consolation & Bowl</h3>
+                    <div id="consolation-bowl-matches"></div>
+                </div>
+                <div class="finals-block">
+                    <h3>Shield & Plate</h3>
+                    <div id="shield-plate-matches"></div>
+                </div>
+                <div class="finals-block">
+                    <h3>Championship Bracket</h3>
+                    <div id="championship-matches"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="auto-refresh">
             Last updated: <span id="last-updated"></span>
             <br>
@@ -840,102 +858,89 @@
         }
 
         function updateFinalsOverview(data) {
-            const finalsBlocks = document.querySelectorAll('.finals-block');
             const finalsMatches = data.finalsSchedule || [];
             
             // Update Consolation & Bowl matches
-            const consolationBowl = finalsBlocks[0];
+            const consolationBowlMatches = document.getElementById('consolation-bowl-matches');
             const consolationMatch = finalsMatches.find(m => m.name.includes('Consolation'));
             const bowlMatch = finalsMatches.find(m => m.name.includes('Bowl'));
-            updateFinalsBlock(consolationBowl, [consolationMatch, bowlMatch], data);
+            consolationBowlMatches.innerHTML = generateMatchHTML(consolationMatch, data) + generateMatchHTML(bowlMatch, data);
 
             // Update Shield & Plate matches
-            const shieldPlate = finalsBlocks[1];
+            const shieldPlateMatches = document.getElementById('shield-plate-matches');
             const shieldMatch = finalsMatches.find(m => m.name.includes('Shield'));
             const plateMatch = finalsMatches.find(m => m.name.includes('Plate'));
-            updateFinalsBlock(shieldPlate, [shieldMatch, plateMatch], data);
+            shieldPlateMatches.innerHTML = generateMatchHTML(shieldMatch, data) + generateMatchHTML(plateMatch, data);
 
             // Update Championship matches
-            const championship = finalsBlocks[2];
+            const championshipMatches = document.getElementById('championship-matches');
             const semiFinals = finalsMatches.filter(m => m.name.includes('Semifinal'));
             const thirdPlace = finalsMatches.find(m => m.name.includes('3rd'));
             const cupFinal = finalsMatches.find(m => m.name.includes('Cup'));
-            updateFinalsBlock(championship, [...semiFinals, thirdPlace, cupFinal], data);
+            championshipMatches.innerHTML = semiFinals.map(m => generateMatchHTML(m, data)).join('') +
+                                            generateMatchHTML(thirdPlace, data) +
+                                            generateMatchHTML(cupFinal, data);
         }
 
-        function updateFinalsBlock(block, matches, data) {
-            const matchDivs = block.querySelectorAll('.match');
-            matches.forEach((match, index) => {
-                if (!match || !matchDivs[index]) return;
+        function generateMatchHTML(match, data) {
+            if (!match) return '';
 
-                const matchDiv = matchDivs[index];
-                const current = isCurrentMatch(match.time);
-                const completed = isMatchCompleted(match.time);
-                const result = getMatchResult(match.teams, data.matchResults);
+            const current = isCurrentMatch(match.time);
+            const completed = isMatchCompleted(match.time);
+            const result = getMatchResult(match.teams, data.matchResults);
+            const teams = match.teams || getTeamsForMatch(match.name, data);
+            const [team1, team2] = teams ? teams.split(' vs ') : [null, null];
 
-                // Get teams for this match
-                const teamsDiv = matchDiv.querySelector('.teams');
-                const teams = match.teams || getTeamsForMatch(match.name, data);
-                
-                // Only update teams if we have new teams or a result
-                if (teams || result) {
-                    const [team1, team2] = teams ? teams.split(' vs ') : [null, null];
-                    
-                    if (result) {
-                        teamsDiv.innerHTML = `
-                            <div class="team ${result.winner === team1 ? 'winner' : ''}">${team1}</div>
-                            <div class="score">
-                                <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
-                                -
-                                <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
-                            </div>
-                            <div class="team ${result.winner === team2 ? 'winner' : ''}">${team2}</div>
-                        `;
-                    } else if (teams) {
-                        const currentTeams = teamsDiv.textContent.replace(/\s+/g, ' ').trim();
-                        if (currentTeams !== teams) {
-                            teamsDiv.innerHTML = `
-                                <div class="team">${team1 || ''}</div>
-                                <div class="vs">vs</div>
-                                <div class="team">${team2 || ''}</div>
-                            `;
-                            // Update the pool label if it's a finals match
-                            const poolLabel = matchDiv.querySelector('.pool-label');
-                            if (poolLabel) {
-                                poolLabel.textContent = match.name;
-                            }
-                        }
-                    }
+            let matchContent = `
+                <div class="teams">
+                    <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1 || ''}</div>
+            `;
+
+            if (result) {
+                matchContent += `
+                    <div class="score">
+                        <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
+                        -
+                        <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
+                    </div>
+                `;
+            } else {
+                matchContent += `<div class="vs">vs</div>`;
+            }
+
+            matchContent += `
+                    <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2 || ''}</div>
+                </div>
+            `;
+
+            let statusContent = '';
+            if (current) {
+                statusContent = '<div class="match-status current">In Progress</div>';
+            } else if (completed) {
+                if (result) {
+                    statusContent = `
+                        <div class="match-status completed">
+                            ${result.winner ? `${result.winner} wins` : 'Draw'}
+                        </div>
+                    `;
+                } else if (teams) {
+                    statusContent = '<div class="match-status completed">Not Started</div>';
                 }
+            }
 
-                // Update match status
-                matchDiv.classList.toggle('current', current);
-                matchDiv.classList.toggle('completed', completed);
-
-                // Remove existing status if any
-                const existingStatus = matchDiv.querySelector('.match-status');
-                if (existingStatus) existingStatus.remove();
-
-                // Add new status
-                const matchDetails = matchDiv.querySelector('.match-details');
-                if (current) {
-                    matchDetails.insertAdjacentHTML('beforeend', 
-                        '<div class="match-status current">In Progress</div>'
-                    );
-                } else if (completed) {
-                    if (result) {
-                        matchDetails.insertAdjacentHTML('beforeend', `
-                            <div class="match-status completed">
-                                ${result.winner ? `${result.winner} wins` : 'Draw'}
-                            </div>
-                        `);
-                    } else if (teams) {
-                        matchDetails.insertAdjacentHTML('beforeend', 
-                            '<div class="match-status completed">Not Started</div>'
-                        );
-                    }
-                }
-            });
+            return `
+                <div class="match finals ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
+                    <div class="time">
+                        <span class="time-value">${match.time}</span>
+                        <span class="match-number">${match.match}</span>
+                    </div>
+                    <div class="match-details">
+                        ${matchContent}
+                        <div class="pool-label">${match.name}</div>
+                        ${statusContent}
+                    </div>
+                </div>
+            `;
         }
 
         function getTeamsForMatch(matchName, data) {
