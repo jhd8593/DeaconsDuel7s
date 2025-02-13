@@ -75,9 +75,9 @@ def calculate_pool_standings(results):
 
 def assign_pools(teams):
     pools = {
-        'A': ['Duke', 'Belmont Abbey', 'UVA', 'VTech I'],
-        'B': ['Queens', 'UNCW', 'USC', 'VTech II'],
-        'C': ['App State', 'Wake', 'Clemson', 'UNC Charlotte']
+        'A': ['Duke', 'Belmont Abbey', 'VTech I', 'UVA'],
+        'B': ['Queens', 'UNCW', 'VTech II', 'USC'],
+        'C': ['App State', 'Clemson', 'Wake', 'UNC Charlotte']
     }
     
     pool_teams = {pool: [team for team in teams if team['name'] in pool_teams] 
