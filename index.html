@@ -491,101 +491,6 @@
     </div>
 
     <div class="container">
-        <div class="section" id="finals">
-            <h2>Finals Overview</h2>
-            <div class="finals-grid">
-                <div class="finals-block">
-                    <h3>Consolation & Bowl</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">2:45-2:59</span>
-                            <span class="match-number">M19</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">11th vs 12th Place</div>
-                            <div class="pool-label">M19: Consolation Match</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:01-3:15</span>
-                            <span class="match-number">M20</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">9th vs 10th Place</div>
-                            <div class="pool-label">M20: Bowl Final</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="finals-block">
-                    <h3>Shield & Plate</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:17-3:31</span>
-                            <span class="match-number">M21</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">7th vs 8th Place</div>
-                            <div class="pool-label">M21: Shield Final</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:33-3:47</span>
-                            <span class="match-number">M22</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">5th vs 6th Place</div>
-                            <div class="pool-label">M22: Plate Final</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="finals-block">
-                    <h3>Championship Bracket</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:49-4:03</span>
-                            <span class="match-number">M23</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">1st Pool A vs 4th Seed</div>
-                            <div class="pool-label">M23: Semifinal 1</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">4:05-4:19</span>
-                            <span class="match-number">M24</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">1st Pool B vs 1st Pool C</div>
-                            <div class="pool-label">M24: Semifinal 2</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">4:30-4:44</span>
-                            <span class="match-number">M25</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">Semifinal Losers</div>
-                            <div class="pool-label">M25: 3rd Place Match</div>
-                        </div>
-                    </div>
-                    <div class="match finals highlight">
-                        <div class="time">
-                            <span class="time-value">4:46-5:00</span>
-                            <span class="match-number">M26</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">Semifinal Winners</div>
-                            <div class="pool-label">M26: Cup Final</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="section scoring-system" id="standings">
             <h2>Scoring System</h2>
             <ul>
@@ -869,11 +774,7 @@
                         </div>
                     </div>
                 `;
-            }).join('') + `
-                <div class="lunch-break">
-                    <strong>1:00 PM:</strong> Break for Lunch
-                </div>
-            `;
+            }).join('');
 
             // Update final matches
             const finalMatchesDiv = document.getElementById('final-matches');
@@ -1088,74 +989,14 @@
             updateRankings(data);
 
             // Update pool matches
-            const poolMatchesDiv = document.getElementById('pool-matches');
-            if (data.poolSchedule) {
-                poolMatchesDiv.innerHTML = data.poolSchedule.map(match => {
-                    const current = isCurrentMatch(match.time);
-                    const completed = isMatchCompleted(match.time);
-                    const result = getMatchResult(match.teams, data.matchResults);
-                    const [team1, team2] = match.teams.split(' vs ');
-                    
-                    let matchContent = `
-                        <div class="teams">
-                            <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1}</div>
-                    `;
-
-                    if (result) {
-                        matchContent += `
-                            <div class="score">
-                                <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
-                                -
-                                <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
-                            </div>
-                        `;
-                    }
-
-                    matchContent += `
-                            <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2}</div>
-                        </div>
-                    `;
-
-                    if (current) {
-                        matchContent += `<div class="match-status current">In Progress</div>`;
-                    } else if (completed && !result) {
-                        matchContent += `<div class="match-status completed">Not Started</div>`;
-                    } else if (result) {
-                        matchContent += `
-                            <div class="match-status completed">
-                                ${result.winner ? `${result.winner} wins` : 'Draw'}
-                            </div>
-                        `;
-                    }
-
-                    return `
-                        <div class="match pool-${match.pool} ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
-                            <div class="time">
-                                <span class="time-value">${match.time}</span>
-                                <span class="match-number">${match.match}</span>
-                            </div>
-                            <div class="match-details">
-                                ${matchContent}
-                                <div class="pool-label">Pool ${match.pool}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('') + `
-                    <div class="lunch-break">
-                        <strong>1:00 PM:</strong> Break for Lunch
-                    </div>
-                `;
-            }
+            updateMatches(data.poolSchedule, data);
 
             // Update finals overview
-            if (data.finalsSchedule) {
-                updateFinalsOverview(data);
-            }
+            updateFinalsOverview(data);
 
             document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
             flashUpdate();
         }
-
 
         function fetchData() {
             console.log('Fetching tournament data...');
@@ -1176,3 +1017,99 @@
     </script>
 </body>
 </html>
+
+<!-- Finals Overview Section -->
+<div class="section" id="finals">
+    <h2>Finals Overview</h2>
+    <div class="finals-grid">
+        <div class="finals-block">
+            <h3>Consolation & Bowl</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">2:45-2:59</span>
+                    <span class="match-number">M19</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">11th vs 12th Place</div>
+                    <div class="pool-label">M19: Consolation Match</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:01-3:15</span>
+                    <span class="match-number">M20</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">9th vs 10th Place</div>
+                    <div class="pool-label">M20: Bowl Final</div>
+                </div>
+            </div>
+        </div>
+        <div class="finals-block">
+            <h3>Shield & Plate</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:17-3:31</span>
+                    <span class="match-number">M21</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">7th vs 8th Place</div>
+                    <div class="pool-label">M21: Shield Final</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:33-3:47</span>
+                    <span class="match-number">M22</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">5th vs 6th Place</div>
+                    <div class="pool-label">M22: Plate Final</div>
+                </div>
+            </div>
+        </div>
+        <div class="finals-block">
+            <h3>Championship Bracket</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:49-4:03</span>
+                    <span class="match-number">M23</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">1st Pool A vs 4th Seed</div>
+                    <div class="pool-label">M23: Semifinal 1</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">4:05-4:19</span>
+                    <span class="match-number">M24</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">1st Pool B vs 1st Pool C</div>
+                    <div class="pool-label">M24: Semifinal 2</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">4:30-4:44</span>
+                    <span class="match-number">M25</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">Semifinal Losers</div>
+                    <div class="pool-label">M25: 3rd Place Match</div>
+                </div>
+            </div>
+            <div class="match finals highlight">
+                <div class="time">
+                    <span class="time-value">4:46-5:00</span>
+                    <span class="match-number">M26</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">Semifinal Winners</div>
+                    <div class="pool-label">M26: Cup Final</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
