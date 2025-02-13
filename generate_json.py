@@ -159,27 +159,28 @@ def generate_finals_schedule():
         }
     ]
 
-def generate_pool_schedule():
-    return [
-        {'time': '9:00-9:14', 'match': 'M1', 'pool': 'A'},
-        {'time': '9:16-9:30', 'match': 'M2', 'pool': 'A'},
-        {'time': '9:32-9:46', 'match': 'M3', 'pool': 'B'},
-        {'time': '9:48-10:02', 'match': 'M4', 'pool': 'B'},
-        {'time': '10:04-10:18', 'match': 'M5', 'pool': 'C'},
-        {'time': '10:20-10:34', 'match': 'M6', 'pool': 'C'},
-        {'time': '10:36-10:50', 'match': 'M7', 'pool': 'A'},
-        {'time': '10:52-11:06', 'match': 'M8', 'pool': 'A'},
-        {'time': '11:08-11:22', 'match': 'M9', 'pool': 'B'},
-        {'time': '11:24-11:38', 'match': 'M10', 'pool': 'B'},
-        {'time': '11:40-11:54', 'match': 'M11', 'pool': 'C'},
-        {'time': '11:56-12:10', 'match': 'M12', 'pool': 'C'},
-        {'time': '12:12-12:26', 'match': 'M13', 'pool': 'A'},
-        {'time': '12:28-12:42', 'match': 'M14', 'pool': 'A'},
-        {'time': '12:44-12:58', 'match': 'M15', 'pool': 'B'},
-        {'time': '1:30-1:44', 'match': 'M16', 'pool': 'B'},
-        {'time': '1:46-2:00', 'match': 'M17', 'pool': 'C'},
-        {'time': '2:02-2:16', 'match': 'M18', 'pool': 'C'}
+def generate_pool_schedule(pools):
+    schedule = [
+        {'time': '9:00-9:14', 'match': 'M1', 'pool': 'A', 'teams': f"{pools['A'][0]['name']} vs {pools['A'][1]['name']}"},
+        {'time': '9:16-9:30', 'match': 'M2', 'pool': 'A', 'teams': f"{pools['A'][2]['name']} vs {pools['A'][3]['name']}"},
+        {'time': '9:32-9:46', 'match': 'M3', 'pool': 'B', 'teams': f"{pools['B'][0]['name']} vs {pools['B'][1]['name']}"},
+        {'time': '9:48-10:02', 'match': 'M4', 'pool': 'B', 'teams': f"{pools['B'][2]['name']} vs {pools['B'][3]['name']}"},
+        {'time': '10:04-10:18', 'match': 'M5', 'pool': 'C', 'teams': f"{pools['C'][0]['name']} vs {pools['C'][1]['name']}"},
+        {'time': '10:20-10:34', 'match': 'M6', 'pool': 'C', 'teams': f"{pools['C'][2]['name']} vs {pools['C'][3]['name']}"},
+        {'time': '10:36-10:50', 'match': 'M7', 'pool': 'A', 'teams': f"{pools['A'][0]['name']} vs {pools['A'][2]['name']}"},
+        {'time': '10:52-11:06', 'match': 'M8', 'pool': 'A', 'teams': f"{pools['A'][1]['name']} vs {pools['A'][3]['name']}"},
+        {'time': '11:08-11:22', 'match': 'M9', 'pool': 'B', 'teams': f"{pools['B'][0]['name']} vs {pools['B'][2]['name']}"},
+        {'time': '11:24-11:38', 'match': 'M10', 'pool': 'B', 'teams': f"{pools['B'][1]['name']} vs {pools['B'][3]['name']}"},
+        {'time': '11:40-11:54', 'match': 'M11', 'pool': 'C', 'teams': f"{pools['C'][0]['name']} vs {pools['C'][2]['name']}"},
+        {'time': '11:56-12:10', 'match': 'M12', 'pool': 'C', 'teams': f"{pools['C'][1]['name']} vs {pools['C'][3]['name']}"},
+        {'time': '12:12-12:26', 'match': 'M13', 'pool': 'A', 'teams': f"{pools['A'][0]['name']} vs {pools['A'][3]['name']}"},
+        {'time': '12:28-12:42', 'match': 'M14', 'pool': 'A', 'teams': f"{pools['A'][1]['name']} vs {pools['A'][2]['name']}"},
+        {'time': '12:44-12:58', 'match': 'M15', 'pool': 'B', 'teams': f"{pools['B'][0]['name']} vs {pools['B'][3]['name']}"},
+        {'time': '1:30-1:44', 'match': 'M16', 'pool': 'B', 'teams': f"{pools['B'][1]['name']} vs {pools['B'][2]['name']}"},
+        {'time': '1:46-2:00', 'match': 'M17', 'pool': 'C', 'teams': f"{pools['C'][0]['name']} vs {pools['C'][3]['name']}"},
+        {'time': '2:02-2:16', 'match': 'M18', 'pool': 'C', 'teams': f"{pools['C'][1]['name']} vs {pools['C'][2]['name']}"}
     ]
+    return schedule
 
 def generate_tournament_data():
     results_file = os.environ.get('RESULTS_FILE', 'Results.csv')
@@ -188,7 +189,7 @@ def generate_tournament_data():
     pools = assign_pools(teams)
     playoffs = determine_playoffs(pools)
     finals_schedule = generate_finals_schedule()
-    pool_schedule = generate_pool_schedule()
+    pool_schedule = generate_pool_schedule(pools)
     
     data = {
         'pools': pools,

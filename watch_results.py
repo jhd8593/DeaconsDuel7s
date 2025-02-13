@@ -28,7 +28,7 @@ def update_tournament_data(results):
     pools = assign_pools(teams)
     playoffs = determine_playoffs(pools)
     finals_schedule = generate_finals_schedule()
-    pool_schedule = generate_pool_schedule()
+    pool_schedule = generate_pool_schedule(pools)
 
     # Create updated data dictionary
     data = {
@@ -45,7 +45,7 @@ def update_tournament_data(results):
         json.dump(data, f, indent=2)
 
 def watch_results():
-    results_path = '../Desktop/Rugby/Results.csv'
+    results_path = r'C:\Users\Jon\Deacons Duel Tournament\Results.csv'
     last_modified = None
 
     while True:

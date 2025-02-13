@@ -491,101 +491,6 @@
     </div>
 
     <div class="container">
-        <div class="section" id="finals">
-            <h2>Finals Overview</h2>
-            <div class="finals-grid">
-                <div class="finals-block">
-                    <h3>Consolation & Bowl</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">2:45-2:59</span>
-                            <span class="match-number">M19</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">11th vs 12th Place</div>
-                            <div class="pool-label">M19: Consolation Match</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:01-3:15</span>
-                            <span class="match-number">M20</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">9th vs 10th Place</div>
-                            <div class="pool-label">M20: Bowl Final</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="finals-block">
-                    <h3>Shield & Plate</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:17-3:31</span>
-                            <span class="match-number">M21</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">7th vs 8th Place</div>
-                            <div class="pool-label">M21: Shield Final</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:33-3:47</span>
-                            <span class="match-number">M22</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">5th vs 6th Place</div>
-                            <div class="pool-label">M22: Plate Final</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="finals-block">
-                    <h3>Championship Bracket</h3>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">3:49-4:03</span>
-                            <span class="match-number">M23</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">1st Pool A vs 4th Seed</div>
-                            <div class="pool-label">M23: Semifinal 1</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">4:05-4:19</span>
-                            <span class="match-number">M24</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">1st Pool B vs 1st Pool C</div>
-                            <div class="pool-label">M24: Semifinal 2</div>
-                        </div>
-                    </div>
-                    <div class="match finals">
-                        <div class="time">
-                            <span class="time-value">4:30-4:44</span>
-                            <span class="match-number">M25</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">Semifinal Losers</div>
-                            <div class="pool-label">M25: 3rd Place Match</div>
-                        </div>
-                    </div>
-                    <div class="match finals highlight">
-                        <div class="time">
-                            <span class="time-value">4:46-5:00</span>
-                            <span class="match-number">M26</span>
-                        </div>
-                        <div class="match-details">
-                            <div class="teams">Semifinal Winners</div>
-                            <div class="pool-label">M26: Cup Final</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="section scoring-system" id="standings">
             <h2>Scoring System</h2>
             <ul>
@@ -649,6 +554,24 @@
             </div>
         </div>
 
+
+        <div class="section" id="finals">
+            <h2>Finals Overview</h2>
+            <div class="finals-grid">
+                <div class="finals-block">
+                    <h3>Consolation & Bowl</h3>
+                    <div id="consolation-bowl-matches"></div>
+                </div>
+                <div class="finals-block">
+                    <h3>Shield & Plate</h3>
+                    <div id="shield-plate-matches"></div>
+                </div>
+                <div class="finals-block">
+                    <h3>Championship Bracket</h3>
+                    <div id="championship-matches"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="auto-refresh">
             Last updated: <span id="last-updated"></span>
@@ -816,7 +739,7 @@
             };
         }
 
-        function updateMatches(matches, data) {
+function updateMatches(data) {
             // Update pool matches
             const poolMatchesDiv = document.getElementById('pool-matches');
             poolMatchesDiv.innerHTML = data.poolSchedule.map(match => {
@@ -838,6 +761,8 @@
                             <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
                         </div>
                     `;
+                } else {
+                    matchContent += `<div class="vs">vs</div>`;
                 }
 
                 matchContent += `
@@ -869,65 +794,17 @@
                         </div>
                     </div>
                 `;
-            }).join('') + `
-                <div class="lunch-break">
-                    <strong>1:00 PM:</strong> Break for Lunch
-                </div>
-            `;
-
-            // Update final matches
-            const finalMatchesDiv = document.getElementById('final-matches');
-            finalMatchesDiv.innerHTML = data.finalsSchedule.map(match => {
-                const current = isCurrentMatch(match.time);
-                const completed = isMatchCompleted(match.time);
-                const result = getMatchResult(match.teams, data.matchResults);
-                const [team1, team2] = match.teams.split(' vs ');
-                
-                let matchContent = `
-                    <div class="teams">
-                        <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1}</div>
-                `;
-
-                if (result) {
-                    matchContent += `
-                        <div class="score">
-                            <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
-                            -
-                            <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
-                        </div>
-                    `;
-                }
-
-                matchContent += `
-                        <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2}</div>
-                    </div>
-                `;
-
-                if (current) {
-                    matchContent += `<div class="match-status current">In Progress</div>`;
-                } else if (completed && !result) {
-                    matchContent += `<div class="match-status completed">Not Started</div>`;
-                } else if (result) {
-                    matchContent += `
-                        <div class="match-status completed">
-                            ${result.winner ? `${result.winner} wins` : 'Draw'}
-                        </div>
-                    `;
-                }
-
-                return `
-                    <div class="match finals ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
-                        <div class="time">
-                            <span class="time-value">${match.time}</span>
-                            <span class="match-number">${match.match}</span>
-                        </div>
-                        <div class="match-details">
-                            ${matchContent}
-                            <div class="pool-label">${match.name}</div>
-                        </div>
-                    </div>
-                `;
             }).join('');
+
+            // Update finals matches (if needed)
+            if (data.finalsSchedule) {
+                const finalMatchesDiv = document.getElementById('final-matches');
+                if (finalMatchesDiv) {
+                    finalMatchesDiv.innerHTML = data.finalsSchedule.map(match => {
+                        // ... (keep the existing code for finals matches)
+                    }).join('');
+                }
+            }
         }
 
         function flashUpdate() {
@@ -939,102 +816,89 @@
         }
 
         function updateFinalsOverview(data) {
-            const finalsBlocks = document.querySelectorAll('.finals-block');
             const finalsMatches = data.finalsSchedule || [];
             
             // Update Consolation & Bowl matches
-            const consolationBowl = finalsBlocks[0];
+            const consolationBowlMatches = document.getElementById('consolation-bowl-matches');
             const consolationMatch = finalsMatches.find(m => m.name.includes('Consolation'));
             const bowlMatch = finalsMatches.find(m => m.name.includes('Bowl'));
-            updateFinalsBlock(consolationBowl, [consolationMatch, bowlMatch], data);
+            consolationBowlMatches.innerHTML = generateMatchHTML(consolationMatch, data) + generateMatchHTML(bowlMatch, data);
 
             // Update Shield & Plate matches
-            const shieldPlate = finalsBlocks[1];
+            const shieldPlateMatches = document.getElementById('shield-plate-matches');
             const shieldMatch = finalsMatches.find(m => m.name.includes('Shield'));
             const plateMatch = finalsMatches.find(m => m.name.includes('Plate'));
-            updateFinalsBlock(shieldPlate, [shieldMatch, plateMatch], data);
+            shieldPlateMatches.innerHTML = generateMatchHTML(shieldMatch, data) + generateMatchHTML(plateMatch, data);
 
             // Update Championship matches
-            const championship = finalsBlocks[2];
+            const championshipMatches = document.getElementById('championship-matches');
             const semiFinals = finalsMatches.filter(m => m.name.includes('Semifinal'));
             const thirdPlace = finalsMatches.find(m => m.name.includes('3rd'));
             const cupFinal = finalsMatches.find(m => m.name.includes('Cup'));
-            updateFinalsBlock(championship, [...semiFinals, thirdPlace, cupFinal], data);
+            championshipMatches.innerHTML = semiFinals.map(m => generateMatchHTML(m, data)).join('') +
+                                            generateMatchHTML(thirdPlace, data) +
+                                            generateMatchHTML(cupFinal, data);
         }
 
-        function updateFinalsBlock(block, matches, data) {
-            const matchDivs = block.querySelectorAll('.match');
-            matches.forEach((match, index) => {
-                if (!match || !matchDivs[index]) return;
+        function generateMatchHTML(match, data) {
+            if (!match) return '';
 
-                const matchDiv = matchDivs[index];
-                const current = isCurrentMatch(match.time);
-                const completed = isMatchCompleted(match.time);
-                const result = getMatchResult(match.teams, data.matchResults);
+            const current = isCurrentMatch(match.time);
+            const completed = isMatchCompleted(match.time);
+            const result = getMatchResult(match.teams, data.matchResults);
+            const teams = match.teams || getTeamsForMatch(match.name, data);
+            const [team1, team2] = teams ? teams.split(' vs ') : [null, null];
 
-                // Get teams for this match
-                const teamsDiv = matchDiv.querySelector('.teams');
-                const teams = match.teams || getTeamsForMatch(match.name, data);
-                
-                // Only update teams if we have new teams or a result
-                if (teams || result) {
-                    const [team1, team2] = teams ? teams.split(' vs ') : [null, null];
-                    
-                    if (result) {
-                        teamsDiv.innerHTML = `
-                            <div class="team ${result.winner === team1 ? 'winner' : ''}">${team1}</div>
-                            <div class="score">
-                                <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
-                                -
-                                <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
-                            </div>
-                            <div class="team ${result.winner === team2 ? 'winner' : ''}">${team2}</div>
-                        `;
-                    } else if (teams) {
-                        const currentTeams = teamsDiv.textContent.replace(/\s+/g, ' ').trim();
-                        if (currentTeams !== teams) {
-                            teamsDiv.innerHTML = `
-                                <div class="team">${team1 || ''}</div>
-                                <div class="vs">vs</div>
-                                <div class="team">${team2 || ''}</div>
-                            `;
-                            // Update the pool label if it's a finals match
-                            const poolLabel = matchDiv.querySelector('.pool-label');
-                            if (poolLabel) {
-                                poolLabel.textContent = match.name;
-                            }
-                        }
-                    }
+            let matchContent = `
+                <div class="teams">
+                    <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1 || ''}</div>
+            `;
+
+            if (result) {
+                matchContent += `
+                    <div class="score">
+                        <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
+                        -
+                        <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
+                    </div>
+                `;
+            } else {
+                matchContent += `<div class="vs">vs</div>`;
+            }
+
+            matchContent += `
+                    <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2 || ''}</div>
+                </div>
+            `;
+
+            let statusContent = '';
+            if (current) {
+                statusContent = '<div class="match-status current">In Progress</div>';
+            } else if (completed) {
+                if (result) {
+                    statusContent = `
+                        <div class="match-status completed">
+                            ${result.winner ? `${result.winner} wins` : 'Draw'}
+                        </div>
+                    `;
+                } else if (teams) {
+                    statusContent = '<div class="match-status completed">Not Started</div>';
                 }
+            }
 
-                // Update match status
-                matchDiv.classList.toggle('current', current);
-                matchDiv.classList.toggle('completed', completed);
-
-                // Remove existing status if any
-                const existingStatus = matchDiv.querySelector('.match-status');
-                if (existingStatus) existingStatus.remove();
-
-                // Add new status
-                const matchDetails = matchDiv.querySelector('.match-details');
-                if (current) {
-                    matchDetails.insertAdjacentHTML('beforeend', 
-                        '<div class="match-status current">In Progress</div>'
-                    );
-                } else if (completed) {
-                    if (result) {
-                        matchDetails.insertAdjacentHTML('beforeend', `
-                            <div class="match-status completed">
-                                ${result.winner ? `${result.winner} wins` : 'Draw'}
-                            </div>
-                        `);
-                    } else if (teams) {
-                        matchDetails.insertAdjacentHTML('beforeend', 
-                            '<div class="match-status completed">Not Started</div>'
-                        );
-                    }
-                }
-            });
+            return `
+                <div class="match finals ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
+                    <div class="time">
+                        <span class="time-value">${match.time}</span>
+                        <span class="match-number">${match.match}</span>
+                    </div>
+                    <div class="match-details">
+                        ${matchContent}
+                        <div class="pool-label">${match.name}</div>
+                        ${statusContent}
+                    </div>
+                </div>
+            `;
         }
 
         function getTeamsForMatch(matchName, data) {
@@ -1087,75 +951,15 @@
             updatePools(data.pools);
             updateRankings(data);
 
-            // Update pool matches
-            const poolMatchesDiv = document.getElementById('pool-matches');
-            if (data.poolSchedule) {
-                poolMatchesDiv.innerHTML = data.poolSchedule.map(match => {
-                    const current = isCurrentMatch(match.time);
-                    const completed = isMatchCompleted(match.time);
-                    const result = getMatchResult(match.teams, data.matchResults);
-                    const [team1, team2] = match.teams.split(' vs ');
-                    
-                    let matchContent = `
-                        <div class="teams">
-                            <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1}</div>
-                    `;
-
-                    if (result) {
-                        matchContent += `
-                            <div class="score">
-                                <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
-                                -
-                                <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
-                            </div>
-                        `;
-                    }
-
-                    matchContent += `
-                            <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2}</div>
-                        </div>
-                    `;
-
-                    if (current) {
-                        matchContent += `<div class="match-status current">In Progress</div>`;
-                    } else if (completed && !result) {
-                        matchContent += `<div class="match-status completed">Not Started</div>`;
-                    } else if (result) {
-                        matchContent += `
-                            <div class="match-status completed">
-                                ${result.winner ? `${result.winner} wins` : 'Draw'}
-                            </div>
-                        `;
-                    }
-
-                    return `
-                        <div class="match pool-${match.pool} ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
-                            <div class="time">
-                                <span class="time-value">${match.time}</span>
-                                <span class="match-number">${match.match}</span>
-                            </div>
-                            <div class="match-details">
-                                ${matchContent}
-                                <div class="pool-label">Pool ${match.pool}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('') + `
-                    <div class="lunch-break">
-                        <strong>1:00 PM:</strong> Break for Lunch
-                    </div>
-                `;
-            }
+            // Update all matches (pool and finals)
+            updateMatches(data);
 
             // Update finals overview
-            if (data.finalsSchedule) {
-                updateFinalsOverview(data);
-            }
+            updateFinalsOverview(data);
 
             document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
             flashUpdate();
         }
-
 
         function fetchData() {
             console.log('Fetching tournament data...');
@@ -1176,3 +980,99 @@
     </script>
 </body>
 </html>
+
+<!-- Finals Overview Section -->
+<div class="section" id="finals">
+    <h2>Finals Overview</h2>
+    <div class="finals-grid">
+        <div class="finals-block">
+            <h3>Consolation & Bowl</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">2:45-2:59</span>
+                    <span class="match-number">M19</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">11th vs 12th Place</div>
+                    <div class="pool-label">M19: Consolation Match</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:01-3:15</span>
+                    <span class="match-number">M20</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">9th vs 10th Place</div>
+                    <div class="pool-label">M20: Bowl Final</div>
+                </div>
+            </div>
+        </div>
+        <div class="finals-block">
+            <h3>Shield & Plate</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:17-3:31</span>
+                    <span class="match-number">M21</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">7th vs 8th Place</div>
+                    <div class="pool-label">M21: Shield Final</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:33-3:47</span>
+                    <span class="match-number">M22</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">5th vs 6th Place</div>
+                    <div class="pool-label">M22: Plate Final</div>
+                </div>
+            </div>
+        </div>
+        <div class="finals-block">
+            <h3>Championship Bracket</h3>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">3:49-4:03</span>
+                    <span class="match-number">M23</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">1st Pool A vs 4th Seed</div>
+                    <div class="pool-label">M23: Semifinal 1</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">4:05-4:19</span>
+                    <span class="match-number">M24</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">1st Pool B vs 1st Pool C</div>
+                    <div class="pool-label">M24: Semifinal 2</div>
+                </div>
+            </div>
+            <div class="match finals">
+                <div class="time">
+                    <span class="time-value">4:30-4:44</span>
+                    <span class="match-number">M25</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">Semifinal Losers</div>
+                    <div class="pool-label">M25: 3rd Place Match</div>
+                </div>
+            </div>
+            <div class="match finals highlight">
+                <div class="time">
+                    <span class="time-value">4:46-5:00</span>
+                    <span class="match-number">M26</span>
+                </div>
+                <div class="match-details">
+                    <div class="teams">Semifinal Winners</div>
+                    <div class="pool-label">M26: Cup Final</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
