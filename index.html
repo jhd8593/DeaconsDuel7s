@@ -743,6 +743,15 @@ function updateMatches(data) {
             // Update pool matches
             const poolMatchesDiv = document.getElementById('pool-matches');
             poolMatchesDiv.innerHTML = data.poolSchedule.map(match => {
+                if (match.match === 'LUNCH') {
+                    return `
+                        <div class="lunch-break">
+                            <span class="time-value">${match.time}</span>
+                            <span class="lunch-label">${match.teams}</span>
+                        </div>
+                    `;
+                }
+
                 const current = isCurrentMatch(match.time);
                 const completed = isMatchCompleted(match.time);
                 const result = getMatchResult(match.teams, data.matchResults);
