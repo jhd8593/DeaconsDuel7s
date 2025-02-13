@@ -6,6 +6,9 @@ on:
       - 'Results.csv'
   workflow_dispatch:  # Allows manual triggering
 
+permissions:
+  contents: write
+
 jobs:
   update-scores:
     runs-on: ubuntu-latest
