@@ -96,32 +96,7 @@
   },
   "teams": [
     {
-      "name": "Wake",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "VTech II",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "UNCW",
-      "points": 0,
-      "pd": 0
-    },
-    {
       "name": "App State",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "Clemson",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "UNC Charlotte",
       "points": 0,
       "pd": 0
     },
@@ -131,17 +106,37 @@
       "pd": 0
     },
     {
-      "name": "VTech I",
+      "name": "UNCW",
       "points": 0,
       "pd": 0
     },
     {
-      "name": "Duke",
+      "name": "VTech II",
       "points": 0,
       "pd": 0
     },
     {
       "name": "Belmont Abbey",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Wake",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "UNC Charlotte",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "VTech I",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Clemson",
       "points": 0,
       "pd": 0
     },
@@ -152,6 +147,11 @@
     },
     {
       "name": "Queens",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Duke",
       "points": 0,
       "pd": 0
     }
