@@ -7,12 +7,12 @@
         "pd": 16
       },
       {
-        "name": "VTech I",
+        "name": "UVA",
         "points": 0,
         "pd": 0
       },
       {
-        "name": "UVA",
+        "name": "VTech I",
         "points": 0,
         "pd": 0
       },
@@ -29,17 +29,17 @@
         "pd": 0
       },
       {
-        "name": "UNCW",
-        "points": 0,
-        "pd": 0
-      },
-      {
         "name": "Queens",
         "points": 0,
         "pd": 0
       },
       {
         "name": "VTech II",
+        "points": 0,
+        "pd": 0
+      },
+      {
+        "name": "UNCW",
         "points": 0,
         "pd": 0
       }
@@ -56,12 +56,12 @@
         "pd": 0
       },
       {
-        "name": "UNC Charlotte",
+        "name": "Clemson",
         "points": 0,
         "pd": 0
       },
       {
-        "name": "Clemson",
+        "name": "UNC Charlotte",
         "points": 0,
         "pd": 0
       }
@@ -89,19 +89,19 @@
       }
     ],
     "fourthSeed": {
-      "team": "VTech I",
+      "team": "UVA",
       "points": 0,
       "pd": 0
     }
   },
   "teams": [
     {
-      "name": "Duke",
+      "name": "USC",
       "points": 0,
-      "pd": -16
+      "pd": 0
     },
     {
-      "name": "USC",
+      "name": "Queens",
       "points": 0,
       "pd": 0
     },
@@ -111,17 +111,12 @@
       "pd": 0
     },
     {
-      "name": "UNCW",
+      "name": "Duke",
       "points": 0,
-      "pd": 0
+      "pd": -16
     },
     {
       "name": "App State",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "UNC Charlotte",
       "points": 0,
       "pd": 0
     },
@@ -131,7 +126,12 @@
       "pd": 16
     },
     {
-      "name": "Queens",
+      "name": "UVA",
+      "points": 0,
+      "pd": 0
+    },
+    {
+      "name": "Clemson",
       "points": 0,
       "pd": 0
     },
@@ -146,12 +146,12 @@
       "pd": 0
     },
     {
-      "name": "UVA",
+      "name": "UNCW",
       "points": 0,
       "pd": 0
     },
     {
-      "name": "Clemson",
+      "name": "UNC Charlotte",
       "points": 0,
       "pd": 0
     }
@@ -313,25 +313,25 @@
       "time": "9:00-9:14",
       "match": "M1",
       "pool": "A",
-      "teams": "Belmont Abbey vs VTech I"
+      "teams": "Belmont Abbey vs UVA"
     },
     {
       "time": "9:16-9:30",
       "match": "M2",
       "pool": "A",
-      "teams": "UVA vs Duke"
+      "teams": "VTech I vs Duke"
     },
     {
       "time": "9:32-9:46",
       "match": "M3",
       "pool": "B",
-      "teams": "USC vs UNCW"
+      "teams": "USC vs Queens"
     },
     {
       "time": "9:48-10:02",
       "match": "M4",
       "pool": "B",
-      "teams": "Queens vs VTech II"
+      "teams": "VTech II vs UNCW"
     },
     {
       "time": "10:04-10:18",
@@ -343,43 +343,43 @@
       "time": "10:20-10:34",
       "match": "M6",
       "pool": "C",
-      "teams": "UNC Charlotte vs Clemson"
+      "teams": "Clemson vs UNC Charlotte"
     },
     {
       "time": "10:36-10:50",
       "match": "M7",
       "pool": "A",
-      "teams": "Belmont Abbey vs UVA"
+      "teams": "Belmont Abbey vs VTech I"
     },
     {
       "time": "10:52-11:06",
       "match": "M8",
       "pool": "A",
-      "teams": "VTech I vs Duke"
+      "teams": "UVA vs Duke"
     },
     {
       "time": "11:08-11:22",
       "match": "M9",
       "pool": "B",
-      "teams": "USC vs Queens"
+      "teams": "USC vs VTech II"
     },
     {
       "time": "11:24-11:38",
       "match": "M10",
       "pool": "B",
-      "teams": "UNCW vs VTech II"
+      "teams": "Queens vs UNCW"
     },
     {
       "time": "11:40-11:54",
       "match": "M11",
       "pool": "C",
-      "teams": "Wake vs UNC Charlotte"
+      "teams": "Wake vs Clemson"
     },
     {
       "time": "11:56-12:10",
       "match": "M12",
       "pool": "C",
-      "teams": "App State vs Clemson"
+      "teams": "App State vs UNC Charlotte"
     },
     {
       "time": "12:12-12:26",
@@ -391,31 +391,31 @@
       "time": "12:28-12:42",
       "match": "M14",
       "pool": "A",
-      "teams": "VTech I vs UVA"
+      "teams": "UVA vs VTech I"
     },
     {
       "time": "12:44-12:58",
       "match": "M15",
       "pool": "B",
-      "teams": "USC vs VTech II"
+      "teams": "USC vs UNCW"
     },
     {
       "time": "1:30-1:44",
       "match": "M16",
       "pool": "B",
-      "teams": "UNCW vs Queens"
+      "teams": "Queens vs VTech II"
     },
     {
       "time": "1:46-2:00",
       "match": "M17",
       "pool": "C",
-      "teams": "Wake vs Clemson"
+      "teams": "Wake vs UNC Charlotte"
     },
     {
       "time": "2:02-2:16",
       "match": "M18",
       "pool": "C",
-      "teams": "App State vs UNC Charlotte"
+      "teams": "App State vs Clemson"
     }
   ]
 }
