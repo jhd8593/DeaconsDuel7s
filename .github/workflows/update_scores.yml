@@ -1,8 +1,9 @@
 name: Update Scores
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'  # Runs every 6 hours
+  push:
+    paths:
+      - 'Results.csv'
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -10,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
