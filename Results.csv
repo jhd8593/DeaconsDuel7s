@@ -3,14 +3,14 @@ Duke,20,Belmont Abbey,10
 VTech I,10,UVA,5
 Queens,20,UNCW,20
 VTech II,10,USC,10
-App State,20,Clemson,20
+App State,20,Clemson,0
 Wake,10,UNC Charlotte,10
 Duke,20,VTech I,10
 Belmont Abbey,10,UVA,20
 Queens,10,VTech II,10
 UNCW,20,USC,20
 App State,10,Wake,10
-Clemson,10,UNC Charlotte,10
+Clemson,0,UNC Charlotte,10
 Duke,10,UVA,20
 Belmont Abbey,20,VTech I,10
 Queens,10,USC,20
