@@ -1,3 +1,19 @@
 Team 1,Score 1,Team 2,Score 2
-Team A,0,Team B,0
-Team C,0,Team D,0
+Duke,20,Belmont Abbey,10
+VTech I,10,UVA,5
+Queens,20,UNCW,20
+VTech II,10,USC,10
+App State,20,Clemson,20
+Wake,10,UNC Charlotte,10
+Duke,20,VTech I,10
+Belmont Abbey,10,UVA,20
+Queens,10,VTech II,10
+UNCW,20,USC,20
+App State,10,Wake,10
+Clemson,10,UNC Charlotte,10
+Duke,10,UVA,20
+Belmont Abbey,20,VTech I,10
+Queens,10,USC,20
+UNCW,100,VTech II,10
+App State,0,UNC Charlotte,6
+Clemson,200,Wake,5
