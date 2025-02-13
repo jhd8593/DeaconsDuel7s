@@ -29,6 +29,11 @@
         "pd": 0
       },
       {
+        "name": "UNC Charlotte",
+        "points": 6,
+        "pd": 0
+      },
+      {
         "name": "UNCW",
         "points": 6,
         "pd": 0
@@ -37,19 +42,9 @@
         "name": "USC",
         "points": 6,
         "pd": 0
-      },
-      {
-        "name": "UNC Charlotte",
-        "points": 4,
-        "pd": -10
       }
     ],
     "C": [
-      {
-        "name": "Wake",
-        "points": 8,
-        "pd": 10
-      },
       {
         "name": "UVA",
         "points": 6,
@@ -62,6 +57,11 @@
       },
       {
         "name": "VTech II",
+        "points": 6,
+        "pd": 0
+      },
+      {
+        "name": "Wake",
         "points": 6,
         "pd": 0
       }
@@ -83,9 +83,9 @@
       },
       {
         "pool": "C",
-        "team": "Wake",
-        "points": 8,
-        "pd": 10
+        "team": "UVA",
+        "points": 6,
+        "pd": 0
       }
     ],
     "fourthSeed": {
@@ -101,7 +101,22 @@
       "pd": 0
     },
     {
-      "name": "App State",
+      "name": "UNCW",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "Duke",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "VTech II",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "UNC Charlotte",
       "points": 6,
       "pd": 0
     },
@@ -116,42 +131,27 @@
       "pd": 0
     },
     {
-      "name": "Belmont Abbey",
-      "points": 6,
-      "pd": 0
-    },
-    {
       "name": "USC",
       "points": 6,
       "pd": 0
     },
     {
-      "name": "Clemson",
+      "name": "Belmont Abbey",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "App State",
       "points": 6,
       "pd": 0
     },
     {
       "name": "Wake",
-      "points": 8,
-      "pd": 10
-    },
-    {
-      "name": "Duke",
       "points": 6,
       "pd": 0
     },
     {
-      "name": "VTech II",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 4,
-      "pd": -10
-    },
-    {
-      "name": "UNCW",
+      "name": "Clemson",
       "points": 6,
       "pd": 0
     }
@@ -189,7 +189,7 @@
     },
     {
       "team1": "Wake",
-      "score1": 10,
+      "score1": 0,
       "team2": "UNC Charlotte",
       "score2": 0
     },
