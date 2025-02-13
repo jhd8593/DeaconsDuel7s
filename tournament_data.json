@@ -101,12 +101,7 @@
       "pd": 0
     },
     {
-      "name": "UVA",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "App State",
+      "name": "VTech I",
       "points": 6,
       "pd": 0
     },
@@ -116,12 +111,12 @@
       "pd": 0
     },
     {
-      "name": "UNCW",
+      "name": "UVA",
       "points": 6,
       "pd": 0
     },
     {
-      "name": "Queens",
+      "name": "UNCW",
       "points": 6,
       "pd": 0
     },
@@ -131,17 +126,12 @@
       "pd": 0
     },
     {
-      "name": "VTech I",
+      "name": "App State",
       "points": 6,
       "pd": 0
     },
     {
       "name": "UNC Charlotte",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "Belmont Abbey",
       "points": 6,
       "pd": 0
     },
@@ -152,6 +142,16 @@
     },
     {
       "name": "Wake",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "Belmont Abbey",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "Queens",
       "points": 6,
       "pd": 0
     }
