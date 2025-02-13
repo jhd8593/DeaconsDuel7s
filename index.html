@@ -753,7 +753,7 @@ function updateMatches(data) {
                         <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1}</div>
                 `;
 
-                if (result) {
+                if (result && (result.score1 > 0 || result.score2 > 0)) {
                     matchContent += `
                         <div class="score">
                             <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
@@ -772,14 +772,16 @@ function updateMatches(data) {
 
                 if (current) {
                     matchContent += `<div class="match-status current">In Progress</div>`;
-                } else if (completed && !result) {
+                } else if (completed && (!result || (result.score1 === 0 && result.score2 === 0))) {
                     matchContent += `<div class="match-status completed">Not Started</div>`;
-                } else if (result) {
+                } else if (result && (result.score1 > 0 || result.score2 > 0)) {
                     matchContent += `
                         <div class="match-status completed">
                             ${result.winner ? `${result.winner} wins` : 'Draw'}
                         </div>
                     `;
+                } else {
+                    matchContent += `<div class="match-status">Not Started</div>`;
                 }
 
                 return `

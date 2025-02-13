@@ -74,21 +74,16 @@ def calculate_pool_standings(results):
     return list(teams.values())
 
 def assign_pools(teams):
-    # Sort teams by name to ensure consistent pool assignment
-    sorted_teams = sorted(teams, key=lambda x: x['name'])
+    pools = {
+        'A': ['Duke', 'Belmont Abbey', 'UVA', 'VTech I'],
+        'B': ['Queens', 'UNCW', 'USC', 'VTech II'],
+        'C': ['App State', 'Wake', 'Clemson', 'UNC Charlotte']
+    }
     
-    pools = {'A': [], 'B': [], 'C': []}
+    pool_teams = {pool: [team for team in teams if team['name'] in pool_teams] 
+                  for pool, pool_teams in pools.items()}
     
-    # Assign teams to pools (4 teams per pool)
-    for i, team in enumerate(sorted_teams):
-        if i < 4:
-            pools['A'].append(team)
-        elif i < 8:
-            pools['B'].append(team)
-        else:
-            pools['C'].append(team)
-    
-    return pools
+    return pool_teams
 
 def determine_playoffs(pools):
     # Sort teams in each pool by points, then PD
