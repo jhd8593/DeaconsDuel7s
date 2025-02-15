@@ -7,14 +7,14 @@
         "pd": 22
       },
       {
-        "name": "Belmont Abbey",
-        "points": 7,
-        "pd": 26
+        "name": "VTech I",
+        "points": 9,
+        "pd": 22
       },
       {
-        "name": "VTech I",
-        "points": 7,
-        "pd": 12
+        "name": "Belmont Abbey",
+        "points": 5,
+        "pd": 16
       },
       {
         "name": "UVA",
@@ -96,19 +96,9 @@
   },
   "teams": [
     {
-      "name": "Duke",
-      "points": 12,
-      "pd": 22
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 7,
-      "pd": 10
-    },
-    {
-      "name": "App State",
-      "points": 7,
-      "pd": -20
+      "name": "Belmont Abbey",
+      "points": 5,
+      "pd": 16
     },
     {
       "name": "Queens",
@@ -116,24 +106,24 @@
       "pd": 48
     },
     {
-      "name": "USC",
-      "points": 12,
-      "pd": 43
-    },
-    {
-      "name": "Belmont Abbey",
-      "points": 7,
-      "pd": 26
-    },
-    {
       "name": "Wake",
       "points": 2,
       "pd": -35
     },
     {
-      "name": "Clemson",
-      "points": 11,
-      "pd": 45
+      "name": "UNC Charlotte",
+      "points": 7,
+      "pd": 10
+    },
+    {
+      "name": "USC",
+      "points": 12,
+      "pd": 43
+    },
+    {
+      "name": "VTech II",
+      "points": 2,
+      "pd": -52
     },
     {
       "name": "UVA",
@@ -142,8 +132,18 @@
     },
     {
       "name": "VTech I",
+      "points": 9,
+      "pd": 22
+    },
+    {
+      "name": "App State",
       "points": 7,
-      "pd": 12
+      "pd": -20
+    },
+    {
+      "name": "Clemson",
+      "points": 11,
+      "pd": 45
     },
     {
       "name": "UNCW",
@@ -151,9 +151,9 @@
       "pd": -39
     },
     {
-      "name": "VTech II",
-      "points": 2,
-      "pd": -52
+      "name": "Duke",
+      "points": 12,
+      "pd": 22
     }
   ],
   "matchResults": [
@@ -237,9 +237,9 @@
     },
     {
       "team1": "Belmont Abbey",
-      "score1": 0,
+      "score1": 7,
       "team2": "VTech I",
-      "score2": 0
+      "score2": 17
     },
     {
       "team1": "Queens",
@@ -458,27 +458,27 @@
     "plateShield": [
       {
         "rank": 5,
-        "name": "Belmont Abbey",
-        "points": 7,
-        "pd": 26
+        "name": "VTech I",
+        "points": 9,
+        "pd": 22
       },
       {
         "rank": 6,
-        "name": "VTech I",
-        "points": 7,
-        "pd": 12
-      },
-      {
-        "rank": 7,
         "name": "UNC Charlotte",
         "points": 7,
         "pd": 10
       },
       {
-        "rank": 8,
+        "rank": 7,
         "name": "App State",
         "points": 7,
         "pd": -20
+      },
+      {
+        "rank": 8,
+        "name": "Belmont Abbey",
+        "points": 5,
+        "pd": 16
       }
     ],
     "bowlConsolation": [
