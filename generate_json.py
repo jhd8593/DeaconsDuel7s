@@ -182,7 +182,7 @@ def generate_pool_schedule(pools):
     return schedule
 
 def generate_rankings(teams, playoffs):
-    # Sort all teams by points and then by PD
+    # Sort all teams by points first, then by PD if there's a tie
     sorted_teams = sorted(teams, key=lambda x: (-x['points'], -x['pd']))
     
     # Assign rankings
@@ -199,7 +199,10 @@ def generate_rankings(teams, playoffs):
             'name': team['name'],
             'points': team['points'],
             'pd': team['pd'],
-            'status': 'Pool Winner' if team['name'] in [w['team'] for w in playoffs['poolWinners']] else '4th Seed'
+            'status': 'Pool A Winner' if team['name'] == playoffs['poolWinners'][0]['team'] else
+                      'Pool B Winner' if team['name'] == playoffs['poolWinners'][1]['team'] else
+                      'Pool C Winner' if team['name'] == playoffs['poolWinners'][2]['team'] else
+                      '4th Seed'
         })
     
     # Plate & Shield (next 4 teams)
@@ -249,11 +252,23 @@ def generate_tournament_data():
     except Exception as e:
         logging.error(f"Error writing tournament data: {str(e)}")
     
+    # Print all teams
+    print("All Teams:")
+    for team in teams:
+        print(f"{team['name']} - Points: {team['points']}, PD: {team['pd']}")
+    
+    # Print playoffs
+    print("\nPlayoffs:")
+    print("Pool Winners:")
+    for winner in playoffs['poolWinners']:
+        print(f"{winner['pool']}: {winner['team']} - Points: {winner['points']}, PD: {winner['pd']}")
+    print(f"4th Seed: {playoffs['fourthSeed']['team']} - Points: {playoffs['fourthSeed']['points']}, PD: {playoffs['fourthSeed']['pd']}")
+    
     # Print rankings
-    print("Tournament Rankings:")
+    print("\nTournament Rankings:")
     print("Championship Bracket:")
     for team in rankings['championship']:
-        print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}")
+        print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}, Status: {team['status']}")
     print("\nPlate & Shield:")
     for team in rankings['plateShield']:
         print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}")
@@ -263,4 +278,3 @@ def generate_tournament_data():
 
 if __name__ == '__main__':
     generate_tournament_data()
-
