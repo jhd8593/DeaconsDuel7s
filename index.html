@@ -1,1668 +1,796 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deacons Duel Tournament</title>
-    <style>
-        :root {
-            --primary-color: #1a1a1a;
-            --accent-color: #4CAF50;
-            --pool-a-color: #4CAF50;
-            --pool-b-color: #2196F3;
-            --pool-c-color: #FF9800;
-            --finals-color: #9C27B0;
-            --shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --border-radius: 8px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 0;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-        
-        .nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .nav a:hover {
-            background-color: var(--accent-color);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deacons Duel 7s Tournament</title>
 
-        .section {
-            background-color: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            transition: transform 0.2s;
-        }
-        
-        .section:hover {
-            transform: translateY(-2px);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+  <!-- Google Fonts (Poppins) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-        .pools-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
+    :root {
+      --primary-color: #1a1a1a;
+      --accent-color: #4CAF50;
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
+      /* Pool colors */
+      --pool-a-color: #4CAF50; /* Green */
+      --pool-b-color: #2196F3; /* Blue */
+      --pool-c-color: #FFEB3B; /* Yellow */
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
+      --shadow: 0 4px 10px rgba(0,0,0,0.08);
+      --border-radius: 10px;
 
-        th {
-            background-color: #f8f8f8;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
+      /* Additional brand colors or highlights if needed */
+      --header-bg: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+      --body-bg: linear-gradient(120deg, #f5f5f5 0%, #fafafa 100%);
+    }
 
-        tr:hover {
-            background-color: #f9f9f9;
-        }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--body-bg);
+      color: #333;
+      line-height: 1.6;
+    }
 
-        .match {
-            padding: 25px;
-            margin: 25px 0;
-            border-radius: var(--border-radius);
-            border-left: 4px solid #ddd;
-            background-color: #f8f8f8;
-            transition: all 0.3s ease;
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 20px;
-            align-items: center;
-        }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
 
-        .match.current {
-            background-color: #e6ffe6;
-            border-left-color: var(--accent-color);
-            box-shadow: var(--shadow);
-        }
+    /* HEADER */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      color: white;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .nav {
+      display: flex;
+      gap: 20px;
+    }
+    .nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .nav a:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
 
-        .match.completed {
-            opacity: 0.7;
-        }
+    /* SECTIONS */
+    .section {
+      background-color: #fff;
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .section h2 {
+      margin-top: 0;
+      color: var(--primary-color);
+      border-bottom: 2px solid #eee;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
 
-        .time {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+    /* POOLS */
+    .pools-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: white;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #f8f8f8;
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 0.95rem;
+    }
+    td {
+      font-size: 0.95rem;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+    }
 
-        .time-value {
-            color: #666;
-            font-weight: 600;
-        }
+    /* MATCHES */
+    .match {
+      padding: 25px;
+      margin: 25px 0;
+      border-radius: var(--border-radius);
+      border-left: 4px solid #ddd;
+      background-color: #ffffff;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    .match:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
 
-        .match-number {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
+    .match.current {
+      /* Optional style if you want a subtle highlight for in-progress */
+    }
+    .match.completed {
+      opacity: 0.8;
+    }
 
-        .match-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
+    .time {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .time-value {
+      color: #666;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .match-number {
+      color: var(--primary-color);
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
 
-        .teams {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 500;
-            gap: 10px;
-        }
+    .match-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .teams {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.05rem;
+      font-weight: 500;
+      gap: 10px;
+    }
+    .team {
+      flex: 1;
+      transition: color 0.2s;
+    }
+    .team.winner {
+      font-weight: 700;
+      color: var(--accent-color);
+    }
 
-        .team {
-            flex: 1;
-        }
+    .score {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1em;
+      font-weight: 600;
+      padding: 0 15px;
+      min-width: 80px;
+      color: #555;
+    }
+    .score span {
+      min-width: 30px;
+      text-align: center;
+    }
+    .score span.winner {
+      color: var(--accent-color);
+    }
 
-        .team.winner {
-            font-weight: 700;
-            color: var(--accent-color);
-        }
+    .match-status {
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 5px;
+      width: fit-content;
+    }
+    .match-status.current {
+      /* Optional style if you want a subtle highlight for in-progress */
+    }
+    .match-status.completed {
+      color: #666;
+    }
 
-        .score {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2em;
-            font-weight: 600;
-            padding: 0 15px;
-            min-width: 80px;
-        }
+    .pool-label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 500;
+      margin-top: 5px;
+    }
 
-        .score span {
-            min-width: 30px;
-            text-align: center;
-        }
+    /* POOL BORDER COLORS FOR MATCH CARDS */
+    .pool-A { border-left-color: var(--pool-a-color); }
+    .pool-B { border-left-color: var(--pool-b-color); }
+    .pool-C { border-left-color: var(--pool-c-color); }
 
-        .score span.winner {
-            color: var(--accent-color);
-        }
+    /* LUNCH BREAK */
+    .lunch-break {
+      text-align: center;
+      padding: 20px;
+      background-color: #fff3cd;
+      border-radius: var(--border-radius);
+      margin: 20px 0;
+      border-left: 4px solid #ffc107;
+      font-weight: 500;
+      color: #856404;
+      box-shadow: var(--shadow);
+    }
+    .lunch-label {
+      font-weight: 600;
+    }
 
-        .match-status {
-            font-size: 0.9em;
-            font-weight: 500;
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
+    /* SCHEDULE HEADER */
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .schedule-header h2 {
+      font-size: 1.4rem;
+    }
 
-        .match-status.current {
-            background-color: #e6ffe6;
-            color: var(--accent-color);
-        }
+    .legend {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9em;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      background: #f8f8f8;
+      border-radius: 15px;
+      font-weight: 500;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
 
-        .match-status.completed {
-            color: #666;
-        }
+    /* AUTO-REFRESH BLOCK */
+    .auto-refresh {
+      text-align: center;
+      color: #666;
+      margin-top: 30px;
+      padding: 15px;
+      background: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+    }
 
-        .finals-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 50px;
-            margin-top: 20px;
-        }
+    /* RANKINGS SECTION */
+    .rankings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 20px;
+    }
+    .rankings-block {
+      background-color: #f8f8f8;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      border-left: 4px solid var(--accent-color);
+      box-shadow: var(--shadow);
+    }
+    .rankings-block h3 {
+      margin: 0 0 15px 0;
+      color: var(--primary-color);
+      font-size: 1.2rem;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ranking-item {
+      background-color: white;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .ranking-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .rank {
+      background-color: var(--primary-color);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .team-info {
+      flex: 1;
+    }
+    .team-name {
+      font-weight: 600;
+      color: var(--primary-color);
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+    .team-stats {
+      font-size: 0.85rem;
+      color: #666;
+    }
 
-        .finals-block {
-            background-color: #f8f8f8;
-            padding: 40px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-            min-width: 450px;
-        }
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .match {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .schedule-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .legend {
+        justify-content: center;
+        width: 100%;
+      }
+    }
 
-        .finals-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
+    /* POOL-SPECIFIC COLORS FOR HEADINGS & TABLE HEADERS */
+    .section.pool-A h2 {
+      color: var(--pool-a-color);
+    }
+    .section.pool-B h2 {
+      color: var(--pool-b-color);
+    }
+    .section.pool-C h2 {
+      color: var(--pool-c-color);
+    }
 
-        .finals-block .match {
-            margin: 45px 0;
-            padding: 30px;
-        }
-
-        .finals-block .match:first-child {
-            margin-top: 25px;
-        }
-
-        .finals-block .match:last-child {
-            margin-bottom: 25px;
-        }
-
-        .finals-block .match .teams {
-            font-size: 1.3em;
-            gap: 20px;
-        }
-
-        .finals-block:nth-child(1) { border-left-color: #607D8B; }
-        .finals-block:nth-child(2) { border-left-color: #2196F3; }
-        .finals-block:nth-child(3) { border-left-color: var(--accent-color); }
-
-        .finals .match-details {
-            text-align: center;
-        }
-
-        .finals .teams {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--primary-color);
-            justify-content: center;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .finals .vs {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-            margin: 0 5px;
-        }
-
-        .finals .pool-label {
-            color: #666;
-            font-style: italic;
-        }
-
-        .finals.highlight {
-            background-color: #f1f8ff;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .pool-label {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .pool-A { border-left-color: var(--pool-a-color); }
-        .pool-B { border-left-color: var(--pool-b-color); }
-        .pool-C { border-left-color: var(--pool-c-color); }
-        .finals { border-left-color: var(--finals-color); }
-
-        .lunch-break {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff3cd;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-            border-left: 4px solid #ffc107;
-            font-weight: 500;
-            color: #856404;
-        }
-
-        .schedule-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            font-size: 0.9em;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 10px;
-            background: #f8f8f8;
-            border-radius: 15px;
-            font-weight: 500;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .auto-refresh {
-            text-align: center;
-            color: #666;
-            margin-top: 30px;
-            padding: 15px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .rankings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-
-        .rankings-block {
-            background-color: #f8f8f8;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-        }
-
-        .rankings-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .ranking-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .ranking-item {
-            background-color: white;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .rank {
-            background-color: var(--primary-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9em;
-            flex-shrink: 0;
-        }
-
-        .team-info {
-            flex: 1;
-        }
-
-        .team-name {
-            font-weight: 600;
-            color: var(--primary-color);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .team-stats {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .update-flash {
-            animation: flash 0.5s;
-        }
-
-        @keyframes flash {
-            0% { background-color: #ffffff; }
-            50% { background-color: #e6ffe6; }
-            100% { background-color: #ffffff; }
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .match {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .schedule-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .legend {
-                justify-content: center;
-                width: 100%;
-            }
-        }
-    </style>
+    .section.pool-A table th {
+      background-color: var(--pool-a-color);
+      color: #fff; /* White text on green */
+    }
+    .section.pool-B table th {
+      background-color: var(--pool-b-color);
+      color: #fff; /* White text on blue */
+    }
+    .section.pool-C table th {
+      background-color: var(--pool-c-color);
+      color: #333; /* Dark text on yellow for contrast */
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <h1>Deacons Duel Tournament</h1>
-            <nav class="nav">
-                <a href="#standings">Standings</a>
-                <a href="#schedule">Pool Play</a>
-                <a href="#playoffs">Playoffs</a>
-            </nav>
-        </div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-content">
+      <h1>Deacons Duel 7s Tournament</h1>
+      <nav class="nav">
+        <a href="#standings">Standings</a>
+        <a href="#schedule">Pool Play</a>
+        <a href="#playoffs">Playoffs</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+    <!-- SCORING SYSTEM -->
+    <div class="section scoring-system" id="standings">
+      <h2>Scoring System</h2>
+      <ul>
+        <li>4 points for a win</li>
+        <li>2 points for a draw</li>
+        <li>0 points for a loss</li>
+        <li>+1 bonus point for scoring 20+ points (4+ tries)</li>
+        <li>+1 bonus point for losing by 7 or fewer points</li>
+        <li>Teams tied on points are ranked by points differential (PD)</li>
+      </ul>
     </div>
 
-    <div class="container">
-        <div class="section scoring-system" id="standings">
-            <h2>Scoring System</h2>
-            <ul>
-                <li> 4 points for a win</li>
-                <li> 2 points for a draw</li>
-                <li> 0 points for a loss</li>
-                <li> +1 bonus point for scoring 20+ points (4+ tries)</li>
-                <li> +1 bonus point for losing by 7 or fewer points</li>
-                <li> Teams tied on points are ranked by points differential (PD)</li>
-            </ul>
-        </div>
-
-        <div class="section pools-container" id="pools">
-            <!-- Pool standings will be populated by JavaScript -->
-        </div>
-
-        <div class="section rankings" id="playoffs">
-            <h2>Tournament Rankings</h2>
-            <div class="rankings-grid">
-                <div class="rankings-block">
-                    <h3>Championship Bracket</h3>
-                    <div id="championship-teams">
-                        <!-- Championship teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Plate & Shield</h3>
-                    <div id="plate-shield-teams">
-                        <!-- Plate & Shield teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Bowl & Consolation</h3>
-                    <div id="bowl-consolation-teams">
-                        <!-- Bowl & Consolation teams will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section schedule" id="schedule">
-            <div class="schedule-header">
-                <h2>Pool Play Schedule</h2>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-a-color);"></div>
-                        <span>Pool A</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-b-color);"></div>
-                        <span>Pool B</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-c-color);"></div>
-                        <span>Pool C</span>
-                    </div>
-                </div>
-            </div>
-            <div id="pool-matches">
-                <!-- Pool matches will be populated by JavaScript -->
-            </div>
-        </div>
-
-
-    </div>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deacons Duel Tournament</title>
-    <style>
-        :root {
-            --primary-color: #1a1a1a;
-            --accent-color: #4CAF50;
-            --pool-a-color: #4CAF50;
-            --pool-b-color: #2196F3;
-            --pool-c-color: #FF9800;
-            --finals-color: #9C27B0;
-            --shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --border-radius: 8px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 0;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-        
-        .nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .nav a:hover {
-            background-color: var(--accent-color);
-        }
-
-        .section {
-            background-color: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            transition: transform 0.2s;
-        }
-        
-        .section:hover {
-            transform: translateY(-2px);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .pools-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background-color: #f8f8f8;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        tr:hover {
-            background-color: #f9f9f9;
-        }
-
-        .match {
-            padding: 25px;
-            margin: 25px 0;
-            border-radius: var(--border-radius);
-            border-left: 4px solid #ddd;
-            background-color: #f8f8f8;
-            transition: all 0.3s ease;
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .match.current {
-            background-color: #e6ffe6;
-            border-left-color: var(--accent-color);
-            box-shadow: var(--shadow);
-        }
-
-        .match.completed {
-            opacity: 0.7;
-        }
-
-        .time {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .time-value {
-            color: #666;
-            font-weight: 600;
-        }
-
-        .match-number {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .match-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .teams {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 500;
-            gap: 10px;
-        }
-
-        .team {
-            flex: 1;
-        }
-
-        .team.winner {
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-
-        .score {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2em;
-            font-weight: 600;
-            padding: 0 15px;
-            min-width: 80px;
-        }
-
-        .score span {
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .score span.winner {
-            color: var(--accent-color);
-        }
-
-        .match-status {
-            font-size: 0.9em;
-            font-weight: 500;
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
-
-        .match-status.current {
-            background-color: #e6ffe6;
-            color: var(--accent-color);
-        }
-
-        .match-status.completed {
-            color: #666;
-        }
-
-        .finals-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 50px;
-            margin-top: 20px;
-        }
-
-        .finals-block {
-            background-color: #f8f8f8;
-            padding: 40px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-            min-width: 450px;
-        }
-
-        .finals-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .finals-block .match {
-            margin: 45px 0;
-            padding: 30px;
-        }
-
-        .finals-block .match:first-child {
-            margin-top: 25px;
-        }
-
-        .finals-block .match:last-child {
-            margin-bottom: 25px;
-        }
-
-        .finals-block .match .teams {
-            font-size: 1.3em;
-            gap: 20px;
-        }
-
-        .finals-block:nth-child(1) { border-left-color: #607D8B; }
-        .finals-block:nth-child(2) { border-left-color: #2196F3; }
-        .finals-block:nth-child(3) { border-left-color: var(--accent-color); }
-
-        .finals .match-details {
-            text-align: center;
-        }
-
-        .finals .teams {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--primary-color);
-            justify-content: center;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .finals .vs {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-            margin: 0 5px;
-        }
-
-        .finals .pool-label {
-            color: #666;
-            font-style: italic;
-        }
-
-        .finals.highlight {
-            background-color: #f1f8ff;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .pool-label {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .pool-A { border-left-color: var(--pool-a-color); }
-        .pool-B { border-left-color: var(--pool-b-color); }
-        .pool-C { border-left-color: var(--pool-c-color); }
-        .finals { border-left-color: var(--finals-color); }
-
-        .lunch-break {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff3cd;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-            border-left: 4px solid #ffc107;
-            font-weight: 500;
-            color: #856404;
-        }
-
-        .schedule-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            font-size: 0.9em;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 10px;
-            background: #f8f8f8;
-            border-radius: 15px;
-            font-weight: 500;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .auto-refresh {
-            text-align: center;
-            color: #666;
-            margin-top: 30px;
-            padding: 15px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .rankings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-
-        .rankings-block {
-            background-color: #f8f8f8;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-        }
-
-        .rankings-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .ranking-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .ranking-item {
-            background-color: white;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .rank {
-            background-color: var(--primary-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9em;
-            flex-shrink: 0;
-        }
-
-        .team-info {
-            flex: 1;
-        }
-
-        .team-name {
-            font-weight: 600;
-            color: var(--primary-color);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .team-stats {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .update-flash {
-            animation: flash 0.5s;
-        }
-
-        @keyframes flash {
-            0% { background-color: #ffffff; }
-            50% { background-color: #e6ffe6; }
-            100% { background-color: #ffffff; }
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .match {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .schedule-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .legend {
-                justify-content: center;
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="header-content">
-            <h1>Deacons Duel Tournament</h1>
-            <nav class="nav">
-                <a href="#standings">Standings</a>
-                <a href="#schedule">Pool Play</a>
-                <a href="#playoffs">Playoffs</a>
-            </nav>
-        </div>
+    <!-- POOL STANDINGS -->
+    <div class="section pools-container" id="pools">
+      <!-- Pool standings populated by JavaScript -->
     </div>
 
-    <div class="container">
-        <div class="section scoring-system" id="standings">
-            <h2>Scoring System</h2>
-            <ul>
-                <li> 4 points for a win</li>
-                <li> 2 points for a draw</li>
-                <li> 0 points for a loss</li>
-                <li> +1 bonus point for scoring 20+ points (4+ tries)</li>
-                <li> +1 bonus point for losing by 7 or fewer points</li>
-                <li> Teams tied on points are ranked by points differential (PD)</li>
-            </ul>
+    <!-- TOURNAMENT RANKINGS -->
+    <div class="section rankings" id="playoffs">
+      <h2>Tournament Rankings</h2>
+      <div class="rankings-grid">
+        <div class="rankings-block">
+          <h3>Championship Bracket</h3>
+          <div id="championship-teams">
+            <!-- Championship teams populated by JavaScript -->
+          </div>
         </div>
-
-        <div class="section pools-container" id="pools">
-            <!-- Pool standings will be populated by JavaScript -->
+        <div class="rankings-block">
+          <h3>Plate & Shield</h3>
+          <div id="plate-shield-teams">
+            <!-- Plate & Shield teams populated by JavaScript -->
+          </div>
         </div>
-
-        <div class="section rankings" id="playoffs">
-            <h2>Tournament Rankings</h2>
-            <div class="rankings-grid">
-                <div class="rankings-block">
-                    <h3>Championship Bracket</h3>
-                    <div id="championship-teams">
-                        <!-- Championship teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Plate & Shield</h3>
-                    <div id="plate-shield-teams">
-                        <!-- Plate & Shield teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Bowl & Consolation</h3>
-                    <div id="bowl-consolation-teams">
-                        <!-- Bowl & Consolation teams will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
+        <div class="rankings-block">
+          <h3>Bowl & Consolation</h3>
+          <div id="bowl-consolation-teams">
+            <!-- Bowl & Consolation teams populated by JavaScript -->
+          </div>
         </div>
-
-        <div class="section schedule" id="schedule">
-            <div class="schedule-header">
-                <h2>Pool Play Schedule</h2>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-a-color);"></div>
-                        <span>Pool A</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-b-color);"></div>
-                        <span>Pool B</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-c-color);"></div>
-                        <span>Pool C</span>
-                    </div>
-                </div>
-            </div>
-            <div id="pool-matches">
-                <!-- Pool matches will be populated by JavaScript -->
-            </div>
-        </div>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deacons Duel Tournament</title>
-    <style>
-        :root {
-            --primary-color: #1a1a1a;
-            --accent-color: #4CAF50;
-            --pool-a-color: #4CAF50;
-            --pool-b-color: #2196F3;
-            --pool-c-color: #FF9800;
-            --finals-color: #9C27B0;
-            --shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --border-radius: 8px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 0;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-        
-        .nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .nav a:hover {
-            background-color: var(--accent-color);
-        }
-
-        .section {
-            background-color: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            transition: transform 0.2s;
-        }
-        
-        .section:hover {
-            transform: translateY(-2px);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .pools-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background-color: #f8f8f8;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        tr:hover {
-            background-color: #f9f9f9;
-        }
-
-        .match {
-            padding: 25px;
-            margin: 25px 0;
-            border-radius: var(--border-radius);
-            border-left: 4px solid #ddd;
-            background-color: #f8f8f8;
-            transition: all 0.3s ease;
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .match.current {
-            background-color: #e6ffe6;
-            border-left-color: var(--accent-color);
-            box-shadow: var(--shadow);
-        }
-
-        .match.completed {
-            opacity: 0.7;
-        }
-
-        .time {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .time-value {
-            color: #666;
-            font-weight: 600;
-        }
-
-        .match-number {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .match-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .teams {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 500;
-            gap: 10px;
-        }
-
-        .team {
-            flex: 1;
-        }
-
-        .team.winner {
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-
-        .score {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2em;
-            font-weight: 600;
-            padding: 0 15px;
-            min-width: 80px;
-        }
-
-        .score span {
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .score span.winner {
-            color: var(--accent-color);
-        }
-
-        .match-status {
-            font-size: 0.9em;
-            font-weight: 500;
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
-
-        .match-status.current {
-            background-color: #e6ffe6;
-            color: var(--accent-color);
-        }
-
-        .match-status.completed {
-            color: #666;
-        }
-
-        .finals-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 50px;
-            margin-top: 20px;
-        }
-
-        .finals-block {
-            background-color: #f8f8f8;
-            padding: 40px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-            min-width: 450px;
-        }
-
-        .finals-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .finals-block .match {
-            margin: 45px 0;
-            padding: 30px;
-        }
-
-        .finals-block .match:first-child {
-            margin-top: 25px;
-        }
-
-        .finals-block .match:last-child {
-            margin-bottom: 25px;
-        }
-
-        .finals-block .match .teams {
-            font-size: 1.3em;
-            gap: 20px;
-        }
-
-        .finals-block:nth-child(1) { border-left-color: #607D8B; }
-        .finals-block:nth-child(2) { border-left-color: #2196F3; }
-        .finals-block:nth-child(3) { border-left-color: var(--accent-color); }
-
-        .finals .match-details {
-            text-align: center;
-        }
-
-        .finals .teams {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--primary-color);
-            justify-content: center;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .finals .vs {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-            margin: 0 5px;
-        }
-
-        .finals .pool-label {
-            color: #666;
-            font-style: italic;
-        }
-
-        .finals.highlight {
-            background-color: #f1f8ff;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .pool-label {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .pool-A { border-left-color: var(--pool-a-color); }
-        .pool-B { border-left-color: var(--pool-b-color); }
-        .pool-C { border-left-color: var(--pool-c-color); }
-        .finals { border-left-color: var(--finals-color); }
-
-        .lunch-break {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff3cd;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-            border-left: 4px solid #ffc107;
-            font-weight: 500;
-            color: #856404;
-        }
-
-        .schedule-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            font-size: 0.9em;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 10px;
-            background: #f8f8f8;
-            border-radius: 15px;
-            font-weight: 500;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .auto-refresh {
-            text-align: center;
-            color: #666;
-            margin-top: 30px;
-            padding: 15px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .rankings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-
-        .rankings-block {
-            background-color: #f8f8f8;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--finals-color);
-        }
-
-        .rankings-block h3 {
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-            font-size: 1.2em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .ranking-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .ranking-item {
-            background-color: white;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .rank {
-            background-color: var(--primary-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9em;
-            flex-shrink: 0;
-        }
-
-        .team-info {
-            flex: 1;
-        }
-
-        .team-name {
-            font-weight: 600;
-            color: var(--primary-color);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .team-stats {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .update-flash {
-            animation: flash 0.5s;
-        }
-
-        @keyframes flash {
-            0% { background-color: #ffffff; }
-            50% { background-color: #e6ffe6; }
-            100% { background-color: #ffffff; }
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .match {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .schedule-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .legend {
-                justify-content: center;
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="header-content">
-            <h1>Deacons Duel Tournament</h1>
-            <nav class="nav">
-                <a href="#finals">Finals</a>
-                <a href="#standings">Standings</a>
-                <a href="#schedule">Pool Play</a>
-                <a href="#playoffs">Playoffs</a>
-            </nav>
-        </div>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="section scoring-system" id="standings">
-            <h2>Scoring System</h2>
-            <ul>
-                <li> 4 points for a win</li>
-                <li> 2 points for a draw</li>
-                <li> 0 points for a loss</li>
-                <li> +1 bonus point for scoring 20+ points (4+ tries)</li>
-                <li> +1 bonus point for losing by 7 or fewer points</li>
-                <li> Teams tied on points are ranked by points differential (PD)</li>
-            </ul>
+    <!-- POOL PLAY SCHEDULE -->
+    <div class="section schedule" id="schedule">
+      <div class="schedule-header">
+        <h2>Pool Play Schedule</h2>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--pool-a-color);"></div>
+            <span>Pool A</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--pool-b-color);"></div>
+            <span>Pool B</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--pool-c-color);"></div>
+            <span>Pool C</span>
+          </div>
         </div>
+      </div>
+      <div id="pool-matches">
+        <!-- Pool matches populated by JavaScript -->
+      </div>
+    </div>
 
-        <div class="section pools-container" id="pools">
-            <!-- Pool standings will be populated by JavaScript -->
-        </div>
+    <!-- AUTO-REFRESH BLOCK -->
+    <div class="auto-refresh">
+      Last updated: <span id="last-updated"></span>
+      <br />
+      (Auto-refreshes every 5 seconds)
+    </div>
+  </div>
 
-        <div class="section rankings" id="playoffs">
-            <h2>Tournament Rankings</h2>
-            <div class="rankings-grid">
-                <div class="rankings-block">
-                    <h3>Championship Bracket</h3>
-                    <div id="championship-teams">
-                        <!-- Championship teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Plate & Shield</h3>
-                    <div id="plate-shield-teams">
-                        <!-- Plate & Shield teams will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="rankings-block">
-                    <h3>Bowl & Consolation</h3>
-                    <div id="bowl-consolation-teams">
-                        <!-- Bowl & Consolation teams will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- SCRIPTS -->
+  <script>
+    function updatePools(pools) {
+      const poolsContainer = document.getElementById('pools');
+      poolsContainer.innerHTML = '';
 
-        <div class="section schedule" id="schedule">
-            <div class="schedule-header">
-                <h2>Pool Play Schedule</h2>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-a-color);"></div>
-                        <span>Pool A</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-b-color);"></div>
-                        <span>Pool B</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--pool-c-color);"></div>
-                        <span>Pool C</span>
-                    </div>
-                </div>
+      // For each pool (A, B, or C), add the corresponding class "pool-A", "pool-B", or "pool-C"
+      Object.entries(pools).forEach(([poolName, teams]) => {
+        const poolDiv = document.createElement('div');
+        poolDiv.className = `section pool-${poolName}`; // e.g., "section pool-A"
+
+        poolDiv.innerHTML = `
+          <h2>Pool ${poolName}</h2>
+          <table>
+            <tr>
+              <th>Team</th>
+              <th>Points</th>
+              <th>PD</th>
+            </tr>
+            ${teams.map(team => `
+              <tr>
+                <td>${team.name}</td>
+                <td>${team.points}</td>
+                <td>${team.pd}</td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+        poolsContainer.appendChild(poolDiv);
+      });
+    }
+
+    function updateRankings(data) {
+      // Update Championship teams (1st-4th)
+      const championshipTeams = document.getElementById('championship-teams');
+      championshipTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.playoffs.poolWinners.map((winner, index) => `
+            <div class="ranking-item">
+              <span class="rank">${index + 1}</span>
+              <div class="team-info">
+                <span class="team-name">${winner.team}</span>
+                <span class="team-stats">Pool ${winner.pool} Winner - Points: ${winner.points}, PD: ${winner.pd}</span>
+              </div>
             </div>
-            <div id="pool-matches">
-                <!-- Pool matches will be populated by JavaScript -->
+          `).join('')}
+          <div class="ranking-item">
+            <span class="rank">4</span>
+            <div class="team-info">
+              <span class="team-name">${data.playoffs.fourthSeed.team}</span>
+              <span class="team-stats">4th Seed - Points: ${data.playoffs.fourthSeed.points}, PD: ${data.playoffs.fourthSeed.pd}</span>
             </div>
+          </div>
         </div>
+      `;
+
+      // Update Plate & Shield teams (5th-8th)
+      const plateShieldTeams = document.getElementById('plate-shield-teams');
+      plateShieldTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(0, 4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 5}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+      `;
+
+      // Update Bowl & Consolation teams (9th-12th)
+      const bowlConsolationTeams = document.getElementById('bowl-consolation-teams');
+      bowlConsolationTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 9}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+      `;
+    }
+
+    function isCurrentMatch(timeRange) {
+      const [startStr, endStr] = timeRange.split('-');
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      let [startHour, startMinute] = startStr.split(':').map(Number);
+      let [endHour, endMinute] = endStr.split(':').map(Number);
+
+      // Simple logic for AM/PM adjustment, if needed:
+      if (startHour < 8) startHour += 12;
+      if (endHour < 8) endHour += 12;
+
+      const matchStart = startHour * 60 + startMinute;
+      const matchEnd = endHour * 60 + endMinute;
+      const currentTime = currentHour * 60 + currentMinute;
+
+      return currentTime >= matchStart && currentTime <= matchEnd;
+    }
+
+    function isMatchCompleted(timeRange) {
+      const [, endStr] = timeRange.split('-');
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      let [endHour, endMinute] = endStr.split(':').map(Number);
+      if (endHour < 8) endHour += 12;
+
+      const matchEnd = endHour * 60 + endMinute;
+      const currentTime = currentHour * 60 + currentMinute;
+
+      return currentTime > matchEnd;
+    }
+
+    function getMatchResult(teams, matchResults) {
+      if (!matchResults) return null;
+      const [team1, team2] = teams.split(' vs ');
+
+      // Find the match result
+      const result = matchResults.find(r =>
+        (r.team1 === team1 && r.team2 === team2) ||
+        (r.team1 === team2 && r.team2 === team1)
+      );
+      if (!result) return null;
+
+      // If teams are reversed in the data, swap scores
+      if (result.team1 === team2) {
+        return {
+          score1: result.score2,
+          score2: result.score1,
+          winner:
+            result.score2 > result.score1 ? team1 :
+            result.score1 > result.score2 ? team2 : null
+        };
+      }
+
+      return {
+        score1: result.score1,
+        score2: result.score2,
+        winner:
+          result.score1 > result.score2 ? team1 :
+          result.score2 > result.score1 ? team2 : null
+      };
+    }
+
+    function updateMatches(data) {
+      // Update pool matches only
+      const poolMatchesDiv = document.getElementById('pool-matches');
+      poolMatchesDiv.innerHTML = data.poolSchedule.map(match => {
+        if (match.match === 'LUNCH') {
+          return `
+            <div class="lunch-break">
+              <span class="time-value">${match.time}</span>
+              <span class="lunch-label">${match.teams}</span>
+            </div>
+          `;
+        }
+
+        const current = isCurrentMatch(match.time);
+        const completed = isMatchCompleted(match.time);
+        const result = getMatchResult(match.teams, data.matchResults);
+        const [team1, team2] = match.teams.split(' vs ');
+
+        let matchContent = `
+          <div class="teams">
+            <div class="team ${result && result.winner === team1 ? 'winner' : ''}">${team1}</div>
+        `;
+
+        if (result && (result.score1 > 0 || result.score2 > 0)) {
+          matchContent += `
+            <div class="score">
+              <span class="${result.score1 > result.score2 ? 'winner' : ''}">${result.score1}</span>
+              -
+              <span class="${result.score2 > result.score1 ? 'winner' : ''}">${result.score2}</span>
+            </div>
+          `;
+        } else {
+          matchContent += `<div class="vs">vs</div>`;
+        }
+
+        matchContent += `
+            <div class="team ${result && result.winner === team2 ? 'winner' : ''}">${team2}</div>
+          </div>
+        `;
+
+        let statusContent = '';
+        if (current) {
+          statusContent = `<div class="match-status current">In Progress</div>`;
+        } else if (completed && (!result || (result.score1 === 0 && result.score2 === 0))) {
+          statusContent = `<div class="match-status completed">Not Started</div>`;
+        } else if (result && (result.score1 > 0 || result.score2 > 0)) {
+          statusContent = `
+            <div class="match-status completed">
+              ${result.winner ? `${result.winner} wins` : 'Draw'}
+            </div>
+          `;
+        } else {
+          statusContent = `<div class="match-status">Not Started</div>`;
+        }
+
+        // Add "pool-<PoolName>" class for the colored left border
+        return `
+          <div class="match pool-${match.pool} ${current ? 'current' : ''} ${completed ? 'completed' : ''}">
+            <div class="time">
+              <span class="time-value">${match.time}</span>
+              <span class="match-number">${match.match}</span>
+            </div>
+            <div class="match-details">
+              ${matchContent}
+              <div class="pool-label">Pool ${match.pool}</div>
+              ${statusContent}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateData(data) {
+      // 1. Update Pools and Rankings
+      updatePools(data.pools);
+      updateRankings(data);
+
+      // 2. Update Pool Matches
+      updateMatches(data);
+
+      // Update timestamp
+      document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+    }
+
+    function fetchData() {
+      console.log('Fetching tournament data...');
+      fetch('tournament_data.json?' + new Date().getTime())
+        .then(response => response.json())
+        .then(data => {
+          console.log('Data received, updating display...');
+          updateData(data);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+
+    // Initial fetch
+    fetchData();
+
+    // Auto-refresh every 5 seconds
+    setInterval(fetchData, 5000);
+  </script>
+</body>
+</html>
