@@ -25,13 +25,13 @@
     "B": [
       {
         "name": "Queens",
-        "points": 12,
-        "pd": 48
+        "points": 15,
+        "pd": 77
       },
       {
         "name": "USC",
-        "points": 12,
-        "pd": 43
+        "points": 10,
+        "pd": 14
       },
       {
         "name": "UNCW",
@@ -78,8 +78,8 @@
       {
         "pool": "B",
         "team": "Queens",
-        "points": 12,
-        "pd": 48
+        "points": 15,
+        "pd": 77
       },
       {
         "pool": "C",
@@ -90,20 +90,25 @@
     ],
     "fourthSeed": {
       "team": "USC",
-      "points": 12,
-      "pd": 43
+      "points": 10,
+      "pd": 14
     }
   },
   "teams": [
     {
-      "name": "Belmont Abbey",
-      "points": 5,
-      "pd": 16
+      "name": "App State",
+      "points": 7,
+      "pd": -20
     },
     {
-      "name": "Queens",
-      "points": 12,
-      "pd": 48
+      "name": "Clemson",
+      "points": 11,
+      "pd": 45
+    },
+    {
+      "name": "USC",
+      "points": 10,
+      "pd": 14
     },
     {
       "name": "Wake",
@@ -111,19 +116,19 @@
       "pd": -35
     },
     {
-      "name": "UNC Charlotte",
-      "points": 7,
-      "pd": 10
+      "name": "Belmont Abbey",
+      "points": 5,
+      "pd": 16
     },
     {
-      "name": "USC",
+      "name": "Duke",
       "points": 12,
-      "pd": 43
+      "pd": 22
     },
     {
-      "name": "VTech II",
-      "points": 2,
-      "pd": -52
+      "name": "Queens",
+      "points": 15,
+      "pd": 77
     },
     {
       "name": "UVA",
@@ -136,24 +141,19 @@
       "pd": 22
     },
     {
-      "name": "App State",
+      "name": "UNC Charlotte",
       "points": 7,
-      "pd": -20
+      "pd": 10
     },
     {
-      "name": "Clemson",
-      "points": 11,
-      "pd": 45
+      "name": "VTech II",
+      "points": 2,
+      "pd": -52
     },
     {
       "name": "UNCW",
       "points": 2,
       "pd": -39
-    },
-    {
-      "name": "Duke",
-      "points": 12,
-      "pd": 22
     }
   ],
   "matchResults": [
@@ -243,9 +243,9 @@
     },
     {
       "team1": "Queens",
-      "score1": 0,
+      "score1": 34,
       "team2": "USC",
-      "score2": 0
+      "score2": 5
     },
     {
       "team1": "UNCW",
@@ -429,30 +429,30 @@
       {
         "rank": 1,
         "name": "Queens",
-        "points": 12,
-        "pd": 48,
+        "points": 15,
+        "pd": 77,
         "status": "Pool Winner"
       },
       {
         "rank": 2,
-        "name": "USC",
-        "points": 12,
-        "pd": 43,
-        "status": "4th Seed"
-      },
-      {
-        "rank": 3,
         "name": "Duke",
         "points": 12,
         "pd": 22,
         "status": "Pool Winner"
       },
       {
-        "rank": 4,
+        "rank": 3,
         "name": "Clemson",
         "points": 11,
         "pd": 45,
         "status": "Pool Winner"
+      },
+      {
+        "rank": 4,
+        "name": "USC",
+        "points": 10,
+        "pd": 14,
+        "status": "4th Seed"
       }
     ],
     "plateShield": [
