@@ -52,13 +52,13 @@
       },
       {
         "name": "UNC Charlotte",
-        "points": 7,
-        "pd": 10
+        "points": 9,
+        "pd": 19
       },
       {
         "name": "App State",
-        "points": 7,
-        "pd": -20
+        "points": 5,
+        "pd": -29
       },
       {
         "name": "Wake",
@@ -96,14 +96,9 @@
   },
   "teams": [
     {
-      "name": "UVA",
-      "points": 1,
-      "pd": -60
-    },
-    {
-      "name": "Wake",
-      "points": 2,
-      "pd": -35
+      "name": "UNC Charlotte",
+      "points": 9,
+      "pd": 19
     },
     {
       "name": "VTech II",
@@ -112,28 +107,13 @@
     },
     {
       "name": "App State",
-      "points": 7,
-      "pd": -20
+      "points": 5,
+      "pd": -29
     },
     {
       "name": "VTech I",
       "points": 9,
       "pd": 22
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 7,
-      "pd": 10
-    },
-    {
-      "name": "Belmont Abbey",
-      "points": 5,
-      "pd": 16
-    },
-    {
-      "name": "USC",
-      "points": 10,
-      "pd": 14
     },
     {
       "name": "Clemson",
@@ -146,14 +126,34 @@
       "pd": 77
     },
     {
-      "name": "Duke",
-      "points": 12,
-      "pd": 22
+      "name": "Belmont Abbey",
+      "points": 5,
+      "pd": 16
+    },
+    {
+      "name": "UVA",
+      "points": 1,
+      "pd": -60
+    },
+    {
+      "name": "Wake",
+      "points": 2,
+      "pd": -35
+    },
+    {
+      "name": "USC",
+      "points": 10,
+      "pd": 14
     },
     {
       "name": "UNCW",
       "points": 4,
       "pd": -27
+    },
+    {
+      "name": "Duke",
+      "points": 12,
+      "pd": 22
     }
   ],
   "matchResults": [
@@ -255,9 +255,9 @@
     },
     {
       "team1": "App State",
-      "score1": 0,
+      "score1": 10,
       "team2": "UNC Charlotte",
-      "score2": 0
+      "score2": 19
     },
     {
       "team1": "Clemson",
@@ -465,20 +465,20 @@
       {
         "rank": 6,
         "name": "UNC Charlotte",
-        "points": 7,
-        "pd": 10
+        "points": 9,
+        "pd": 19
       },
       {
         "rank": 7,
-        "name": "App State",
-        "points": 7,
-        "pd": -20
-      },
-      {
-        "rank": 8,
         "name": "Belmont Abbey",
         "points": 5,
         "pd": 16
+      },
+      {
+        "rank": 8,
+        "name": "App State",
+        "points": 5,
+        "pd": -29
       }
     ],
     "bowlConsolation": [
