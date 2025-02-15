@@ -467,11 +467,28 @@
       <!-- Pool standings populated by JavaScript -->
     </div>
 
-    <!-- PLAYOFFS -->
-    <div class="section playoffs" id="playoffs">
-      <h2>Playoffs</h2>
-      <div id="playoffs-info">
-        <!-- Playoffs information populated by JavaScript -->
+    <!-- TOURNAMENT RANKINGS -->
+    <div class="section rankings" id="playoffs">
+      <h2>Tournament Rankings</h2>
+      <div class="rankings-grid">
+        <div class="rankings-block">
+          <h3>Championship Bracket</h3>
+          <div id="championship-teams">
+            <!-- Championship teams populated by JavaScript -->
+          </div>
+        </div>
+        <div class="rankings-block">
+          <h3>Plate & Shield</h3>
+          <div id="plate-shield-teams">
+            <!-- Plate & Shield teams populated by JavaScript -->
+          </div>
+        </div>
+        <div class="rankings-block">
+          <h3>Bowl & Consolation</h3>
+          <div id="bowl-consolation-teams">
+            <!-- Bowl & Consolation teams populated by JavaScript -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -539,32 +556,72 @@
       });
     }
 
-    function updatePlayoffs(data) {
-      const playoffsInfo = document.getElementById('playoffs-info');
-      
-      // Sort all teams by points, then by PD
-      const sortedTeams = data.teams.sort((a, b) => {
-        if (b.points !== a.points) {
-          return b.points - a.points;
-        }
-        return b.pd - a.pd;
-      });
+    function updateRankings(data) {
+      // Update Championship teams (1st-4th)
+      const championshipTeams = document.getElementById('championship-teams');
+      championshipTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.playoffs.poolWinners.map((winner, index) => `
+            <div class="ranking-item">
+              <span class="rank">${index + 1}</span>
+              <div class="team-info">
+                <span class="team-name">${winner.team}</span>
+                <span class="team-stats">Pool ${winner.pool} Winner - Points: ${winner.points}, PD: ${winner.pd}</span>
+              </div>
+            </div>
+          `).join('')}
+          <div class="ranking-item">
+            <span class="rank">4</span>
+            <div class="team-info">
+              <span class="team-name">${data.playoffs.fourthSeed.team}</span>
+              <span class="team-stats">4th Seed - Points: ${data.playoffs.fourthSeed.points}, PD: ${data.playoffs.fourthSeed.pd}</span>
+            </div>
+          </div>
+        </div>
+      `;
 
-      playoffsInfo.innerHTML = `
-        <h3>All Teams Ranking</h3>
-        <ol>
-          ${sortedTeams.map(team => `
-            <li>${team.name} - Points: ${team.points}, PD: ${team.pd}</li>
-          `).join('')}
-        </ol>
-        <h3>Pool Winners</h3>
-        <ul>
-          ${data.playoffs.poolWinners.map(winner => `
-            <li>${winner.team} (Pool ${winner.pool}) - Points: ${winner.points}, PD: ${winner.pd}</li>
-          `).join('')}
-        </ul>
-        <h3>4th Seed</h3>
-        <p>${data.playoffs.fourthSeed.team} - Points: ${data.playoffs.fourthSeed.points}, PD: ${data.playoffs.fourthSeed.pd}</p>
+      // Update Plate & Shield teams (5th-8th)
+      const plateShieldTeams = document.getElementById('plate-shield-teams');
+      plateShieldTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(0, 4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 5}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+      `;
+
+      // Update Bowl & Consolation teams (9th-12th)
+      const bowlConsolationTeams = document.getElementById('bowl-consolation-teams');
+      bowlConsolationTeams.innerHTML = `
+        <div class="ranking-list">
+          ${data.teams
+            .filter(team =>
+              !data.playoffs.poolWinners.some(w => w.team === team.name) &&
+              team.name !== data.playoffs.fourthSeed.team
+            )
+            .slice(4)
+            .map((team, index) => `
+              <div class="ranking-item">
+                <span class="rank">${index + 9}</span>
+                <div class="team-info">
+                  <span class="team-name">${team.name}</span>
+                  <span class="team-stats">Points: ${team.points}, PD: ${team.pd}</span>
+                </div>
+              </div>
+            `).join('')}
+        </div>
       `;
     }
 
@@ -707,13 +764,11 @@
     }
 
     function updateData(data) {
-      // 1. Update Pools
+      // 1. Update Pools and Rankings
       updatePools(data.pools);
+      updateRankings(data);
 
-      // 2. Update Playoffs
-      updatePlayoffs(data);
-
-      // 3. Update Pool Matches
+      // 2. Update Pool Matches
       updateMatches(data);
 
       // Update timestamp
