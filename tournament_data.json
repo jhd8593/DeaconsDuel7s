@@ -2,68 +2,68 @@
   "pools": {
     "A": [
       {
-        "name": "Belmont Abbey",
-        "points": 0,
+        "name": "Duke",
+        "points": 11,
+        "pd": 16
+      },
+      {
+        "name": "VTech I",
+        "points": 7,
         "pd": 0
       },
       {
         "name": "UVA",
-        "points": 0,
-        "pd": 0
+        "points": 6,
+        "pd": -4
       },
       {
-        "name": "Duke",
-        "points": 0,
-        "pd": 0
-      },
-      {
-        "name": "VTech I",
-        "points": 0,
-        "pd": 0
+        "name": "Belmont Abbey",
+        "points": 4,
+        "pd": -12
       }
     ],
     "B": [
       {
-        "name": "UNCW",
-        "points": 0,
-        "pd": 0
-      },
-      {
         "name": "USC",
-        "points": 0,
-        "pd": 0
-      },
-      {
-        "name": "VTech II",
-        "points": 0,
-        "pd": 0
+        "points": 12,
+        "pd": 22
       },
       {
         "name": "Queens",
-        "points": 0,
-        "pd": 0
+        "points": 10,
+        "pd": 17
+      },
+      {
+        "name": "VTech II",
+        "points": 4,
+        "pd": -8
+      },
+      {
+        "name": "UNCW",
+        "points": 4,
+        "pd": -31
       }
     ],
     "C": [
       {
-        "name": "App State",
-        "points": 0,
-        "pd": 0
-      },
-      {
         "name": "Wake",
-        "points": 0,
-        "pd": 0
-      },
-      {
-        "name": "UNC Charlotte",
-        "points": 0,
-        "pd": 0
+        "points": 10,
+        "pd": 13
       },
       {
         "name": "Clemson",
-        "points": 0,
-        "pd": 0
+        "points": 8,
+        "pd": 3
+      },
+      {
+        "name": "App State",
+        "points": 6,
+        "pd": -7
+      },
+      {
+        "name": "UNC Charlotte",
+        "points": 5,
+        "pd": -9
       }
     ]
   },
@@ -71,199 +71,199 @@
     "poolWinners": [
       {
         "pool": "A",
-        "team": "Belmont Abbey",
-        "points": 0,
-        "pd": 0
+        "team": "Duke",
+        "points": 11,
+        "pd": 16
       },
       {
         "pool": "B",
-        "team": "UNCW",
-        "points": 0,
-        "pd": 0
+        "team": "USC",
+        "points": 12,
+        "pd": 22
       },
       {
         "pool": "C",
-        "team": "App State",
-        "points": 0,
-        "pd": 0
+        "team": "Wake",
+        "points": 10,
+        "pd": 13
       }
     ],
     "fourthSeed": {
-      "team": "UVA",
-      "points": 0,
-      "pd": 0
+      "team": "Queens",
+      "points": 10,
+      "pd": 17
     }
   },
   "teams": [
     {
-      "name": "UNCW",
-      "points": 0,
-      "pd": 0
+      "name": "VTech II",
+      "points": 4,
+      "pd": -8
     },
     {
-      "name": "App State",
-      "points": 0,
-      "pd": 0
+      "name": "Clemson",
+      "points": 8,
+      "pd": 3
+    },
+    {
+      "name": "UVA",
+      "points": 6,
+      "pd": -4
     },
     {
       "name": "Wake",
-      "points": 0,
+      "points": 10,
+      "pd": 13
+    },
+    {
+      "name": "Duke",
+      "points": 11,
+      "pd": 16
+    },
+    {
+      "name": "VTech I",
+      "points": 7,
       "pd": 0
     },
     {
       "name": "Belmont Abbey",
-      "points": 0,
-      "pd": 0
+      "points": 4,
+      "pd": -12
+    },
+    {
+      "name": "UNCW",
+      "points": 4,
+      "pd": -31
     },
     {
       "name": "USC",
-      "points": 0,
-      "pd": 0
+      "points": 12,
+      "pd": 22
+    },
+    {
+      "name": "App State",
+      "points": 6,
+      "pd": -7
     },
     {
       "name": "UNC Charlotte",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "VTech II",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "UVA",
-      "points": 0,
-      "pd": 0
+      "points": 5,
+      "pd": -9
     },
     {
       "name": "Queens",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "Clemson",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "Duke",
-      "points": 0,
-      "pd": 0
-    },
-    {
-      "name": "VTech I",
-      "points": 0,
-      "pd": 0
+      "points": 10,
+      "pd": 17
     }
   ],
   "matchResults": [
     {
       "team1": "Duke",
-      "score1": 0,
+      "score1": 12,
       "team2": "Belmont Abbey",
-      "score2": 0
+      "score2": 5
     },
     {
       "team1": "VTech I",
-      "score1": 0,
+      "score1": 7,
       "team2": "UVA",
-      "score2": 0
+      "score2": 7
     },
     {
       "team1": "Queens",
-      "score1": 0,
+      "score1": 22,
       "team2": "UNCW",
-      "score2": 0
+      "score2": 5
     },
     {
       "team1": "VTech II",
-      "score1": 0,
+      "score1": 10,
       "team2": "USC",
-      "score2": 0
+      "score2": 14
     },
     {
       "team1": "App State",
-      "score1": 0,
+      "score1": 5,
       "team2": "Clemson",
-      "score2": 0
+      "score2": 5
     },
     {
       "team1": "Wake",
-      "score1": 0,
+      "score1": 14,
       "team2": "UNC Charlotte",
       "score2": 0
     },
     {
       "team1": "Duke",
-      "score1": 0,
+      "score1": 21,
       "team2": "VTech I",
-      "score2": 0
+      "score2": 21
     },
     {
       "team1": "Belmont Abbey",
       "score1": 0,
       "team2": "UVA",
-      "score2": 0
+      "score2": 5
     },
     {
       "team1": "Queens",
-      "score1": 0,
+      "score1": 12,
       "team2": "VTech II",
-      "score2": 0
+      "score2": 12
     },
     {
       "team1": "UNCW",
-      "score1": 0,
+      "score1": 10,
       "team2": "USC",
-      "score2": 0
+      "score2": 28
     },
     {
       "team1": "App State",
-      "score1": 0,
+      "score1": 10,
       "team2": "Wake",
-      "score2": 0
+      "score2": 7
     },
     {
       "team1": "Clemson",
-      "score1": 0,
+      "score1": 22,
       "team2": "UNC Charlotte",
-      "score2": 0
+      "score2": 17
     },
     {
       "team1": "Duke",
-      "score1": 0,
+      "score1": 19,
       "team2": "UVA",
-      "score2": 0
+      "score2": 10
     },
     {
       "team1": "Belmont Abbey",
-      "score1": 0,
+      "score1": 14,
       "team2": "VTech I",
-      "score2": 0
+      "score2": 14
     },
     {
       "team1": "Queens",
-      "score1": 0,
+      "score1": 26,
       "team2": "USC",
-      "score2": 0
+      "score2": 26
     },
     {
       "team1": "UNCW",
-      "score1": 0,
+      "score1": 14,
       "team2": "VTech II",
-      "score2": 0
+      "score2": 10
     },
     {
       "team1": "App State",
       "score1": 0,
       "team2": "UNC Charlotte",
-      "score2": 0
+      "score2": 10
     },
     {
       "team1": "Clemson",
-      "score1": 0,
+      "score1": 19,
       "team2": "Wake",
-      "score2": 0
+      "score2": 21
     }
   ],
   "finalsSchedule": [
@@ -428,83 +428,83 @@
     "championship": [
       {
         "rank": 1,
-        "name": "UNCW",
-        "points": 0,
-        "pd": 0,
+        "name": "USC",
+        "points": 12,
+        "pd": 22,
         "status": "Pool Winner"
       },
       {
         "rank": 2,
-        "name": "App State",
-        "points": 0,
-        "pd": 0,
+        "name": "Duke",
+        "points": 11,
+        "pd": 16,
         "status": "Pool Winner"
       },
       {
         "rank": 3,
-        "name": "Wake",
-        "points": 0,
-        "pd": 0,
+        "name": "Queens",
+        "points": 10,
+        "pd": 17,
         "status": "4th Seed"
       },
       {
         "rank": 4,
-        "name": "Belmont Abbey",
-        "points": 0,
-        "pd": 0,
+        "name": "Wake",
+        "points": 10,
+        "pd": 13,
         "status": "Pool Winner"
       }
     ],
     "plateShield": [
       {
         "rank": 5,
-        "name": "USC",
-        "points": 0,
-        "pd": 0
+        "name": "Clemson",
+        "points": 8,
+        "pd": 3
       },
       {
         "rank": 6,
-        "name": "UNC Charlotte",
-        "points": 0,
+        "name": "VTech I",
+        "points": 7,
         "pd": 0
       },
       {
         "rank": 7,
-        "name": "VTech II",
-        "points": 0,
-        "pd": 0
+        "name": "UVA",
+        "points": 6,
+        "pd": -4
       },
       {
         "rank": 8,
-        "name": "UVA",
-        "points": 0,
-        "pd": 0
+        "name": "App State",
+        "points": 6,
+        "pd": -7
       }
     ],
     "bowlConsolation": [
       {
         "rank": 9,
-        "name": "Queens",
-        "points": 0,
-        "pd": 0
+        "name": "UNC Charlotte",
+        "points": 5,
+        "pd": -9
       },
       {
         "rank": 10,
-        "name": "Clemson",
-        "points": 0,
-        "pd": 0
+        "name": "VTech II",
+        "points": 4,
+        "pd": -8
       },
       {
         "rank": 11,
-        "name": "Duke",
-        "points": 0,
-        "pd": 0
+        "name": "Belmont Abbey",
+        "points": 4,
+        "pd": -12
       },
       {
         "rank": 12,
-        "name": "VTech I",
-        "points": 0,
-        "pd": 0
+        "name": "UNCW",
+        "points": 4,
+        "pd": -31
       }
     ]
   }
