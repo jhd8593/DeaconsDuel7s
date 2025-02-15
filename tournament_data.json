@@ -35,13 +35,13 @@
       },
       {
         "name": "UNCW",
-        "points": 2,
-        "pd": -39
+        "points": 4,
+        "pd": -27
       },
       {
         "name": "VTech II",
-        "points": 2,
-        "pd": -52
+        "points": 0,
+        "pd": -64
       }
     ],
     "C": [
@@ -96,49 +96,14 @@
   },
   "teams": [
     {
+      "name": "VTech II",
+      "points": 0,
+      "pd": -64
+    },
+    {
       "name": "UVA",
       "points": 1,
       "pd": -60
-    },
-    {
-      "name": "VTech I",
-      "points": 9,
-      "pd": 22
-    },
-    {
-      "name": "VTech II",
-      "points": 2,
-      "pd": -52
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 7,
-      "pd": 10
-    },
-    {
-      "name": "Duke",
-      "points": 12,
-      "pd": 22
-    },
-    {
-      "name": "Clemson",
-      "points": 11,
-      "pd": 45
-    },
-    {
-      "name": "App State",
-      "points": 7,
-      "pd": -20
-    },
-    {
-      "name": "Wake",
-      "points": 2,
-      "pd": -35
-    },
-    {
-      "name": "UNCW",
-      "points": 2,
-      "pd": -39
     },
     {
       "name": "USC",
@@ -146,14 +111,49 @@
       "pd": 14
     },
     {
+      "name": "Queens",
+      "points": 15,
+      "pd": 77
+    },
+    {
+      "name": "UNC Charlotte",
+      "points": 7,
+      "pd": 10
+    },
+    {
+      "name": "VTech I",
+      "points": 9,
+      "pd": 22
+    },
+    {
+      "name": "Duke",
+      "points": 12,
+      "pd": 22
+    },
+    {
+      "name": "Wake",
+      "points": 2,
+      "pd": -35
+    },
+    {
+      "name": "App State",
+      "points": 7,
+      "pd": -20
+    },
+    {
+      "name": "Clemson",
+      "points": 11,
+      "pd": 45
+    },
+    {
       "name": "Belmont Abbey",
       "points": 5,
       "pd": 16
     },
     {
-      "name": "Queens",
-      "points": 15,
-      "pd": 77
+      "name": "UNCW",
+      "points": 4,
+      "pd": -27
     }
   ],
   "matchResults": [
@@ -249,7 +249,7 @@
     },
     {
       "team1": "UNCW",
-      "score1": 0,
+      "score1": 12,
       "team2": "VTech II",
       "score2": 0
     },
@@ -484,27 +484,27 @@
     "bowlConsolation": [
       {
         "rank": 9,
+        "name": "UNCW",
+        "points": 4,
+        "pd": -27
+      },
+      {
+        "rank": 10,
         "name": "Wake",
         "points": 2,
         "pd": -35
       },
       {
-        "rank": 10,
-        "name": "UNCW",
-        "points": 2,
-        "pd": -39
-      },
-      {
         "rank": 11,
-        "name": "VTech II",
-        "points": 2,
-        "pd": -52
-      },
-      {
-        "rank": 12,
         "name": "UVA",
         "points": 1,
         "pd": -60
+      },
+      {
+        "rank": 12,
+        "name": "VTech II",
+        "points": 0,
+        "pd": -64
       }
     ]
   }
