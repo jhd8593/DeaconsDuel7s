@@ -46,9 +46,9 @@
     ],
     "C": [
       {
-        "name": "App State",
-        "points": 6,
-        "pd": 0
+        "name": "Clemson",
+        "points": 9,
+        "pd": 38
       },
       {
         "name": "UNC Charlotte",
@@ -61,9 +61,9 @@
         "pd": 0
       },
       {
-        "name": "Clemson",
-        "points": 6,
-        "pd": 0
+        "name": "App State",
+        "points": 4,
+        "pd": -38
       }
     ]
   },
@@ -83,9 +83,9 @@
       },
       {
         "pool": "C",
-        "team": "App State",
-        "points": 6,
-        "pd": 0
+        "team": "Clemson",
+        "points": 9,
+        "pd": 38
       }
     ],
     "fourthSeed": {
@@ -96,52 +96,27 @@
   },
   "teams": [
     {
+      "name": "USC",
+      "points": 9,
+      "pd": 26
+    },
+    {
       "name": "UVA",
       "points": 4,
       "pd": -22
     },
     {
       "name": "App State",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "VTech I",
-      "points": 9,
-      "pd": 22
-    },
-    {
-      "name": "Belmont Abbey",
       "points": 4,
-      "pd": -10
-    },
-    {
-      "name": "UNCW",
-      "points": 4,
-      "pd": -22
-    },
-    {
-      "name": "Queens",
-      "points": 9,
-      "pd": 22
-    },
-    {
-      "name": "UNC Charlotte",
-      "points": 6,
-      "pd": 0
-    },
-    {
-      "name": "USC",
-      "points": 9,
-      "pd": 26
-    },
-    {
-      "name": "Wake",
-      "points": 6,
-      "pd": 0
+      "pd": -38
     },
     {
       "name": "Clemson",
+      "points": 9,
+      "pd": 38
+    },
+    {
+      "name": "UNC Charlotte",
       "points": 6,
       "pd": 0
     },
@@ -154,6 +129,31 @@
       "name": "VTech II",
       "points": 4,
       "pd": -26
+    },
+    {
+      "name": "Belmont Abbey",
+      "points": 4,
+      "pd": -10
+    },
+    {
+      "name": "Queens",
+      "points": 9,
+      "pd": 22
+    },
+    {
+      "name": "VTech I",
+      "points": 9,
+      "pd": 22
+    },
+    {
+      "name": "Wake",
+      "points": 6,
+      "pd": 0
+    },
+    {
+      "name": "UNCW",
+      "points": 4,
+      "pd": -22
     }
   ],
   "matchResults": [
@@ -185,7 +185,7 @@
       "team1": "App State",
       "score1": 0,
       "team2": "Clemson",
-      "score2": 0
+      "score2": 38
     },
     {
       "team1": "Wake",
@@ -428,16 +428,16 @@
     "championship": [
       {
         "rank": 1,
-        "name": "USC",
+        "name": "Clemson",
         "points": 9,
-        "pd": 26,
+        "pd": 38,
         "status": "Pool Winner"
       },
       {
         "rank": 2,
-        "name": "VTech I",
+        "name": "USC",
         "points": 9,
-        "pd": 22,
+        "pd": 26,
         "status": "Pool Winner"
       },
       {
@@ -449,18 +449,18 @@
       },
       {
         "rank": 4,
-        "name": "Duke",
-        "points": 8,
-        "pd": 10,
-        "status": "4th Seed"
+        "name": "VTech I",
+        "points": 9,
+        "pd": 22,
+        "status": "Pool Winner"
       }
     ],
     "plateShield": [
       {
         "rank": 5,
-        "name": "App State",
-        "points": 6,
-        "pd": 0
+        "name": "Duke",
+        "points": 8,
+        "pd": 10
       },
       {
         "rank": 6,
@@ -476,35 +476,35 @@
       },
       {
         "rank": 8,
-        "name": "Clemson",
-        "points": 6,
-        "pd": 0
+        "name": "Belmont Abbey",
+        "points": 4,
+        "pd": -10
       }
     ],
     "bowlConsolation": [
       {
         "rank": 9,
-        "name": "Belmont Abbey",
-        "points": 4,
-        "pd": -10
-      },
-      {
-        "rank": 10,
         "name": "UVA",
         "points": 4,
         "pd": -22
       },
       {
-        "rank": 11,
+        "rank": 10,
         "name": "UNCW",
         "points": 4,
         "pd": -22
       },
       {
-        "rank": 12,
+        "rank": 11,
         "name": "VTech II",
         "points": 4,
         "pd": -26
+      },
+      {
+        "rank": 12,
+        "name": "App State",
+        "points": 4,
+        "pd": -38
       }
     ]
   }
