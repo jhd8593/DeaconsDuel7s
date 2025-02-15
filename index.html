@@ -541,7 +541,22 @@
 
     function updatePlayoffs(data) {
       const playoffsInfo = document.getElementById('playoffs-info');
+      
+      // Sort all teams by points, then by PD
+      const sortedTeams = data.teams.sort((a, b) => {
+        if (b.points !== a.points) {
+          return b.points - a.points;
+        }
+        return b.pd - a.pd;
+      });
+
       playoffsInfo.innerHTML = `
+        <h3>All Teams Ranking</h3>
+        <ol>
+          ${sortedTeams.map(team => `
+            <li>${team.name} - Points: ${team.points}, PD: ${team.pd}</li>
+          `).join('')}
+        </ol>
         <h3>Pool Winners</h3>
         <ul>
           ${data.playoffs.poolWinners.map(winner => `
