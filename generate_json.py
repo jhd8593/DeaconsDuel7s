@@ -42,34 +42,33 @@ def calculate_pool_standings(results):
     for team in all_teams:
         teams[team] = {'name': team, 'points': 0, 'pd': 0}
     
-    # Calculate points and PD only if scores are not 0-0
+    # Calculate points and PD for all matches, including 0-0 draws
     for result in results:
         team1, team2 = result['team1'], result['team2']
         score1, score2 = result['score1'], result['score2']
         
-        if score1 > 0 or score2 > 0:
-            # Update points differential
-            teams[team1]['pd'] += score1 - score2
-            teams[team2]['pd'] += score2 - score1
-            
-            # Award points
-            if score1 > score2:
-                teams[team1]['points'] += 4  # Win
-                if score1 - score2 <= 7:  # Losing bonus point
-                    teams[team2]['points'] += 1
-            elif score2 > score1:
-                teams[team2]['points'] += 4  # Win
-                if score2 - score1 <= 7:  # Losing bonus point
-                    teams[team1]['points'] += 1
-            else:
-                teams[team1]['points'] += 2  # Draw
-                teams[team2]['points'] += 2  # Draw
-            
-            # Try bonus points (assuming 5 points per try, 20+ points means 4+ tries)
-            if score1 >= 20:
-                teams[team1]['points'] += 1
-            if score2 >= 20:
+        # Update points differential
+        teams[team1]['pd'] += score1 - score2
+        teams[team2]['pd'] += score2 - score1
+        
+        # Award points
+        if score1 > score2:
+            teams[team1]['points'] += 4  # Win
+            if score1 - score2 <= 7:  # Losing bonus point
                 teams[team2]['points'] += 1
+        elif score2 > score1:
+            teams[team2]['points'] += 4  # Win
+            if score2 - score1 <= 7:  # Losing bonus point
+                teams[team1]['points'] += 1
+        else:
+            teams[team1]['points'] += 2  # Draw
+            teams[team2]['points'] += 2  # Draw
+        
+        # Try bonus points (assuming 5 points per try, 20+ points means 4+ tries)
+        if score1 >= 20:
+            teams[team1]['points'] += 1
+        if score2 >= 20:
+            teams[team2]['points'] += 1
     
     return list(teams.values())
 
@@ -80,10 +79,13 @@ def assign_pools(teams):
         'C': ['App State', 'Clemson', 'Wake', 'UNC Charlotte']
     }
     
-    pool_teams = {pool: [team for team in teams if team['name'] in pool_teams] 
-                  for pool, pool_teams in pools.items()}
+    pool_dict = {}
+    for pool_label, roster in pools.items():
+        pool_dict[pool_label] = [
+            t for t in teams if t['name'] in roster
+        ]
     
-    return pool_teams
+    return pool_dict
 
 def determine_playoffs(pools):
     # Sort teams in each pool by points, then PD
@@ -246,6 +248,18 @@ def generate_tournament_data():
         logging.info('Tournament data updated successfully')
     except Exception as e:
         logging.error(f"Error writing tournament data: {str(e)}")
+    
+    # Print rankings
+    print("Tournament Rankings:")
+    print("Championship Bracket:")
+    for team in rankings['championship']:
+        print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}")
+    print("\nPlate & Shield:")
+    for team in rankings['plateShield']:
+        print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}")
+    print("\nBowl & Consolation:")
+    for team in rankings['bowlConsolation']:
+        print(f"{team['rank']}. {team['name']} - Points: {team['points']}, PD: {team['pd']}")
 
 if __name__ == '__main__':
     generate_tournament_data()
