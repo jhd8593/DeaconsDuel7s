@@ -13,29 +13,54 @@ app.use(express.json());
 // -----------------------------
 // Google Sheets setup
 // -----------------------------
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    type: "service_account",
-    project_id: process.env.GOOGLE_PROJECT_ID,
-    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-    private_key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    auth_uri: "https://accounts.google.com/o/oauth2/auth",
-    token_uri: "https://oauth2.googleapis.com/token",
-    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-    client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
-    universe_domain: "googleapis.com",
-  },
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
+let sheets = null;
 
-const sheets = google.sheets({ version: 'v4', auth });
+// Validate required environment variables
+const requiredEnvVars = [
+  'GOOGLE_CLIENT_EMAIL',
+  'GOOGLE_PRIVATE_KEY', 
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_PROJECT_ID',
+  'SPREADSHEET_ID'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.error('Missing required environment variables:', missingVars.join(', '));
+  console.error('Please check your Vercel environment variables configuration');
+} else {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        type: "service_account",
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+        private_key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
+        universe_domain: "googleapis.com",
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+
+    sheets = google.sheets({ version: 'v4', auth });
+    console.log('Google Sheets API initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Google Sheets API:', error.message);
+  }
+}
 
 // -----------------------------
 // Helpers
 // -----------------------------
 async function getSheetValues(spreadsheetId, range) {
+  if (!sheets) {
+    throw new Error('Google Sheets API not initialized');
+  }
   const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
   return resp.data.values || [];
 }
@@ -630,6 +655,10 @@ app.get('/api/tournament/overview', async (req, res) => {
 
 app.get('/api/tournament/teams', async (req, res) => {
   try {
+    if (!sheets) {
+      return res.status(500).json({ error: 'Google Sheets API not available' });
+    }
+    
     const spreadsheetId = process.env.SPREADSHEET_ID;
     const rows = await getSheetValues(spreadsheetId, 'Teams!A1:Z50');
 
@@ -648,6 +677,10 @@ app.get('/api/tournament/teams', async (req, res) => {
 
 app.get('/api/tournament/schedule', async (req, res) => {
   try {
+    if (!sheets) {
+      return res.status(500).json({ error: 'Google Sheets API not available' });
+    }
+    
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
     const [scheduleRows, teamRows, bracketRows] = await Promise.all([
@@ -868,6 +901,10 @@ app.get('/api/tournament/schedule', async (req, res) => {
 
 app.get('/api/tournament/bracket', async (req, res) => {
   try {
+    if (!sheets) {
+      return res.status(500).json({ error: 'Google Sheets API not available' });
+    }
+    
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
     const [scheduleRows, bracketRows, teamRows] = await Promise.all([
