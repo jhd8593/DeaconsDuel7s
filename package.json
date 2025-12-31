@@ -1,0 +1,29 @@
+{
+  "name": "tournament-site",
+  "version": "1.0.0",
+  "description": "Deacons Duel 7s Tournament Website",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon server/index.js",
+    "dev:client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install:client": "cd client && npm install",
+    "install:all": "npm install && npm run install:client"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "googleapis": "^118.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.0.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
+  }
+}

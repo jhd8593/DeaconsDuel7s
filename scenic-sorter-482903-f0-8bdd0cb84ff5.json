@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "scenic-sorter-482903-f0",
+  "private_key_id": "8bdd0cb84ff59cd5a171ee436cb4ac72ab264ac6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCep/aWujvDNeeo\nfz7e3qmmX1iL3axXC7jXHlsAjC08LUNmHgoQ4tTpeOceVOOb0a3IdqqJrQS1VO8u\nV2io6GhgmTULnX/XqstMID5hMK+kMgcAiDZ4Yvl4w/qD4C++65JGI44SzoWCGhRp\n9XMU9MZnb0wr/ziI9wkF9ja1YzZO7yDQaWW2rxp7ULfEQrt4j3ScWXdV2clkxNO8\nzSXQzZ+5pXsG4fuQ+EfIxQKNqKEzhlltqbQj4/1sa57JPLOCTZLSi5pI3Vg0FbFL\n6LRB1fiZ26X1KUQnLNqnC2OriSP7c/QvY+TpAIy1Q8xrh6VdQf/uhE3ImuRKYYzb\nCdnHcqdFAgMBAAECggEABrM8hFmxuRO8sxlJ6WrpKoqE7cXbHQNKDLj5H4khRpT5\nb1rovT/RvVkKwaAqII7L/QGYlXSGFLZVMirPflqaQIIX2GQQCGaWa/eXSs7IjBxE\nvsQB24xVJsF4AeZk0yDrA3qa6bZpCE6GUCyPw0chsy/jEp9A9Ep3yhWqHSI8d+bW\nVcJ6tP7Z2dvTXyZYeG3G99OUjeGvgj3H14ETzkGo/bjV6qXpeCHkSgbSi+rWFW5A\n/BXLLjg/W/wmWAMdoi7ZR5AsEFeiXez5FSU9cyEZK/BrFCO3/49Dk/t1LbA2yshD\nq4e+UkLClWli1TE/CQOM2odm4Vk0NPxeWjWniwsUYQKBgQDNjHtT9VMexC8vUX+X\nrsOgylAlx/BElG6QQQcWOqxMBLViVaYdC2MrQGo8iWQI5EmKQMHgknDYBWVO7hJz\nfzfEL3wL2P+rHqWsDjmD6MIjrTmHpBf121jMr0M4tBJc1QzsgcCdG3o1n773tNFQ\nO1t2fe5jDcleuXidYc/G0wdSiQKBgQDFmQNklqLJy0N1PfkJ8N5aCfodKJNGmeQt\nOiOrcX0+6925GTdLkkB/6ZbP/+KcK3DgmFh2fAM7tBbG2oGB15EvkPOIl8pu0AC3\nIcg7MpQ4WtWy+Ar49SpfP+0PJHk7HEDhKDBCWFrRx8sq3fw1Shz/tHRdS2nvjLmj\nayquSN9v3QKBgQCvEpSIsk+VyOuXlgbjHwupDCivxVg0UWjKnVh36omORgRoOSM/\nYc+Zq0fRQARgPnEUvItlx9UtaYsca1Jz5UuOYhN5094P1g6uOX9rhvi0gnqZuX5e\n/fDohe7vgRCS2TQkzW9NYXX57pItUWlmuOfySNiercNyVu8QvZrHcj6uYQKBgBab\nXQIDIfjIYp1lS7rRbf8LKSxw2fi33p02C6Kvx06Nmb51nhftUafQx8pgUkLfzXhE\ntcpIge4wunJhyXNbgGbaxKIaC7UF4y8QlGIBdWfFLLHfIxI8qm5fV/XljGEw6FNa\nT7sndKyPmTT8VMCcDBlNQgryd9pKVWrW9fkeqUGZAoGBAIf+Ny/ioko832f41XbJ\nJiHRZM2np0AR60hbZlRgXmOENX6MpgeyQO1gPmWxWFK9VOF6RUKfJmMzgc6dotub\n6RFYZe57MRqNrNLzg2A9GGKDuG6jVDRuMZv2IrEQBgVVK7NEoT85gZ7TDS1Vx7MS\n+7dZRLwTZ2r3vZjZfOVy843I\n-----END PRIVATE KEY-----\n",
+  "client_email": "tournament-api@scenic-sorter-482903-f0.iam.gserviceaccount.com",
+  "client_id": "101676142929646320160",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/tournament-api%40scenic-sorter-482903-f0.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
