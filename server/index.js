@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3001;
 console.log('Environment variables check:');
 console.log('GOOGLE_CLIENT_EMAIL:', process.env.GOOGLE_CLIENT_EMAIL ? 'SET' : 'MISSING');
 console.log('GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? 'SET' : 'MISSING');
+console.log('GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY?.length || 0);
+console.log('GOOGLE_PRIVATE_KEY format:', process.env.GOOGLE_PRIVATE_KEY?.substring(0, 50) + '...');
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
 console.log('GOOGLE_PROJECT_ID:', process.env.GOOGLE_PROJECT_ID ? 'SET' : 'MISSING');
 console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID ? 'SET' : 'MISSING');
@@ -43,7 +45,7 @@ if (missingVars.length > 0) {
         type: "service_account",
         project_id: process.env.GOOGLE_PROJECT_ID,
         private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-        private_key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').trim(),
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
         client_id: process.env.GOOGLE_CLIENT_ID,
         auth_uri: "https://accounts.google.com/o/oauth2/auth",
