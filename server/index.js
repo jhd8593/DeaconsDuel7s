@@ -45,7 +45,22 @@ if (missingVars.length > 0) {
         type: "service_account",
         project_id: process.env.GOOGLE_PROJECT_ID,
         private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').trim(),
+        private_key: (() => {
+          const rawKey = process.env.GOOGLE_PRIVATE_KEY || '';
+          if (!rawKey.trim()) return '';
+          if (rawKey.startsWith('-----BEGIN')) {
+            return rawKey.replace(/\\n/g, '\n').trim();
+          }
+          try {
+            const decoded = Buffer.from(rawKey, 'base64').toString('utf-8');
+            if (decoded.includes('-----BEGIN')) {
+              return decoded.replace(/\\n/g, '\n').trim();
+            }
+          } catch (error) {
+            console.warn('Failed to base64-decode GOOGLE_PRIVATE_KEY, using raw value');
+          }
+          return rawKey.replace(/\\n/g, '\n').trim();
+        })(),
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
         client_id: process.env.GOOGLE_CLIENT_ID,
         auth_uri: "https://accounts.google.com/o/oauth2/auth",
