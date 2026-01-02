@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -19,6 +21,14 @@ console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID ? 'SET' : 'MISSING');
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve built frontend when available (for local "production" runs)
+const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+const hasClientBuild = fs.existsSync(path.join(clientBuildPath, 'index.html'));
+
+if (hasClientBuild) {
+  app.use(express.static(clientBuildPath));
+}
 
 // -----------------------------
 // Google Sheets setup
@@ -738,6 +748,17 @@ app.get('/api/tournament/schedule', async (req, res) => {
       scheduleData[bucket].push({ time, field, team1, score, team2 });
     };
 
+    const upsertMatch = ({ bucket, time, field, team1, score, team2 }) => {
+      const idx = scheduleData[bucket].findIndex(
+        (m) => m.time === time && m.field === field
+      );
+      if (idx >= 0) {
+        scheduleData[bucket][idx] = { time, field, team1, score, team2 };
+        return;
+      }
+      scheduleData[bucket].push({ time, field, team1, score, team2 });
+    };
+
     scheduleMatches.forEach((m) => {
       const mins = toMinutes(m.time);
       const bucket = (mins !== null && mins < 12 * 60) ? 'poolPlay' : 'championship';
@@ -768,6 +789,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
     const hasBracketData =
       bracketFromSheet.quarterfinals.length > 0 ||
       bracketFromSheet.semifinals.length > 0 ||
+      bracketFromSheet.final.length > 0 ||
       bracketFromSheet.consolationElite.length > 0 ||
       bracketFromSheet.consolationDevelopment.length > 0;
 
@@ -807,6 +829,21 @@ app.get('/api/tournament/schedule', async (req, res) => {
           team2: m.team2,
         });
       });
+
+      const finalMatch = resolvedBracket.final;
+      if (finalMatch) {
+        const finalScore = finalMatch.score1 && finalMatch.score2 && (finalMatch.score1 !== '0' || finalMatch.score2 !== '0')
+          ? `${finalMatch.score1}-${finalMatch.score2}`
+          : 'vs';
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:30 PM',
+          field: 'Field 1',
+          team1: finalMatch.team1,
+          score: finalScore,
+          team2: finalMatch.team2,
+        });
+      }
 
       // Elite consolation games run alongside semifinals on Field 2
       sfTimes.forEach((time, i) => {
@@ -911,6 +948,22 @@ app.get('/api/tournament/schedule', async (req, res) => {
     // ones to the next open slot on Field 1.
     scheduleData.championship = sequentializePhase2ToField1(scheduleData.championship);
 
+    // Always force the final to 4:30 PM Field 1 using resolved bracket data.
+    if (hasBracketData && resolvedBracket?.final) {
+      const finalMatch = resolvedBracket.final;
+      const finalScore = finalMatch.score1 && finalMatch.score2 && (finalMatch.score1 !== '0' || finalMatch.score2 !== '0')
+        ? `${finalMatch.score1}-${finalMatch.score2}`
+        : 'vs';
+      upsertMatch({
+        bucket: 'championship',
+        time: '4:30 PM',
+        field: 'Field 1',
+        team1: finalMatch.team1,
+        score: finalScore,
+        team2: finalMatch.team2,
+      });
+    }
+
     // Ensure consistent ordering:
     // - poolPlay chronological
     // - championship chronological (after we sequentialize)
@@ -958,7 +1011,19 @@ app.get('/api/tournament/bracket', async (req, res) => {
   }
 });
 
+// Frontend fallback (for non-API routes) when the build exists
+if (hasClientBuild) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
+
 // -----------------------------
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  if (hasClientBuild) {
+    console.log('Serving client build from', clientBuildPath);
+  } else {
+    console.log('Client build not found; run "npm run build" to generate it.');
+  }
 });

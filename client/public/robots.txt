@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Update sitemap after deployment if generated
+# Sitemap: https://deaconsduel7s.com/sitemap.xml
