@@ -104,6 +104,9 @@ function App() {
   const isFirstLoadRef = useRef(true);
   const touchStartRef = useRef(null);
   const lastScrollYRef = useRef(0);
+  const headerHiddenRef = useRef(false);
+  const headerLockRef = useRef(false);
+  const headerLockTimeoutRef = useRef(null);
 
   const parseTimeToMinutes = (timeStr) => {
     if (!timeStr) return null;
@@ -200,25 +203,47 @@ function App() {
   const liveGame = getCurrentLiveGame();
 
   useEffect(() => {
+    headerHiddenRef.current = isHeaderHidden;
+  }, [isHeaderHidden]);
+
+  useEffect(() => {
     let ticking = false;
     const threshold = 12;
     const minYToHide = 120;
     const topRevealY = 64;
+    const lockDurationMs = 260;
+
+    const setHeaderHidden = (hidden) => {
+      if (headerHiddenRef.current === hidden) {
+        return;
+      }
+      headerHiddenRef.current = hidden;
+      setIsHeaderHidden(hidden);
+      headerLockRef.current = true;
+      if (headerLockTimeoutRef.current) {
+        clearTimeout(headerLockTimeoutRef.current);
+      }
+      headerLockTimeoutRef.current = setTimeout(() => {
+        headerLockRef.current = false;
+        lastScrollYRef.current = window.scrollY || 0;
+      }, lockDurationMs);
+    };
 
     const updateHeaderState = () => {
       ticking = false;
+      if (headerLockRef.current) return;
       const currentY = window.scrollY || 0;
-      const isMobile = window.matchMedia('(max-width: 640px)').matches;
+      const isMobile = window.innerWidth <= 640;
 
       if (!isMobile) {
         lastScrollYRef.current = currentY;
-        setIsHeaderHidden(false);
+        setHeaderHidden(false);
         return;
       }
 
       if (currentY <= topRevealY) {
         lastScrollYRef.current = currentY;
-        setIsHeaderHidden(false);
+        setHeaderHidden(false);
         return;
       }
 
@@ -228,9 +253,9 @@ function App() {
       }
 
       if (delta > 0 && currentY > minYToHide) {
-        setIsHeaderHidden(true);
+        setHeaderHidden(true);
       } else if (delta < 0) {
-        setIsHeaderHidden(false);
+        setHeaderHidden(false);
       }
 
       lastScrollYRef.current = currentY;
@@ -249,6 +274,9 @@ function App() {
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
+      if (headerLockTimeoutRef.current) {
+        clearTimeout(headerLockTimeoutRef.current);
+      }
     };
   }, []);
 
