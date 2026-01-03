@@ -70,12 +70,13 @@ const Icon = ({ name, size = 18, stroke = 'currentColor', className = '', ariaLa
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview');
+  const API_BASE = process.env.REACT_APP_API_URL || '';
   const [tournamentData, setTournamentData] = useState({
     overview: {
-      totalMatches: '31',
-      poolPlay: '18',
-      championship: '7',
-      estimatedFinish: '3:30 PM'
+      totalMatches: '',
+      poolPlay: '',
+      championship: '',
+      estimatedFinish: ''
     },
     schedule: {
       poolPlay: [],
@@ -173,6 +174,27 @@ function App() {
     return null;
   };
 
+  const computeOverviewFromSchedule = (schedule = {}) => {
+    const matchDuration = 20; // 16-minute matches + ~4 minutes turnover
+    const poolPlayCount = schedule.poolPlay?.length || 0;
+    const championshipCount = schedule.championship?.length || 0;
+    const totalMatches = poolPlayCount + championshipCount;
+
+    const allTimes = [...(schedule.poolPlay || []), ...(schedule.championship || [])]
+      .map((m) => parseTimeToMinutes(m.time))
+      .filter((n) => n != null);
+
+    const lastKick = allTimes.length ? Math.max(...allTimes) : null;
+    const estimatedFinish = lastKick != null ? formatMinutesToAmPm(lastKick + matchDuration) : '';
+
+    return {
+      totalMatches: totalMatches ? String(totalMatches) : '',
+      poolPlay: poolPlayCount ? String(poolPlayCount) : '',
+      championship: championshipCount ? String(championshipCount) : '',
+      estimatedFinish,
+    };
+  };
+
   const liveGame = getCurrentLiveGame();
 
   useEffect(() => {
@@ -188,32 +210,27 @@ function App() {
       } else {
         setRefreshing(true);
       }
-      console.log('Fetching data from:', '/api/tournament/overview', '/api/tournament/schedule', '/api/tournament/teams', '/api/tournament/bracket');
-      const [overviewRes, scheduleRes, teamsRes, bracketRes] = await Promise.all([
-        fetch('/api/tournament/overview'),
-        fetch('/api/tournament/schedule'),
-        fetch('/api/tournament/teams'),
-        fetch('/api/tournament/bracket')
+      console.log('Fetching data from:', `${API_BASE}/api/tournament/schedule`, `${API_BASE}/api/tournament/teams`, `${API_BASE}/api/tournament/bracket`);
+      const [scheduleRes, teamsRes, bracketRes] = await Promise.all([
+        fetch(`${API_BASE}/api/tournament/schedule`),
+        fetch(`${API_BASE}/api/tournament/teams`),
+        fetch(`${API_BASE}/api/tournament/bracket`)
       ]);
 
-      if (!overviewRes.ok || !scheduleRes.ok || !teamsRes.ok || !bracketRes.ok) {
+      if (!scheduleRes.ok || !teamsRes.ok || !bracketRes.ok) {
         throw new Error('Failed to fetch tournament data');
       }
 
-      const [overview, schedule, teams, bracket] = await Promise.all([
-        overviewRes.json(),
+      const [schedule, teams, bracket] = await Promise.all([
         scheduleRes.json(),
         teamsRes.json(),
         bracketRes.json()
       ]);
 
+      const computedOverview = computeOverviewFromSchedule(schedule);
+
       setTournamentData({
-        overview: {
-          totalMatches: overview.totalMatches || '31',
-          poolPlay: overview.poolPlay || '18',
-          championship: overview.championship || '7',
-          estimatedFinish: overview.estimatedFinish || '3:30 PM'
-        },
+        overview: computedOverview,
         schedule,
         teams,
         bracket
@@ -417,13 +434,13 @@ const Overview = ({ data }) => (
   <div className="space-y-16">
     {/* Stats Grid */}
     <section>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stat-grid">
         {[
           { label: 'TOTAL MATCHES', value: data.totalMatches, icon: 'grid' },
           { label: 'POOL PLAY', value: data.poolPlay, icon: 'flag' },
           { label: 'CHAMPIONSHIP', value: data.championship, icon: 'trophy' },
           { label: 'EST. FINISH', value: data.estimatedFinish, icon: 'clock' }
-        ].map((stat, i) => (
+        ].filter((stat) => stat.value).map((stat, i) => (
           <div key={i} className="stat-card">
             <div className="stat-icon">
               <Icon name={stat.icon} size={18} ariaLabel={stat.label} />
