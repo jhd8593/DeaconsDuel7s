@@ -1283,6 +1283,16 @@ table {
     padding: 10px 12px;
   }
 
+  .stat-grid {
+    justify-items: stretch;
+    align-items: stretch;
+  }
+
+  .stat-card {
+    width: 100%;
+    min-height: 140px;
+  }
+
   .table-shell {
     overflow-x: visible;
   }

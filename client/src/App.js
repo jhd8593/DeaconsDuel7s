@@ -376,33 +376,6 @@ function App() {
           </div>
         )}
 
-        {!loading && (
-          <section className="action-grid" aria-label="Quick actions">
-              {[
-                { key: 'schedule', icon: 'flag', title: 'Live & Schedule', helper: 'Jump to fixtures', accent: 'primary' },
-                { key: 'bracket', icon: 'trophy', title: 'Bracket', helper: 'Cup + consolation', accent: 'accent' },
-                { key: 'teams', icon: 'map', title: 'Teams', helper: 'Pools & registration', accent: 'neutral' }
-              ].map((action) => (
-                <button
-                  key={action.key}
-                  type="button"
-                  className={`action-card ${action.accent}`}
-                  onClick={() => setActiveTab(action.key)}
-                  aria-label={`Go to ${action.title}`}
-                >
-                <span className="action-icon">
-                  <Icon name={action.icon} size={18} ariaLabel={`${action.title} icon`} />
-                </span>
-                  <div className="action-text">
-                    <span className="action-title">{action.title}</span>
-                    <span className="action-helper">{action.helper}</span>
-                  </div>
-                <span className="action-caret">→</span>
-              </button>
-            ))}
-          </section>
-        )}
-
         {loading ? (
           <div className="skeleton-page">
             <div className="skeleton-grid">
