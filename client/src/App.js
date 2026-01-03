@@ -289,7 +289,7 @@ function App() {
     <div className="min-h-screen app-shell">
       {/* Header */}
       <header className="topbar">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="header-grid">
             <div className="brand-block">
               <div className="crest-badge" aria-label="Deacons Duel crest">
@@ -300,7 +300,7 @@ function App() {
                 <div className="kicker">Rugby Sevens Command</div>
                 <h1 className="page-title">Deacons Duel 7s</h1>
                 <div className="subhead">Feb 15, 2025 | 2 Pitches | 09:00 Kickoff</div>
-                <div className="meta-row">
+                <div className="meta-row hidden sm:flex">
                   <span className="meta-pill">Wake Forest Rugby</span>
                   <span className="meta-pill alt">Winston-Salem, NC</span>
                   <span className="meta-pill subtle">{headerMeta}</span>
