@@ -67,7 +67,7 @@ Example Overview sheet structure:
 A1: Total Matches    B1: 31
 A2: Pool Play       B2: 18
 A3: Championship    B3: 7
-A4: Estimated Finish B4: 3:30 PM
+A4: Estimated Finish B4: 4:50 PM
 ```
 
 ### 4. Installation & Running

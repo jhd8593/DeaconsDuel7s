@@ -61,7 +61,7 @@ def add_overview(wb):
     ws.append(["Total Matches", "=COUNTA(Schedule!A2:A200)+COUNTA(Championship!A2:A200)"])
     ws.append(["Pool Play", "=COUNTA(Schedule!A2:A200)"])
     ws.append(["Championship", "=COUNTA(Championship!A2:A200)"])
-    ws.append(["Estimated Finish", "4:30 PM"])
+    ws.append(["Estimated Finish", "4:50 PM"])
     autosize(ws)
 
 
