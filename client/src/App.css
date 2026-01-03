@@ -1241,6 +1241,8 @@ table {
   .tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    grid-auto-flow: row;
     gap: 10px;
     overflow: visible;
     padding: 10px 0;
@@ -1254,6 +1256,8 @@ table {
     text-align: left;
     padding: 10px 12px;
     font-size: 11px;
+    white-space: normal;
+    line-height: 1.2;
     background: var(--surface);
     border-color: var(--line);
   }

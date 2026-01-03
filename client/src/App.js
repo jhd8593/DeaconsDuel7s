@@ -186,7 +186,7 @@ function App() {
 
     const lastKick = allTimes.length ? Math.max(...allTimes) : null;
     const estimatedFinish = lastKick != null ? formatMinutesToAmPm(lastKick + matchDuration) : '';
-    const totalMatchesValue = totalMatches || 31;
+    const totalMatchesValue = Math.max(31, totalMatches || 0);
 
     return {
       totalMatches: String(totalMatchesValue),
