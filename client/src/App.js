@@ -301,11 +301,6 @@ function App() {
                 <div className="kicker">Rugby Sevens Command</div>
                 <h1 className="page-title">Deacons Duel 7s</h1>
                 <div className="subhead">Feb 15, 2025 | 2 Pitches | 09:00 Kickoff</div>
-                <div className="meta-row hidden sm:flex">
-                  <span className="meta-pill">Wake Forest Rugby</span>
-                  <span className="meta-pill alt">Winston-Salem, NC</span>
-                  <span className="meta-pill subtle">{headerMeta}</span>
-                </div>
               </div>
             </div>
             <div className="live-shell">
@@ -435,7 +430,7 @@ const Overview = ({ data }) => (
   <div className="space-y-16">
     {/* Stats Grid */}
     <section>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stat-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 stat-grid">
         {[
           { label: 'TOTAL MATCHES', value: data.totalMatches, icon: 'grid' },
           { label: 'POOL PLAY', value: data.poolPlay, icon: 'flag' },
