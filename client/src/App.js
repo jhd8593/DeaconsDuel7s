@@ -99,14 +99,9 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
 
   const isFirstLoadRef = useRef(true);
   const touchStartRef = useRef(null);
-  const lastScrollYRef = useRef(0);
-  const headerHiddenRef = useRef(false);
-  const headerLockRef = useRef(false);
-  const headerLockTimeoutRef = useRef(null);
 
   const parseTimeToMinutes = (timeStr) => {
     if (!timeStr) return null;
@@ -191,9 +186,10 @@ function App() {
 
     const lastKick = allTimes.length ? Math.max(...allTimes) : null;
     const estimatedFinish = lastKick != null ? formatMinutesToAmPm(lastKick + matchDuration) : '';
+    const totalMatchesValue = totalMatches || 31;
 
     return {
-      totalMatches: totalMatches ? String(totalMatches) : '',
+      totalMatches: String(totalMatchesValue),
       poolPlay: poolPlayCount ? String(poolPlayCount) : '',
       championship: championshipCount ? String(championshipCount) : '',
       estimatedFinish,
@@ -201,84 +197,6 @@ function App() {
   };
 
   const liveGame = getCurrentLiveGame();
-
-  useEffect(() => {
-    headerHiddenRef.current = isHeaderHidden;
-  }, [isHeaderHidden]);
-
-  useEffect(() => {
-    let ticking = false;
-    const threshold = 12;
-    const minYToHide = 120;
-    const topRevealY = 64;
-    const lockDurationMs = 260;
-
-    const setHeaderHidden = (hidden) => {
-      if (headerHiddenRef.current === hidden) {
-        return;
-      }
-      headerHiddenRef.current = hidden;
-      setIsHeaderHidden(hidden);
-      headerLockRef.current = true;
-      if (headerLockTimeoutRef.current) {
-        clearTimeout(headerLockTimeoutRef.current);
-      }
-      headerLockTimeoutRef.current = setTimeout(() => {
-        headerLockRef.current = false;
-        lastScrollYRef.current = window.scrollY || 0;
-      }, lockDurationMs);
-    };
-
-    const updateHeaderState = () => {
-      ticking = false;
-      if (headerLockRef.current) return;
-      const currentY = window.scrollY || 0;
-      const isMobile = window.innerWidth <= 640;
-
-      if (!isMobile) {
-        lastScrollYRef.current = currentY;
-        setHeaderHidden(false);
-        return;
-      }
-
-      if (currentY <= topRevealY) {
-        lastScrollYRef.current = currentY;
-        setHeaderHidden(false);
-        return;
-      }
-
-      const delta = currentY - lastScrollYRef.current;
-      if (Math.abs(delta) < threshold) {
-        return;
-      }
-
-      if (delta > 0 && currentY > minYToHide) {
-        setHeaderHidden(true);
-      } else if (delta < 0) {
-        setHeaderHidden(false);
-      }
-
-      lastScrollYRef.current = currentY;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(updateHeaderState);
-        ticking = true;
-      }
-    };
-
-    lastScrollYRef.current = window.scrollY || 0;
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (headerLockTimeoutRef.current) {
-        clearTimeout(headerLockTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     fetchTournamentData({ showInitialLoader: true });
@@ -371,7 +289,7 @@ function App() {
   return (
     <div className="min-h-screen app-shell">
       {/* Header */}
-      <header className={`topbar${isHeaderHidden ? ' is-hidden' : ''}`}>
+      <header className="topbar">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="header-grid">
             <div className="brand-block">
@@ -432,7 +350,7 @@ function App() {
       </header>
 
       {/* Navigation */}
-      <nav className={`sticky top-0 z-50 nav-shell${isHeaderHidden ? ' is-hidden' : ''}`} aria-label="Tournament sections">
+      <nav className="nav-shell" aria-label="Tournament sections">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="tabs">
             {NAV_TABS.map((tab) => (
@@ -811,14 +729,14 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
                     
                     return (
                       <tr key={i} className={`table-row ${isLiveGame ? 'live-game-row' : ''}`}>
-                        <td className="py-4 px-6 text-sm font-mono time-cell">
+                        <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">
                           {row.time}
                           {isLiveGame && <span className="live-indicator-small ml-2">LIVE</span>}
                         </td>
-                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 1' ? 'is-live' : ''}`}>
+                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 1' ? 'is-live' : ''}`} data-label="Field 1">
                           {renderMatchWithWinner(row.field1)}
                         </td>
-                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 2' ? 'is-live' : ''}`}>
+                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 2' ? 'is-live' : ''}`} data-label="Field 2">
                           {renderMatchWithWinner(row.field2 || '')}
                         </td>
                       </tr>
@@ -862,8 +780,8 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
                 <tbody>
                   {phase2BaseRows.map((row, i) => (
                     <tr key={i} className="table-row">
-                      <td className="py-4 px-6 text-sm font-mono time-cell">{row.time}</td>
-                      <td className="py-4 px-6 text-sm match-cell">{renderMatchWithWinner(row.field1)}</td>
+                      <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
+                      <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{renderMatchWithWinner(row.field1)}</td>
                     </tr>
                   ))}
                 </tbody>
