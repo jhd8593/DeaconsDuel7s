@@ -390,7 +390,7 @@ function App() {
           <>
         {activeTab === 'overview' && <Overview data={tournamentData.overview} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} parseTimeToMinutes={parseTimeToMinutes} formatMinutesToAmPm={formatMinutesToAmPm} liveGame={liveGame} />}
-        {activeTab === 'bracket' && <Bracket data={tournamentData.bracket} />}
+        {activeTab === 'bracket' && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'teams' && <Teams data={tournamentData.teams} />}
           </>
         )}
@@ -664,7 +664,7 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
         {/* Phase 1 */}
         <div className="mb-16">
           <div className="phase-header">
-            <div className="flex items-center justify-between">
+            <div className="phase-title-stack">
               <h3 className="text-sm font-mono tracking-widest">PHASE 1: POOL PLAY</h3>
               <span className="phase-meta">09:00 - 12:09</span>
             </div>
@@ -730,7 +730,7 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
         {/* Phase 2 */}
         <div className="mb-16">
           <div className="phase-header">
-          <div className="flex items-center justify-between">
+            <div className="phase-title-stack">
               <h3 className="text-sm font-mono tracking-widest">PHASE 2: CHAMPIONSHIP</h3>
               <span className="phase-meta">12:39 - 16:09</span>
             </div>
@@ -782,8 +782,37 @@ const getBracketWinner = (score1, score2) => {
   return s1 > s2 ? 'team1' : 'team2';
 };
 
-const Bracket = ({ data }) => {
+const Bracket = ({ data, schedule }) => {
+  const scheduleMatches = schedule?.championship || [];
+  const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
+  const sfTimes = ['2:03 PM', '2:24 PM'];
+  const finalTimeFallback = '4:30 PM';
+  const eliteConsolTimes = ['2:03 PM', '2:24 PM'];
+  const devConsolTimes = ['3:27 PM', '3:48 PM', '4:09 PM'];
+  const eliteConsolChampTime = '4:09 PM';
+
+  const escapeRegExp = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const findTimeForLabel = (label) => {
+    if (!label) return '';
+    const pattern = new RegExp(`\\b${escapeRegExp(label)}\\b`, 'i');
+    const match = scheduleMatches.find((m) => pattern.test(m.team1 || '') || pattern.test(m.team2 || ''));
+    return match?.time || '';
+  };
+
+  const resolveTime = (label, fallback) => findTimeForLabel(label) || fallback || '';
+  const getQfTime = (index) => resolveTime(`QF${index + 1}`, qfTimes[index]);
+  const getSfTime = (index) => resolveTime(`SF${index + 1}`, sfTimes[index]);
+  const getFinalTime = () => findTimeForLabel('Final') || finalTimeFallback;
+  const getEliteConsolTime = (index) => resolveTime(`Elite Consol ${index + 1}`, eliteConsolTimes[index]);
+  const getEliteConsolChampTime = () => resolveTime('Elite Consol Championship', eliteConsolChampTime);
+  const getDevConsolTime = (index) => {
+    const labels = ['Dev 2nd Place', 'Dev 4th Place', 'Dev 6th Place'];
+    return resolveTime(labels[index], devConsolTimes[index]);
+  };
+
   const finalWinner = getBracketWinner(data.final?.score1, data.final?.score2);
+  const finalTime = getFinalTime();
 
   return (
     <div className="space-y-16">
@@ -806,8 +835,10 @@ const Bracket = ({ data }) => {
               ['Seed 3', 'Seed 6']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const timeLabel = getQfTime(i);
               return (
                 <div key={i} className="bracket-match">
+                  {timeLabel && <div className="match-time">{timeLabel}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
                     <span className="match-score">{match.score1 || '0'}</span>
@@ -829,8 +860,10 @@ const Bracket = ({ data }) => {
               ['Winner QF3', 'Winner QF4']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const timeLabel = getSfTime(i);
               return (
                 <div key={i} className="bracket-match mt-20">
+                  {timeLabel && <div className="match-time">{timeLabel}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
                     <span className="match-score">{match.score1 || '0'}</span>
@@ -848,6 +881,7 @@ const Bracket = ({ data }) => {
           <div className="space-y-6">
             <h3 className="bracket-stage-title">FINAL</h3>
             <div className="bracket-final mt-32">
+              {finalTime && <div className="match-time">{finalTime}</div>}
               <div className="final-trophy">TRY</div>
               <div className={`match-team ${finalWinner === 'team1' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{data.final?.team1 || 'Winner SF1'}</span>
@@ -880,8 +914,10 @@ const Bracket = ({ data }) => {
               ['Loser QF3', 'Loser QF4']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const timeLabel = getEliteConsolTime(i);
               return (
               <div key={i} className="consolation-match">
+                {timeLabel && <div className="match-time">{timeLabel}</div>}
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team1 || match[0]}</span>
                   <span className="match-score-small">{match.score1 || '0'}</span>
@@ -899,8 +935,10 @@ const Bracket = ({ data }) => {
                   data.eliteConsolationChampionship.score1,
                   data.eliteConsolationChampionship.score2
                 );
+                const timeLabel = getEliteConsolChampTime();
                 return (
               <div className="consolation-match">
+                {timeLabel && <div className="match-time">{timeLabel}</div>}
                 <div className="small-muted mb-2 text-center font-mono">ELITE CONSOL CHAMPIONSHIP</div>
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{data.eliteConsolationChampionship.team1}</span>
@@ -925,8 +963,10 @@ const Bracket = ({ data }) => {
               ['Pool C #4', 'Pool D #4', '4TH PLACE']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const timeLabel = getDevConsolTime(i);
               return (
               <div key={i} className="consolation-match">
+                {timeLabel && <div className="match-time">{timeLabel}</div>}
                 <div className="small-muted mb-2 text-center font-mono">{match.place || match[2]}</div>
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team1 || match[0]}</span>
