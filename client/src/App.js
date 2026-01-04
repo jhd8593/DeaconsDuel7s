@@ -486,6 +486,34 @@ const normalizeMatchLabel = (matchText = '') => {
   return spaced;
 };
 
+const isUnplayedScoreText = (scoreText = '') => {
+  const s = String(scoreText ?? '').trim().toLowerCase();
+  if (!s || s === 'vs') return true;
+  if (s === '0' || s === '0-0' || s === '0:0') return true;
+  if (/^0+\s*-\s*0+$/.test(s)) return true;
+  return false;
+};
+
+const isUnplayedScoreValue = (value = '') => {
+  const s = String(value ?? '').trim().toLowerCase();
+  if (!s || s === 'vs' || s === '0-0' || s === '0:0') return true;
+  return /^0+(?:\.0+)?$/.test(s);
+};
+
+const isUnplayedScorePair = (score1, score2) => (
+  isUnplayedScoreValue(score1) && isUnplayedScoreValue(score2)
+);
+
+const formatScheduleScore = (scoreText) => (
+  isUnplayedScoreText(scoreText) ? 'vs' : String(scoreText ?? '').trim()
+);
+
+const formatBracketScore = (score, otherScore) => (
+  isUnplayedScorePair(score, otherScore)
+    ? 'vs'
+    : (String(score ?? '').trim() || '0')
+);
+
 const renderMatchWithWinner = (matchText) => {
   if (!matchText || !matchText.trim()) {
     return <span className="match-muted">TBD</span>;
@@ -500,6 +528,16 @@ const renderMatchWithWinner = (matchText) => {
     const score1 = parseInt(match[2]);
     const score2 = parseInt(match[3]);
     const team2 = match[4].trim();
+
+    if (isUnplayedScorePair(score1, score2)) {
+      return (
+        <span>
+          <span>{team1}</span>
+          <span className="mx-2 match-scoreline">vs</span>
+          <span>{team2}</span>
+        </span>
+      );
+    }
 
     const winner = score1 > score2 ? team1 : team2;
 
@@ -548,10 +586,11 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
     if (!acc[match.time]) {
       acc[match.time] = {};
     }
+    const scoreText = formatScheduleScore(match.score);
     if (match.field === 'Field 1') {
-      acc[match.time].field1 = `${match.team1} ${match.score} ${match.team2}`;
+      acc[match.time].field1 = `${match.team1} ${scoreText} ${match.team2}`;
     } else if (match.field === 'Field 2') {
-      acc[match.time].field2 = `${match.team1} ${match.score} ${match.team2}`;
+      acc[match.time].field2 = `${match.team1} ${scoreText} ${match.team2}`;
     }
     return acc;
   }, {});
@@ -566,10 +605,11 @@ const Schedule = ({ data, parseTimeToMinutes, formatMinutesToAmPm, liveGame }) =
     if (!acc[match.time]) {
       acc[match.time] = {};
     }
+    const scoreText = formatScheduleScore(match.score);
     if (match.field === 'Field 1') {
-      acc[match.time].field1 = `${match.team1} ${match.score} ${match.team2}`;
+      acc[match.time].field1 = `${match.team1} ${scoreText} ${match.team2}`;
     } else if (match.field === 'Field 2') {
-      acc[match.time].field2 = `${match.team1} ${match.score} ${match.team2}`;
+      acc[match.time].field2 = `${match.team1} ${scoreText} ${match.team2}`;
     }
     return acc;
   }, {});
@@ -812,6 +852,8 @@ const Bracket = ({ data, schedule }) => {
   };
 
   const finalWinner = getBracketWinner(data.final?.score1, data.final?.score2);
+  const finalScore1 = formatBracketScore(data.final?.score1, data.final?.score2);
+  const finalScore2 = formatBracketScore(data.final?.score2, data.final?.score1);
   const finalTime = getFinalTime();
 
   return (
@@ -835,17 +877,19 @@ const Bracket = ({ data, schedule }) => {
               ['Seed 3', 'Seed 6']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const score1 = formatBracketScore(match.score1, match.score2);
+              const score2 = formatBracketScore(match.score2, match.score1);
               const timeLabel = getQfTime(i);
               return (
                 <div key={i} className="bracket-match">
                   {timeLabel && <div className="match-time">{timeLabel}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
-                    <span className="match-score">{match.score1 || '0'}</span>
+                    <span className="match-score">{score1}</span>
                   </div>
                   <div className={`match-team ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team2 || match[1]}</span>
-                    <span className="match-score">{match.score2 || '0'}</span>
+                    <span className="match-score">{score2}</span>
                   </div>
                 </div>
               );
@@ -860,17 +904,19 @@ const Bracket = ({ data, schedule }) => {
               ['Winner QF3', 'Winner QF4']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const score1 = formatBracketScore(match.score1, match.score2);
+              const score2 = formatBracketScore(match.score2, match.score1);
               const timeLabel = getSfTime(i);
               return (
                 <div key={i} className="bracket-match mt-20">
                   {timeLabel && <div className="match-time">{timeLabel}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
-                    <span className="match-score">{match.score1 || '0'}</span>
+                    <span className="match-score">{score1}</span>
                   </div>
                   <div className={`match-team ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team2 || match[1]}</span>
-                    <span className="match-score">{match.score2 || '0'}</span>
+                    <span className="match-score">{score2}</span>
                   </div>
                 </div>
               );
@@ -885,11 +931,11 @@ const Bracket = ({ data, schedule }) => {
               <div className="final-trophy">TRY</div>
               <div className={`match-team ${finalWinner === 'team1' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{data.final?.team1 || 'Winner SF1'}</span>
-                <span className="match-score">{data.final?.score1 || '0'}</span>
+                <span className="match-score">{finalScore1}</span>
               </div>
               <div className={`match-team ${finalWinner === 'team2' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{data.final?.team2 || 'Winner SF2'}</span>
-                <span className="match-score">{data.final?.score2 || '0'}</span>
+                <span className="match-score">{finalScore2}</span>
               </div>
             </div>
           </div>
@@ -914,17 +960,19 @@ const Bracket = ({ data, schedule }) => {
               ['Loser QF3', 'Loser QF4']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const score1 = formatBracketScore(match.score1, match.score2);
+              const score2 = formatBracketScore(match.score2, match.score1);
               const timeLabel = getEliteConsolTime(i);
               return (
               <div key={i} className="consolation-match">
                 {timeLabel && <div className="match-time">{timeLabel}</div>}
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team1 || match[0]}</span>
-                  <span className="match-score-small">{match.score1 || '0'}</span>
+                  <span className="match-score-small">{score1}</span>
                 </div>
                 <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team2 || match[1]}</span>
-                  <span className="match-score-small">{match.score2 || '0'}</span>
+                  <span className="match-score-small">{score2}</span>
                 </div>
               </div>
             )})}
@@ -935,6 +983,14 @@ const Bracket = ({ data, schedule }) => {
                   data.eliteConsolationChampionship.score1,
                   data.eliteConsolationChampionship.score2
                 );
+                const score1 = formatBracketScore(
+                  data.eliteConsolationChampionship.score1,
+                  data.eliteConsolationChampionship.score2
+                );
+                const score2 = formatBracketScore(
+                  data.eliteConsolationChampionship.score2,
+                  data.eliteConsolationChampionship.score1
+                );
                 const timeLabel = getEliteConsolChampTime();
                 return (
               <div className="consolation-match">
@@ -942,11 +998,11 @@ const Bracket = ({ data, schedule }) => {
                 <div className="small-muted mb-2 text-center font-mono">ELITE CONSOL CHAMPIONSHIP</div>
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{data.eliteConsolationChampionship.team1}</span>
-                  <span className="match-score-small">{data.eliteConsolationChampionship.score1 || '0'}</span>
+                  <span className="match-score-small">{score1}</span>
                 </div>
                 <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{data.eliteConsolationChampionship.team2}</span>
-                  <span className="match-score-small">{data.eliteConsolationChampionship.score2 || '0'}</span>
+                  <span className="match-score-small">{score2}</span>
                 </div>
               </div>
                 );
@@ -963,6 +1019,8 @@ const Bracket = ({ data, schedule }) => {
               ['Pool C #4', 'Pool D #4', '4TH PLACE']
             ]).map((match, i) => {
               const winner = getBracketWinner(match.score1, match.score2);
+              const score1 = formatBracketScore(match.score1, match.score2);
+              const score2 = formatBracketScore(match.score2, match.score1);
               const timeLabel = getDevConsolTime(i);
               return (
               <div key={i} className="consolation-match">
@@ -970,11 +1028,11 @@ const Bracket = ({ data, schedule }) => {
                 <div className="small-muted mb-2 text-center font-mono">{match.place || match[2]}</div>
                 <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team1 || match[0]}</span>
-                  <span className="match-score-small">{match.score1 || '0'}</span>
+                  <span className="match-score-small">{score1}</span>
                 </div>
                 <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                   <span>{match.team2 || match[1]}</span>
-                  <span className="match-score-small">{match.score2 || '0'}</span>
+                  <span className="match-score-small">{score2}</span>
                 </div>
               </div>
             )})}
