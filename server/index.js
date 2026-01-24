@@ -117,7 +117,7 @@ function matchStageRank(match) {
   // Consolation + placement games.
   // IMPORTANT: these should happen AFTER QFs but BEFORE SFs.
   // If they are ranked after SFs, the sequentializer can push SFs later in the day.
-  if (label.includes('consol') || label.includes('dev ') || label.includes('place')) return 45;
+  if (label.includes('consol') || label.includes('place')) return 45;
 
   // Then semis
   if (label.includes('sf') || label.includes('semi')) return 50;
@@ -180,14 +180,10 @@ function addMinutesToTime(timeStr, minutesToAdd) {
   return `${hh12}:${String(mm).padStart(2, '0')} ${ap}`;
 }
 
-function sequentializePhase2ToField1(matches, { incrementMinutes = 21 } = {}) {
-  // For Phase 2 we want everything on Field 1.
-  // If multiple games collide in the same time slot, move the extra ones forward
-  // by incrementMinutes until an open slot exists.
-  const used = new Set();
+function sequentializePhase2ByField(matches, { incrementMinutes = 21 } = {}) {
+  // Keep Field 1/Field 2 assignments intact, but avoid time collisions per field.
+  const usedByField = new Map();
 
-  // Work on a copy, and sort by time first for stable scheduling.
-  // Within the same time slot, keep deeper bracket games first (QF -> SF -> consolation/placement -> final).
   const ordered = [...matches].sort((a, b) => {
     const am = toMinutes(a.time);
     const bm = toMinutes(b.time);
@@ -197,25 +193,26 @@ function sequentializePhase2ToField1(matches, { incrementMinutes = 21 } = {}) {
     const br = matchStageRank(b);
     if (ar !== br) return br - ar;
 
-    // Stable: Field 1 before Field 2
     const af = safeStr(a.field);
     const bf = safeStr(b.field);
     if (af !== bf) return af.localeCompare(bf);
     return `${safeStr(a.team1)}|${safeStr(a.team2)}`.localeCompare(`${safeStr(b.team1)}|${safeStr(b.team2)}`);
   });
+
   const out = [];
 
   for (const m of ordered) {
     const baseTime = safeStr(m.time);
     const minutes = toMinutes(baseTime);
     if (minutes === null) {
-      // Unknown time: still force Field 1.
-      out.push({ ...m, field: 'Field 1' });
+      out.push({ ...m });
       continue;
     }
 
+    const field = safeStr(m.field) || 'Field 1';
+    const used = usedByField.get(field) || new Set();
+
     let t = baseTime;
-    // Find next open slot (Field 1 only)
     while (used.has(t)) {
       const next = addMinutesToTime(t, incrementMinutes);
       if (!next) break;
@@ -223,7 +220,8 @@ function sequentializePhase2ToField1(matches, { incrementMinutes = 21 } = {}) {
     }
 
     used.add(t);
-    out.push({ ...m, time: t, field: 'Field 1' });
+    usedByField.set(field, used);
+    out.push({ ...m, time: t, field });
   }
 
   return out;
@@ -235,6 +233,100 @@ function parseScore(scoreText) {
   const m = s.match(/^(\d+)\s*-\s*(\d+)$/);
   if (!m) return null;
   return { a: parseInt(m[1], 10), b: parseInt(m[2], 10) };
+}
+
+function flattenScheduleMatches(scheduleMatches) {
+  const out = [];
+  scheduleMatches.forEach((row) => {
+    if (row.field1) {
+      out.push({ time: row.time, field: 'Field 1', ...row.field1 });
+    }
+    if (row.field2) {
+      out.push({ time: row.time, field: 'Field 2', ...row.field2 });
+    }
+  });
+  return out;
+}
+
+function normalizeMatchText(value) {
+  return safeStr(value).toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function stripMatchLabel(value) {
+  const s = safeStr(value);
+  if (!s) return '';
+  const idx = s.indexOf(':');
+  if (idx === -1) return s.trim();
+  return s.slice(idx + 1).trim();
+}
+
+function normalizeTeamKey(value) {
+  return normalizeMatchText(stripMatchLabel(value));
+}
+
+function findScheduleMatchByLabel(scheduleFlat, labels = []) {
+  for (const label of labels) {
+    const key = normalizeMatchText(label);
+    if (!key) continue;
+    const matches = scheduleFlat.filter((m) => {
+      const t1 = normalizeMatchText(m.team1);
+      const t2 = normalizeMatchText(m.team2);
+      return t1.includes(key) || t2.includes(key);
+    });
+    if (matches.length === 1) return matches[0];
+  }
+  return null;
+}
+
+function findScheduleMatchByTeams(scheduleFlat, team1, team2) {
+  const t1 = normalizeTeamKey(team1);
+  const t2 = normalizeTeamKey(team2);
+  if (!t1 || !t2) return null;
+  return scheduleFlat.find((m) => {
+    const a = normalizeTeamKey(m.team1);
+    const b = normalizeTeamKey(m.team2);
+    return (a === t1 && b === t2) || (a === t2 && b === t1);
+  }) || null;
+}
+
+function resolveMatchFromSchedule({ scheduleFlat, labels = [], team1, team2 }) {
+  if (!scheduleFlat || scheduleFlat.length === 0) return null;
+  let match = findScheduleMatchByLabel(scheduleFlat, labels);
+  if (!match && team1 && team2) {
+    match = findScheduleMatchByTeams(scheduleFlat, team1, team2);
+  }
+  if (!match) return null;
+
+  const score = parseScore(match.score);
+  if (!score) return null;
+
+  const cleanTeam1 = stripMatchLabel(match.team1);
+  const cleanTeam2 = stripMatchLabel(match.team2);
+
+  let winner = null;
+  let loser = null;
+  if (score.a !== score.b) {
+    winner = score.a > score.b ? cleanTeam1 : cleanTeam2;
+    loser = score.a > score.b ? cleanTeam2 : cleanTeam1;
+  }
+
+  return {
+    team1: cleanTeam1,
+    team2: cleanTeam2,
+    score1: String(score.a),
+    score2: String(score.b),
+    winner,
+    loser,
+    source: 'schedule',
+  };
+}
+
+function buildLabelVariants(prefixes, label) {
+  const out = [];
+  const list = Array.isArray(prefixes) ? prefixes : [prefixes];
+  list.filter(Boolean).forEach((prefix) => out.push(`${prefix} ${label}`));
+  out.push(label);
+  return out;
 }
 
 function parseTeamsFromTeamsSheet(rows) {
@@ -381,33 +473,70 @@ function computeStandings({ pools, teamToPool }, scheduleMatches) {
   return { standings, stats };
 }
 
-function parseBracketSheet(bracketRows) {
-  // Reads bracket rows into sections in order:
-  // quarterfinals: 4 matches
-  // semifinals: 2 matches
-  // final: 1 match
-  // consolationElite: 2 matches
-  // eliteConsolationChampionship: 1 match
-  // consolationDevelopment: 3 matches
-  const sections = {
+function emptyBracket() {
+  return {
     quarterfinals: [],
     semifinals: [],
     final: [],
-    consolationElite: [],
+    consolation: { elite: [], development: [] },
     eliteConsolationChampionship: [],
-    consolationDevelopment: [],
+  };
+}
+
+function parseBracketSheet(bracketRows) {
+  const brackets = {
+    elite: emptyBracket(),
+    development: emptyBracket(),
   };
 
   let section = null;
+  let currentBracket = 'elite';
 
   const setSection = (row0) => {
     const t = safeStr(row0).toLowerCase();
-    if (t.includes('quarterfinal')) section = 'quarterfinals';
-    else if (t.includes('semifinal')) section = 'semifinals';
-    else if (t === 'final' || t.includes('final')) section = 'final';
-    else if (t.includes('consolation elite')) section = 'consolationElite';
-    else if (t.includes('elite consol') && t.includes('championship')) section = 'eliteConsolationChampionship';
-    else if (t.includes('consolation development')) section = 'consolationDevelopment';
+
+    if (t.includes('development') || t.includes('dev bracket')) currentBracket = 'development';
+    if (t.includes('elite') || t.includes('championship bracket')) currentBracket = 'elite';
+
+    if (
+      t.includes('bracket') &&
+      !t.includes('quarterfinal') &&
+      !t.includes('semifinal') &&
+      !t.includes('final') &&
+      !t.includes('consol')
+    ) {
+      section = null;
+      return;
+    }
+
+    if (t.includes('elite consol') && t.includes('championship')) {
+      section = 'eliteConsolationChampionship';
+      return;
+    }
+    if (t.includes('consolation elite')) {
+      section = 'consolationElite';
+      return;
+    }
+    if (t.includes('consolation development')) {
+      section = 'consolationDevelopment';
+      return;
+    }
+    if (t.includes('quarterfinal')) {
+      section = 'quarterfinals';
+      return;
+    }
+    if (t.includes('semifinal')) {
+      section = 'semifinals';
+      return;
+    }
+    if (t === 'final' || t.includes('final')) {
+      section = 'final';
+      return;
+    }
+  };
+
+  const pushMatch = (target, match) => {
+    if (Array.isArray(target)) target.push(match);
   };
 
   bracketRows.forEach((row) => {
@@ -416,19 +545,16 @@ function parseBracketSheet(bracketRows) {
     const c1 = safeStr(row[1]);
 
     if (c0 && !c1) {
-      // likely a header line
       setSection(c0);
       return;
     }
 
     if (!section) return;
 
-    // match rows should have team1, team2, score1, score2
     if (c0 && c1) {
       const score1 = safeStr(row[2]) || '0';
       const score2 = safeStr(row[3]) || '0';
 
-      // winner/loser if numeric
       const s1 = parseInt(score1, 10);
       const s2 = parseInt(score2, 10);
       let winner = null;
@@ -438,18 +564,25 @@ function parseBracketSheet(bracketRows) {
         loser = s1 > s2 ? c1 : c0;
       }
 
-      sections[section].push({
+      const match = {
         team1: c0,
         team2: c1,
         score1: score1,
         score2: score2,
         winner,
         loser,
-      });
+      };
+
+      if (section === 'quarterfinals') pushMatch(brackets[currentBracket].quarterfinals, match);
+      else if (section === 'semifinals') pushMatch(brackets[currentBracket].semifinals, match);
+      else if (section === 'final') pushMatch(brackets[currentBracket].final, match);
+      else if (section === 'consolationElite') pushMatch(brackets.elite.consolation.elite, match);
+      else if (section === 'eliteConsolationChampionship') pushMatch(brackets.elite.eliteConsolationChampionship, match);
+      else if (section === 'consolationDevelopment') pushMatch(brackets.development.consolation.development, match);
     }
   });
 
-  return sections;
+  return brackets;
 }
 
 function findMatchResultFromSchedule({ scheduleMatches, time, field }) {
@@ -490,62 +623,68 @@ function findMatchResultFromSchedule({ scheduleMatches, time, field }) {
   };
 }
 
-function resolveBracketFromStandingsAndSchedule({ standings, bracketFromSheet, scheduleMatches }) {
-  // Always seed QFs from Phase 1 standings.
+function resolveMatchWithSchedule({ base, scheduleFlat, labels }) {
+  if (!base || base.winner) return base;
+  const fromSchedule = resolveMatchFromSchedule({
+    scheduleFlat,
+    labels,
+    team1: base.team1,
+    team2: base.team2,
+  });
+  if (!fromSchedule || !fromSchedule.winner) return base;
+  return { ...base, ...fromSchedule };
+}
+
+function resolveDivisionBracket({
+  divisionKey,
+  standings,
+  bracketFromSheet,
+  scheduleFlat,
+  pool1Key,
+  pool2Key,
+  pool1Label,
+  pool2Label,
+  labelPrefixes,
+  allowPlacementFallback = false,
+}) {
+  const bracket = bracketFromSheet?.[divisionKey] || emptyBracket();
+  const pool1 = standings[pool1Key] || [];
+  const pool2 = standings[pool2Key] || [];
+
+  const seed = (arr, idx, fallback) => arr?.[idx] || fallback;
   const qfSeeds = [
-    { team1: standings.poolA?.[0] || 'Pool A 1st', team2: standings.poolC?.[0] || 'Pool C 1st' },
-    { team1: standings.poolA?.[1] || 'Pool A 2nd', team2: standings.poolD?.[1] || 'Pool D 2nd' },
-    { team1: standings.poolB?.[0] || 'Pool B 1st', team2: standings.poolD?.[0] || 'Pool D 1st' },
-    { team1: standings.poolB?.[1] || 'Pool B 2nd', team2: standings.poolC?.[1] || 'Pool C 2nd' },
+    { team1: seed(pool1, 0, `${pool1Label} 1st`), team2: seed(pool2, 3, `${pool2Label} 4th`) },
+    { team1: seed(pool1, 1, `${pool1Label} 2nd`), team2: seed(pool2, 2, `${pool2Label} 3rd`) },
+    { team1: seed(pool2, 0, `${pool2Label} 1st`), team2: seed(pool1, 3, `${pool1Label} 4th`) },
+    { team1: seed(pool2, 1, `${pool2Label} 2nd`), team2: seed(pool1, 2, `${pool1Label} 3rd`) },
   ];
 
-  const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
-  const sfTimes = ['2:03 PM', '2:24 PM'];
-  const finalTime = '14:45'; // informational only; final score comes from Bracket sheet typically
-
-  // 1) Quarterfinals
-  const quarterfinals = qfSeeds.map((seed, i) => {
-    const fromSheet = bracketFromSheet.quarterfinals[i];
-    const fromSchedule = findMatchResultFromSchedule({ scheduleMatches, time: qfTimes[i], field: 'Field 1' });
-
+  const quarterfinals = qfSeeds.map((seedMatch, i) => {
+    const fromSheet = bracket.quarterfinals[i];
     const base = {
-      team1: fromSheet?.team1 || seed.team1,
-      team2: fromSheet?.team2 || seed.team2,
+      team1: fromSheet?.team1 || seedMatch.team1,
+      team2: fromSheet?.team2 || seedMatch.team2,
       score1: fromSheet?.score1 || '0',
       score2: fromSheet?.score2 || '0',
       winner: fromSheet?.winner || null,
       loser: fromSheet?.loser || null,
     };
-
-    // If bracket sheet doesn't have a decided winner, use schedule score.
-    if (!base.winner && fromSchedule?.winner) {
-      return {
-        ...base,
-        team1: fromSchedule.team1,
-        team2: fromSchedule.team2,
-        score1: fromSchedule.score1,
-        score2: fromSchedule.score2,
-        winner: fromSchedule.winner,
-        loser: fromSchedule.loser,
-      };
-    }
-
-    return base;
+    return resolveMatchWithSchedule({
+      base,
+      scheduleFlat,
+      labels: buildLabelVariants(labelPrefixes, `QF${i + 1}`),
+    });
   });
 
   const qfWinners = quarterfinals.map((m) => m.winner).filter(Boolean);
   const qfLosers = quarterfinals.map((m) => m.loser).filter(Boolean);
 
-  // 2) Semifinals (prefer sheet, else derive from QF winners)
   const semifinals = [0, 1].map((i) => {
-    const fromSheet = bracketFromSheet.semifinals[i];
-    const fromSchedule = findMatchResultFromSchedule({ scheduleMatches, time: sfTimes[i], field: 'Field 1' });
-
+    const fromSheet = bracket.semifinals[i];
     const defaultTeams =
       i === 0
         ? { team1: qfWinners[0] || 'Winner QF1', team2: qfWinners[1] || 'Winner QF2' }
         : { team1: qfWinners[2] || 'Winner QF3', team2: qfWinners[3] || 'Winner QF4' };
-
     const base = {
       team1: fromSheet?.team1 || defaultTeams.team1,
       team2: fromSheet?.team2 || defaultTeams.team2,
@@ -554,102 +693,203 @@ function resolveBracketFromStandingsAndSchedule({ standings, bracketFromSheet, s
       winner: fromSheet?.winner || null,
       loser: fromSheet?.loser || null,
     };
-
-    if (!base.winner && fromSchedule?.winner) {
-      return {
-        ...base,
-        team1: fromSchedule.team1,
-        team2: fromSchedule.team2,
-        score1: fromSchedule.score1,
-        score2: fromSchedule.score2,
-        winner: fromSchedule.winner,
-        loser: fromSchedule.loser,
-      };
-    }
-
-    return base;
+    return resolveMatchWithSchedule({
+      base,
+      scheduleFlat,
+      labels: buildLabelVariants(labelPrefixes, `SF${i + 1}`),
+    });
   });
 
   const sfWinners = semifinals.map((m) => m.winner).filter(Boolean);
 
-  // 3) Final (prefer sheet; otherwise derive teams from SF winners)
-  const finalFromSheet = bracketFromSheet.final[0];
-  const final = {
+  const finalFromSheet = bracket.final[0];
+  const finalBase = {
     team1: finalFromSheet?.team1 || sfWinners[0] || 'Winner SF1',
     team2: finalFromSheet?.team2 || sfWinners[1] || 'Winner SF2',
     score1: finalFromSheet?.score1 || '0',
     score2: finalFromSheet?.score2 || '0',
     winner: finalFromSheet?.winner || null,
     loser: finalFromSheet?.loser || null,
-    time: finalTime,
-    field: 'Field 1',
+    time: '',
+    field: '',
   };
-
-  // 4) Elite consolation (prefer sheet; else derive from QF losers)
-  const consolationElite = [0, 1].map((i) => {
-    const from = bracketFromSheet.consolationElite[i];
-    return {
-      team1: from?.team1 || qfLosers[i * 2] || (i === 0 ? 'Loser QF1' : 'Loser QF3'),
-      team2: from?.team2 || qfLosers[i * 2 + 1] || (i === 0 ? 'Loser QF2' : 'Loser QF4'),
-      score1: from?.score1 || '0',
-      score2: from?.score2 || '0',
-      winner: from?.winner || null,
-      loser: from?.loser || null,
-    };
+  const final = resolveMatchWithSchedule({
+    base: finalBase,
+    scheduleFlat,
+    labels: buildLabelVariants(labelPrefixes, 'Final'),
   });
 
-  // 5) Dev placement (standings-derived, sheet can override)
-  const consolationDevelopmentSeeds = [
-    { team1: standings.poolC?.[1] || 'Pool C 2nd', team2: standings.poolD?.[1] || 'Pool D 2nd' },
-    { team1: standings.poolC?.[2] || 'Pool C 3rd', team2: standings.poolD?.[2] || 'Pool D 3rd' },
-    { team1: standings.poolC?.[3] || 'Pool C 4th', team2: standings.poolD?.[3] || 'Pool D 4th' },
-  ];
+  const consolation = { elite: [], development: [] };
+  let eliteConsolationChampionship = null;
 
-  const consolationDevelopment = consolationDevelopmentSeeds.map((seed, i) => {
-    const from = bracketFromSheet.consolationDevelopment[i];
-    return {
-      team1: from?.team1 || seed.team1,
-      team2: from?.team2 || seed.team2,
-      score1: from?.score1 || '0',
-      score2: from?.score2 || '0',
-      winner: from?.winner || null,
-      loser: from?.loser || null,
-    };
-  });
+  if (divisionKey === 'elite') {
+    const consolationElite = [0, 1].map((i) => {
+      const from = bracket.consolation?.elite?.[i];
+      const base = {
+        team1: from?.team1 || qfLosers[i * 2] || (i === 0 ? 'Loser QF1' : 'Loser QF3'),
+        team2: from?.team2 || qfLosers[i * 2 + 1] || (i === 0 ? 'Loser QF2' : 'Loser QF4'),
+        score1: from?.score1 || '0',
+        score2: from?.score2 || '0',
+        winner: from?.winner || null,
+        loser: from?.loser || null,
+      };
+      return resolveMatchWithSchedule({
+        base,
+        scheduleFlat,
+        labels: buildLabelVariants(['Elite'], `Consol ${i + 1}`),
+      });
+    });
+    consolation.elite = consolationElite;
+
+    const ecChampFromSheet = bracket.eliteConsolationChampionship?.[0] || null;
+    if (ecChampFromSheet) {
+      eliteConsolationChampionship = {
+        team1: ecChampFromSheet.team1,
+        team2: ecChampFromSheet.team2,
+        score1: ecChampFromSheet.score1 || '0',
+        score2: ecChampFromSheet.score2 || '0',
+        winner: ecChampFromSheet.winner || null,
+        loser: ecChampFromSheet.loser || null,
+      };
+    } else {
+      const winners = consolationElite.map((m) => m.winner).filter(Boolean);
+      if (winners.length > 0) {
+        eliteConsolationChampionship = {
+          team1: winners[0] || 'Winner EC1',
+          team2: winners[1] || 'Winner EC2',
+          score1: '0',
+          score2: '0',
+          winner: null,
+          loser: null,
+        };
+      }
+    }
+  }
+
+  if (divisionKey === 'development') {
+    const hasDevBracket =
+      bracket.quarterfinals.length > 0 ||
+      bracket.semifinals.length > 0 ||
+      bracket.final.length > 0;
+
+    if (!hasDevBracket && allowPlacementFallback) {
+      const devPlaceLabels = ['2nd Place', '3rd Place', '4th Place'];
+      const consolationDevelopmentSeeds = [
+        { team1: standings.poolC?.[1] || 'Pool C 2nd', team2: standings.poolD?.[1] || 'Pool D 2nd' },
+        { team1: standings.poolC?.[2] || 'Pool C 3rd', team2: standings.poolD?.[2] || 'Pool D 3rd' },
+        { team1: standings.poolC?.[3] || 'Pool C 4th', team2: standings.poolD?.[3] || 'Pool D 4th' },
+      ];
+      consolation.development = consolationDevelopmentSeeds.map((seedMatch, i) => {
+        const from = bracket.consolation?.development?.[i];
+        const base = {
+          team1: from?.team1 || seedMatch.team1,
+          team2: from?.team2 || seedMatch.team2,
+          score1: from?.score1 || '0',
+          score2: from?.score2 || '0',
+          winner: from?.winner || null,
+          loser: from?.loser || null,
+        };
+        return resolveMatchWithSchedule({
+          base,
+          scheduleFlat,
+          labels: buildLabelVariants(['Dev', 'Development'], devPlaceLabels[i] || `Place ${i + 2}`),
+        });
+      });
+    } else if (bracket.consolation?.development?.length) {
+      consolation.development = bracket.consolation.development.map((from, i) => ({
+        team1: from.team1,
+        team2: from.team2,
+        score1: from.score1 || '0',
+        score2: from.score2 || '0',
+        winner: from.winner || null,
+        loser: from.loser || null,
+      }));
+    }
+  }
 
   return {
     quarterfinals,
     semifinals,
     final,
-    consolation: {
-      elite: consolationElite,
-      development: consolationDevelopment,
-    },
+    consolation,
+    eliteConsolationChampionship,
   };
 }
 
+function resolveBracketsFromStandingsAndSchedule({ standings, bracketFromSheet, scheduleMatches }) {
+  const scheduleFlat = flattenScheduleMatches(scheduleMatches);
+  const elite = resolveDivisionBracket({
+    divisionKey: 'elite',
+    standings,
+    bracketFromSheet,
+    scheduleFlat,
+    pool1Key: 'poolA',
+    pool2Key: 'poolB',
+    pool1Label: 'Pool A',
+    pool2Label: 'Pool B',
+    labelPrefixes: ['Elite'],
+    allowPlacementFallback: false,
+  });
+
+  const development = resolveDivisionBracket({
+    divisionKey: 'development',
+    standings,
+    bracketFromSheet,
+    scheduleFlat,
+    pool1Key: 'poolC',
+    pool2Key: 'poolD',
+    pool1Label: 'Pool C',
+    pool2Label: 'Pool D',
+    labelPrefixes: ['Development', 'Dev'],
+    allowPlacementFallback: true,
+  });
+
+  return { elite, development };
+}
+
 function generateChampionshipMatchupsFromStandings(standings) {
-  // These are your “PM” times the old code used.
-  // If your event times differ, change keys here.
   const matchups = {};
 
-  const hasA = standings.poolA && standings.poolA.length >= 2;
-  const hasB = standings.poolB && standings.poolB.length >= 2;
-  const hasC = standings.poolC && standings.poolC.length >= 4;
-  const hasD = standings.poolD && standings.poolD.length >= 4;
+  const hasElite = (standings.poolA?.length || 0) >= 4 && (standings.poolB?.length || 0) >= 4;
+  const hasDev = (standings.poolC?.length || 0) >= 4 && (standings.poolD?.length || 0) >= 4;
 
-  if (!(hasA && hasB && hasC && hasD)) return matchups;
+  if (!hasElite && !hasDev) return matchups;
 
-  // Quarterfinals
-  matchups['12:39 PM'] = { field1: `QF1: ${standings.poolA[0]} vs ${standings.poolC[0]}` };
-  matchups['1:00 PM']  = { field1: `QF2: ${standings.poolA[1]} vs ${standings.poolD[1]}` };
-  matchups['1:21 PM']  = { field1: `QF3: ${standings.poolB[0]} vs ${standings.poolD[0]}` };
-  matchups['1:42 PM']  = { field1: `QF4: ${standings.poolB[1]} vs ${standings.poolC[1]}` };
+  const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
+  const sfTimes = ['2:03 PM', '2:24 PM'];
 
-  // Consolation Development (correct indices)
-  matchups['2:45 PM'] = { field2: `Dev 2nd Place: ${standings.poolC[1]} vs ${standings.poolD[1]}` };
-  matchups['3:06 PM'] = { field2: `Dev 3rd Place: ${standings.poolC[2]} vs ${standings.poolD[2]}` };
-  matchups['3:27 PM'] = { field2: `Dev 4th Place: ${standings.poolC[3]} vs ${standings.poolD[3]}` };
+  const eliteQf = [
+    `Elite QF1: ${standings.poolA?.[0] || 'Pool A 1st'} vs ${standings.poolB?.[3] || 'Pool B 4th'}`,
+    `Elite QF2: ${standings.poolA?.[1] || 'Pool A 2nd'} vs ${standings.poolB?.[2] || 'Pool B 3rd'}`,
+    `Elite QF3: ${standings.poolB?.[0] || 'Pool B 1st'} vs ${standings.poolA?.[3] || 'Pool A 4th'}`,
+    `Elite QF4: ${standings.poolB?.[1] || 'Pool B 2nd'} vs ${standings.poolA?.[2] || 'Pool A 3rd'}`,
+  ];
+
+  const devQf = [
+    `Dev QF1: ${standings.poolC?.[0] || 'Pool C 1st'} vs ${standings.poolD?.[3] || 'Pool D 4th'}`,
+    `Dev QF2: ${standings.poolC?.[1] || 'Pool C 2nd'} vs ${standings.poolD?.[2] || 'Pool D 3rd'}`,
+    `Dev QF3: ${standings.poolD?.[0] || 'Pool D 1st'} vs ${standings.poolC?.[3] || 'Pool C 4th'}`,
+    `Dev QF4: ${standings.poolD?.[1] || 'Pool D 2nd'} vs ${standings.poolC?.[2] || 'Pool C 3rd'}`,
+  ];
+
+  qfTimes.forEach((time, i) => {
+    matchups[time] = matchups[time] || {};
+    if (hasElite) matchups[time].field1 = eliteQf[i];
+    if (hasDev) matchups[time].field2 = devQf[i];
+  });
+
+  sfTimes.forEach((time, i) => {
+    matchups[time] = matchups[time] || {};
+    if (hasElite) matchups[time].field1 = `Elite SF${i + 1}: Winner QF${i * 2 + 1} vs Winner QF${i * 2 + 2}`;
+    if (hasDev) matchups[time].field2 = `Dev SF${i + 1}: Winner QF${i * 2 + 1} vs Winner QF${i * 2 + 2}`;
+  });
+
+  if (hasElite) {
+    matchups['4:30 PM'] = { ...(matchups['4:30 PM'] || {}), field1: 'Elite Final: Winner SF1 vs Winner SF2' };
+  }
+  if (hasDev) {
+    matchups['4:09 PM'] = { ...(matchups['4:09 PM'] || {}), field2: 'Dev Final: Winner SF1 vs Winner SF2' };
+  }
 
   return matchups;
 }
@@ -711,6 +951,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       generated: [],
       standings,
     };
+    let didAutoInject = false;
 
     const pushIfMissing = ({ bucket, time, field, team1, score, team2 }) => {
       // Avoid duplicates if the user already entered a row in the Schedule sheet
@@ -719,6 +960,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       );
       if (exists) return;
       scheduleData[bucket].push({ time, field, team1, score, team2 });
+      didAutoInject = true;
     };
 
     const upsertMatch = ({ bucket, time, field, team1, score, team2 }) => {
@@ -730,11 +972,13 @@ app.get('/api/tournament/schedule', async (req, res) => {
         return;
       }
       scheduleData[bucket].push({ time, field, team1, score, team2 });
+      didAutoInject = true;
     };
 
     scheduleMatches.forEach((m) => {
       const mins = toMinutes(m.time);
-      const bucket = (mins !== null && mins < 12 * 60) ? 'poolPlay' : 'championship';
+      // Pool play ends at 12:51 PM (771 minutes), lunch starts at 12:52 PM, championship starts at 1:22 PM
+      const bucket = (mins !== null && mins <= 12 * 60 + 51) ? 'poolPlay' : 'championship';
 
       if (m.field1) {
         scheduleData[bucket].push({
@@ -757,128 +1001,166 @@ app.get('/api/tournament/schedule', async (req, res) => {
     });
 
     // Prefer Bracket sheet for Phase 2 matchups if it exists.
-    // This matches your Excel "Bracket" layout (Quarterfinals/Semifinals/Final/Consolations)
     const bracketFromSheet = parseBracketSheet(bracketRows);
-    const hasBracketData =
-      bracketFromSheet.quarterfinals.length > 0 ||
-      bracketFromSheet.semifinals.length > 0 ||
-      bracketFromSheet.consolationElite.length > 0 ||
-      bracketFromSheet.consolationDevelopment.length > 0;
+    const hasEliteSeedData =
+      bracketFromSheet.elite.quarterfinals.length > 0 ||
+      bracketFromSheet.elite.semifinals.length > 0 ||
+      bracketFromSheet.elite.final.length > 0;
+    const hasEliteExtras =
+      bracketFromSheet.elite.consolation.elite.length > 0 ||
+      bracketFromSheet.elite.eliteConsolationChampionship.length > 0;
+    const hasDevSeedData =
+      bracketFromSheet.development.quarterfinals.length > 0 ||
+      bracketFromSheet.development.semifinals.length > 0 ||
+      bracketFromSheet.development.final.length > 0;
+    const hasDevExtras = bracketFromSheet.development.consolation.development.length > 0;
 
-    // Also compute a resolved bracket using ANY available scores so we can
-    // auto-advance SFs/final as QF/SF scores get entered.
-    const resolvedBracket = resolveBracketFromStandingsAndSchedule({
+    const useEliteBracket = hasEliteSeedData || hasEliteExtras;
+    const useDevBracket = hasDevSeedData;
+    const hasBracketData = useEliteBracket || useDevBracket || hasDevExtras;
+
+    const resolvedBrackets = resolveBracketsFromStandingsAndSchedule({
       standings,
       bracketFromSheet,
       scheduleMatches,
     });
 
+    const scoreFromMatch = (m) =>
+      m?.score1 && m?.score2 && (m.score1 !== '0' || m.score2 !== '0')
+        ? `${m.score1}-${m.score2}`
+        : 'vs';
+
     if (hasBracketData) {
       const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
-      qfTimes.forEach((time, i) => {
-        const m = resolvedBracket.quarterfinals[i];
-        if (!m) return;
-        pushIfMissing({
-          bucket: 'championship',
-          time,
-          field: 'Field 1',
-          team1: `QF${i + 1}: ${m.team1}`,
-          score: m.score1 && m.score2 && (m.score1 !== '0' || m.score2 !== '0') ? `${m.score1}-${m.score2}` : 'vs',
-          team2: m.team2,
-        });
-      });
-
       const sfTimes = ['2:03 PM', '2:24 PM'];
-      sfTimes.forEach((time, i) => {
-        const m = resolvedBracket.semifinals[i];
-        if (!m) return;
-        pushIfMissing({
-          bucket: 'championship',
-          time,
-          field: 'Field 1',
-          team1: `SF${i + 1}: ${m.team1}`,
-          score: m.score1 && m.score2 && (m.score1 !== '0' || m.score2 !== '0') ? `${m.score1}-${m.score2}` : 'vs',
-          team2: m.team2,
-        });
+      const eliteBracket = resolvedBrackets.elite;
+      const devBracket = resolvedBrackets.development;
+
+      qfTimes.forEach((time, i) => {
+        if (useEliteBracket) {
+          const m = eliteBracket.quarterfinals[i];
+          if (m) {
+            pushIfMissing({
+              bucket: 'championship',
+              time,
+              field: 'Field 1',
+              team1: `Elite QF${i + 1}: ${m.team1}`,
+              score: scoreFromMatch(m),
+              team2: m.team2,
+            });
+          }
+        }
+        if (useDevBracket) {
+          const m = devBracket.quarterfinals[i];
+          if (m) {
+            pushIfMissing({
+              bucket: 'championship',
+              time,
+              field: 'Field 2',
+              team1: `Dev QF${i + 1}: ${m.team1}`,
+              score: scoreFromMatch(m),
+              team2: m.team2,
+            });
+          }
+        }
       });
 
-      const finalMatch = resolvedBracket.final;
-      if (finalMatch) {
-        const finalScore = finalMatch.score1 && finalMatch.score2 && (finalMatch.score1 !== '0' || finalMatch.score2 !== '0')
-          ? `${finalMatch.score1}-${finalMatch.score2}`
-          : 'vs';
+      sfTimes.forEach((time, i) => {
+        if (useEliteBracket) {
+          const m = eliteBracket.semifinals[i];
+          if (m) {
+            pushIfMissing({
+              bucket: 'championship',
+              time,
+              field: 'Field 1',
+              team1: `Elite SF${i + 1}: ${m.team1}`,
+              score: scoreFromMatch(m),
+              team2: m.team2,
+            });
+          }
+        }
+        if (useDevBracket) {
+          const m = devBracket.semifinals[i];
+          if (m) {
+            pushIfMissing({
+              bucket: 'championship',
+              time,
+              field: 'Field 2',
+              team1: `Dev SF${i + 1}: ${m.team1}`,
+              score: scoreFromMatch(m),
+              team2: m.team2,
+            });
+          }
+        }
+      });
+
+      if (useEliteBracket && eliteBracket.final) {
         upsertMatch({
           bucket: 'championship',
           time: '4:30 PM',
           field: 'Field 1',
-          team1: finalMatch.team1,
-          score: finalScore,
-          team2: finalMatch.team2,
+          team1: `Elite Final: ${eliteBracket.final.team1}`,
+          score: scoreFromMatch(eliteBracket.final),
+          team2: eliteBracket.final.team2,
         });
       }
 
-      // Elite consolation games run alongside semifinals on Field 2
-      sfTimes.forEach((time, i) => {
-        const m = bracketFromSheet.consolationElite[i];
-        if (!m) return;
+      if (useDevBracket && devBracket.final) {
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:09 PM',
+          field: 'Field 2',
+          team1: `Dev Final: ${devBracket.final.team1}`,
+          score: scoreFromMatch(devBracket.final),
+          team2: devBracket.final.team2,
+        });
+      }
 
-        // Prefer Bracket sheet score if present; else fall back to Schedule sheet score
-        const bracketHasScore = safeStr(m.score1) !== '0' || safeStr(m.score2) !== '0';
-        const fromSchedule = findMatchResultFromSchedule({ scheduleMatches, time, field: 'Field 2' });
-        const team1 = m.team1;
-        const team2 = m.team2;
-        const score = bracketHasScore
-          ? `${m.score1}-${m.score2}`
-          : (fromSchedule ? `${fromSchedule.score1}-${fromSchedule.score2}` : 'vs');
+      const allowConsolations = !useDevBracket;
+      if (allowConsolations && eliteBracket.consolation?.elite?.length) {
+        const eliteConsolTimes = ['2:03 PM', '2:24 PM'];
+        eliteConsolTimes.forEach((time, i) => {
+          const m = eliteBracket.consolation.elite[i];
+          if (!m) return;
+          pushIfMissing({
+            bucket: 'championship',
+            time,
+            field: 'Field 2',
+            team1: `Elite Consol ${i + 1}: ${m.team1}`,
+            score: scoreFromMatch(m),
+            team2: m.team2,
+          });
+        });
+      }
+
+      if (allowConsolations && eliteBracket.eliteConsolationChampionship) {
+        const m = eliteBracket.eliteConsolationChampionship;
         pushIfMissing({
           bucket: 'championship',
-          time,
+          time: '4:09 PM',
           field: 'Field 2',
-          team1: `Elite Consol ${i + 1}: ${team1}`,
-          score,
-          team2,
+          team1: `Elite Consol Championship: ${m.team1}`,
+          score: scoreFromMatch(m),
+          team2: m.team2,
         });
-      });
+      }
 
-      // Add Elite Consol Championship (from Bracket sheet section if present)
-      const ecChampFromSheet = bracketFromSheet.eliteConsolationChampionship?.[0] || null;
-      const ecChampTeam1 = ecChampFromSheet?.team1 || 'Winner EC1';
-      const ecChampTeam2 = ecChampFromSheet?.team2 || 'Winner EC2';
-      const ecChampScore = ecChampFromSheet && (safeStr(ecChampFromSheet.score1) !== '0' || safeStr(ecChampFromSheet.score2) !== '0')
-        ? `${ecChampFromSheet.score1}-${ecChampFromSheet.score2}`
-        : 'vs';
-      pushIfMissing({
-        bucket: 'championship',
-        time: '4:09 PM',
-        field: 'Field 2',
-        team1: `Elite Consol Championship: ${ecChampTeam1}`,
-        score: ecChampScore,
-        team2: ecChampTeam2,
-      });
-
-      const devTimes = ['3:27 PM', '3:48 PM', '4:09 PM'];
-      const devLabels = ['Dev 2nd Place', 'Dev 4th Place', 'Dev 6th Place'];
-      devTimes.forEach((time, i) => {
-        const m = bracketFromSheet.consolationDevelopment[i];
-        if (!m) return;
-
-        // Prefer Bracket sheet score if present; else fall back to Schedule sheet score
-        const bracketHasScore = safeStr(m.score1) !== '0' || safeStr(m.score2) !== '0';
-        const fromSchedule = findMatchResultFromSchedule({ scheduleMatches, time, field: 'Field 2' });
-        const team1 = m.team1;
-        const team2 = m.team2;
-        const score = bracketHasScore
-          ? `${m.score1}-${m.score2}`
-          : (fromSchedule ? `${fromSchedule.score1}-${fromSchedule.score2}` : 'vs');
-        pushIfMissing({
-          bucket: 'championship',
-          time,
-          field: 'Field 2',
-          team1: `${devLabels[i]}: ${team1}`,
-          score,
-          team2,
+      if (allowConsolations && devBracket.consolation?.development?.length) {
+        const devTimes = ['3:27 PM', '3:48 PM', '4:09 PM'];
+        const devLabels = ['Dev 2nd Place', 'Dev 3rd Place', 'Dev 4th Place'];
+        devTimes.forEach((time, i) => {
+          const m = devBracket.consolation.development[i];
+          if (!m) return;
+          pushIfMissing({
+            bucket: 'championship',
+            time,
+            field: 'Field 2',
+            team1: `${devLabels[i]}: ${m.team1}`,
+            score: scoreFromMatch(m),
+            team2: m.team2,
+          });
         });
-      });
+      }
     } else {
       // Fallback: Add generated PM matchups based on pool standings
       const generated = generateChampionshipMatchupsFromStandings(standings);
@@ -916,9 +1198,9 @@ app.get('/api/tournament/schedule', async (req, res) => {
       });
     }
 
-    // ✅ Phase 2 should all be on Field 1. If any games collide, move the extra
-    // ones to the next open slot on Field 1.
-    scheduleData.championship = sequentializePhase2ToField1(scheduleData.championship);
+    if (didAutoInject) {
+      scheduleData.championship = sequentializePhase2ByField(scheduleData.championship);
+    }
 
     // Ensure consistent ordering:
     // - poolPlay chronological
@@ -953,13 +1235,13 @@ app.get('/api/tournament/bracket', async (req, res) => {
 
     const bracketFromSheet = parseBracketSheet(bracketRows);
 
-    const resolved = resolveBracketFromStandingsAndSchedule({
+    const resolved = resolveBracketsFromStandingsAndSchedule({
       standings,
       bracketFromSheet,
       scheduleMatches,
     });
 
-    const eliteConsolationChampionship = bracketFromSheet.eliteConsolationChampionship?.[0] || null;
+    const eliteConsolationChampionship = resolved?.elite?.eliteConsolationChampionship || null;
     res.json({ standings, ...resolved, eliteConsolationChampionship });
   } catch (error) {
     console.error('Error fetching bracket data:', error);
