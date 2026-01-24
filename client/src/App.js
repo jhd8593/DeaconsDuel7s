@@ -436,8 +436,8 @@ const Overview = ({ data }) => (
       <h2 className="section-title">TOURNAMENT FORMAT</h2>
       <div className="info-card">
         <div className="space-y-6 text-sm text-secondary leading-relaxed">
-          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. Elite bracket crowns the champion after pool play.</p>
-          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. Development bracket crowns its champion after pool play.</p>
+          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. Top teams from pool play advance to the Elite bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
+          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. Top teams from pool play advance to the Development bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
           <p><span className="font-semibold text-text">MATCH STRUCTURE</span> - 16-minute matches with 5-minute turnovers between pitches.</p>
           <p><span className="font-semibold text-text">LUNCH BREAK</span> - 30-minute break at 12:52 PM.</p>
         </div>
