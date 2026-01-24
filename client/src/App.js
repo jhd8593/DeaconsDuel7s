@@ -753,7 +753,7 @@ const Schedule = ({ data, liveGame }) => {
           <div className="phase-header">
             <div className="phase-title-stack">
               <h3 className="text-sm font-mono tracking-widest">PHASE 1: POOL PLAY</h3>
-              <span className="phase-meta">09:00 - 12:52</span>
+              <span className="phase-meta">09:00 - 12:51 PM</span>
             </div>
           </div>
           <div className="table-shell">
@@ -776,7 +776,10 @@ const Schedule = ({ data, liveGame }) => {
                     {time: '10:45 AM', field1: 'Pool B: B3 vs B1', field2: 'Pool D: D1 vs D4'},
                     {time: '11:06 AM', field1: 'Pool C: C2 vs C3', field2: 'Pool D: D2 vs D3'},
                     {time: '11:27 AM', field1: 'Pool C: C2 vs C4', field2: 'Pool D: D2 vs D4'},
-                    {time: '11:48 AM', field1: 'Pool C: C3 vs C4', field2: 'Pool D: D3 vs D4'}
+                    {time: '11:48 AM', field1: 'Pool C: C3 vs C4', field2: 'Pool D: D3 vs D4'},
+                    {time: '12:09 PM', field1: 'Pool A: A4 vs A1', field2: 'Pool B: B4 vs B1'},
+                    {time: '12:30 PM', field1: 'Pool A: A4 vs A2', field2: 'Pool B: B4 vs B2'},
+                    {time: '12:51 PM', field1: 'Pool A: A4 vs A3', field2: 'Pool B: B4 vs B3'}
                   ]).map((row, i) => {
                     const isLiveGame = liveGame && liveGame.time === row.time && 
                       ((liveGame.field === 'Field 1' && row.field1 === liveGame.team1 + ' ' + liveGame.score + ' ' + liveGame.team2) ||
@@ -888,8 +891,8 @@ const getBracketWinner = (score1, score2) => {
 
 const Bracket = ({ data, schedule }) => {
   const scheduleMatches = schedule?.championship || [];
-  const eliteBracket = data?.elite || data || {};
-  const devBracket = data?.development || null;
+  const eliteBracket = data?.elite || {};
+  const devBracket = data?.development || {};
   const eliteConsolationChampionship =
     eliteBracket.eliteConsolationChampionship || data?.eliteConsolationChampionship || null;
 
@@ -1027,13 +1030,6 @@ const Bracket = ({ data, schedule }) => {
     );
   };
 
-  const showDevBracket =
-    devBracket &&
-    ((devBracket.quarterfinals?.length || 0) > 0 ||
-      (devBracket.semifinals?.length || 0) > 0 ||
-      devBracket.final?.team1 ||
-      devBracket.final?.team2);
-
   const eliteConsolationMatches =
     eliteBracket.consolation?.elite && eliteBracket.consolation.elite.length > 0
       ? eliteBracket.consolation.elite
@@ -1060,7 +1056,7 @@ const Bracket = ({ data, schedule }) => {
         qfDefaults: eliteQfDefaults,
       })}
 
-      {showDevBracket && renderBracketSection({
+      {renderBracketSection({
         title: 'DEVELOPMENT BRACKET',
         bracket: devBracket,
         times: devTimes,
