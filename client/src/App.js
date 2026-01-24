@@ -324,7 +324,7 @@ function App() {
               <div aria-label="Deacons Duel event summary">
                 <div className="kicker">Rugby Sevens Command</div>
                 <h1 className="page-title">Deacons Duel 7s</h1>
-                <div className="subhead">Feb 15, 2025 | 2 Pitches | 09:00 Kickoff</div>
+                <div className="subhead">Feb 14, 2025 | 2 Pitches | 09:00 Kickoff</div>
               </div>
             </div>
             <div className="live-shell">
