@@ -1005,11 +1005,11 @@ const Bracket = ({ data, schedule }) => {
                   {times.getQfField(i) && <div className="match-field">{times.getQfField(i)}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
-                    <span className="match-score">{score1}</span>
+                    {score1 !== 'vs' && <span className="match-score">{score1}</span>}
                   </div>
                   <div className={`match-team ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team2 || match[1]}</span>
-                    <span className="match-score">{score2}</span>
+                    {score2 !== 'vs' && <span className="match-score">{score2}</span>}
                   </div>
                 </div>
               );
@@ -1030,11 +1030,11 @@ const Bracket = ({ data, schedule }) => {
                   {times.getSfField(i) && <div className="match-field">{times.getSfField(i)}</div>}
                   <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team1 || match[0]}</span>
-                    <span className="match-score">{score1}</span>
+                    {score1 !== 'vs' && <span className="match-score">{score1}</span>}
                   </div>
                   <div className={`match-team ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
                     <span className="text-sm">{match.team2 || match[1]}</span>
-                    <span className="match-score">{score2}</span>
+                    {score2 !== 'vs' && <span className="match-score">{score2}</span>}
                   </div>
                 </div>
               );
@@ -1050,11 +1050,11 @@ const Bracket = ({ data, schedule }) => {
               <div className="final-trophy">🏆</div>
               <div className={`match-team ${finalWinner === 'team1' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{bracket.final?.team1 || 'Winner SF1'}</span>
-                <span className="match-score">{finalScore1}</span>
+                {finalScore1 !== 'vs' && <span className="match-score">{finalScore1}</span>}
               </div>
               <div className={`match-team ${finalWinner === 'team2' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{bracket.final?.team2 || 'Winner SF2'}</span>
-                <span className="match-score">{finalScore2}</span>
+                {finalScore2 !== 'vs' && <span className="match-score">{finalScore2}</span>}
               </div>
             </div>
             
@@ -1066,11 +1066,11 @@ const Bracket = ({ data, schedule }) => {
                 {thirdPlaceField && <div className="match-field">{thirdPlaceField}</div>}
                 <div className={`match-team ${thirdPlaceWinner === 'team1' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
                   <span className="text-sm">{bracket.thirdPlace?.team1 || 'Loser SF1'}</span>
-                  <span className="match-score">{thirdPlaceScore1}</span>
+                  {thirdPlaceScore1 !== 'vs' && <span className="match-score">{thirdPlaceScore1}</span>}
                 </div>
                 <div className={`match-team ${thirdPlaceWinner === 'team2' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
                   <span className="text-sm">{bracket.thirdPlace?.team2 || 'Loser SF2'}</span>
-                  <span className="match-score">{thirdPlaceScore2}</span>
+                  {thirdPlaceScore2 !== 'vs' && <span className="match-score">{thirdPlaceScore2}</span>}
                 </div>
               </div>
             </div>
