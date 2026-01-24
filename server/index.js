@@ -1121,25 +1121,27 @@ app.get('/api/tournament/schedule', async (req, res) => {
       });
 
       // 3rd Place Matches
-      if (useEliteBracket && eliteBracket.thirdPlace) {
-        upsertMatch({
+      if (useEliteBracket) {
+        const eliteThirdPlace = eliteBracket.thirdPlace || {};
+        pushIfMissing({
           bucket: 'championship',
           time: '4:32 PM',
           field: 'Field 1',
-          team1: `Elite 3rd Place: ${eliteBracket.thirdPlace.team1}`,
-          score: scoreFromMatch(eliteBracket.thirdPlace),
-          team2: eliteBracket.thirdPlace.team2,
+          team1: `Elite 3rd Place: ${eliteThirdPlace.team1 || 'Loser SF1'}`,
+          score: scoreFromMatch(eliteThirdPlace),
+          team2: eliteThirdPlace.team2 || 'Loser SF2',
         });
       }
 
-      if (useDevBracket && devBracket.thirdPlace) {
-        upsertMatch({
+      if (useDevBracket) {
+        const devThirdPlace = devBracket.thirdPlace || {};
+        pushIfMissing({
           bucket: 'championship',
           time: '4:53 PM',
           field: 'Field 2',
-          team1: `Dev 3rd Place: ${devBracket.thirdPlace.team1}`,
-          score: scoreFromMatch(devBracket.thirdPlace),
-          team2: devBracket.thirdPlace.team2,
+          team1: `Dev 3rd Place: ${devThirdPlace.team1 || 'Loser SF1'}`,
+          score: scoreFromMatch(devThirdPlace),
+          team2: devThirdPlace.team2 || 'Loser SF2',
         });
       }
 
