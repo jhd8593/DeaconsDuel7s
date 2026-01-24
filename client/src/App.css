@@ -582,6 +582,26 @@
   box-shadow: var(--shadow);
 }
 
+.stat-card-interactive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.stat-card-interactive:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow);
+  border-color: var(--primary);
+}
+
+.stat-card-interactive:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.stat-card-interactive:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .stat-icon {
   width: 36px;
   height: 36px;

@@ -415,7 +415,7 @@ function App() {
           </div>
         ) : (
           <>
-        {activeTab === 'overview' && <Overview data={tournamentData.overview} />}
+        {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setActiveTab} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGame={liveGame} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
@@ -434,18 +434,31 @@ function App() {
   );
 }
 
-const Overview = ({ data }) => (
+const Overview = ({ data, onNavigate }) => (
   <div className="space-y-16">
     {/* Stats Grid */}
     <section>
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 stat-grid">
         {[
-          { label: 'TOTAL MATCHES', value: data.totalMatches, icon: 'grid' },
-          { label: 'POOL PLAY', value: data.poolPlay, icon: 'flag' },
-          { label: 'BRACKETS', value: data.championship, icon: 'trophy' },
-          { label: 'EST. FINISH', value: data.estimatedFinish, icon: 'clock' }
+          { label: 'TOTAL MATCHES', value: data.totalMatches, icon: 'grid', tab: 'schedule' },
+          { label: 'POOL PLAY', value: data.poolPlay, icon: 'flag', tab: 'schedule' },
+          { label: 'BRACKETS', value: data.championship, icon: 'trophy', tab: 'bracket' },
+          { label: 'EST. FINISH', value: data.estimatedFinish, icon: 'clock', tab: null }
         ].filter((stat) => stat.value).map((stat, i) => (
-          <div key={i} className="stat-card">
+          <div 
+            key={i} 
+            className={`stat-card ${stat.tab ? 'stat-card-interactive' : ''}`}
+            onClick={() => stat.tab && onNavigate && onNavigate(stat.tab)}
+            role={stat.tab ? 'button' : undefined}
+            tabIndex={stat.tab ? 0 : undefined}
+            onKeyDown={(e) => {
+              if (stat.tab && onNavigate && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onNavigate(stat.tab);
+              }
+            }}
+            aria-label={stat.tab ? `Click to view ${stat.label.toLowerCase()}` : undefined}
+          >
             <div className="stat-icon">
               <Icon name={stat.icon} size={18} ariaLabel={stat.label} />
             </div>
