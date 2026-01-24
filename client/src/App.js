@@ -893,16 +893,11 @@ const Bracket = ({ data, schedule }) => {
   const scheduleMatches = schedule?.championship || [];
   const eliteBracket = data?.elite || {};
   const devBracket = data?.development || {};
-  const eliteConsolationChampionship =
-    eliteBracket.eliteConsolationChampionship || data?.eliteConsolationChampionship || null;
 
   const qfTimes = ['1:22 PM', '1:43 PM', '2:04 PM', '2:25 PM'];
   const sfTimes = ['2:46 PM', '3:07 PM'];
   const eliteFinalTimeFallback = '4:53 PM';
   const devFinalTimeFallback = '4:32 PM';
-  const eliteConsolTimes = ['2:46 PM', '3:07 PM'];
-  const devConsolTimes = ['4:10 PM', '4:31 PM', '4:52 PM'];
-  const eliteConsolChampTime = '4:52 PM';
 
   const buildLabelVariants = (prefixes, label) => {
     const out = [];
@@ -1030,22 +1025,6 @@ const Bracket = ({ data, schedule }) => {
     );
   };
 
-  const eliteConsolationMatches =
-    eliteBracket.consolation?.elite && eliteBracket.consolation.elite.length > 0
-      ? eliteBracket.consolation.elite
-      : data?.consolation?.elite || [];
-  const devPlacementMatches =
-    devBracket?.consolation?.development && devBracket.consolation.development.length > 0
-      ? devBracket.consolation.development
-      : data?.consolation?.development || [];
-
-  const devPlaceLabels = ['2nd Place', '3rd Place', '4th Place'];
-  const getEliteConsolTime = (index) => resolveTime(buildLabelVariants(['Elite'], `Consol ${index + 1}`), eliteConsolTimes[index]);
-  const getEliteConsolChampTime = () => resolveTime(['Elite Consol Championship'], eliteConsolChampTime);
-  const getDevConsolTime = (index) => resolveTime(buildLabelVariants(['Dev', 'Development'], devPlaceLabels[index]), devConsolTimes[index]);
-
-  const showConsolations =
-    eliteConsolationMatches.length > 0 || devPlacementMatches.length > 0 || eliteConsolationChampionship;
 
   return (
     <div className="space-y-16">
@@ -1062,105 +1041,6 @@ const Bracket = ({ data, schedule }) => {
         times: devTimes,
         qfDefaults: devQfDefaults,
       })}
-
-      {showConsolations && (
-        <section>
-          <div className="section-header">
-            <div className="section-label">
-              <span className="icon-chip" aria-label="Consolation"><Icon name="flag" size={16} ariaLabel="Flag icon" /></span>
-              <h2 className="section-title">CONSOLATION MATCHES</h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="consolation-section">
-              <h3 className="consolation-title">ELITE BRACKET LOSERS</h3>
-              <div className="space-y-4">
-                {(eliteConsolationMatches.length > 0 ? eliteConsolationMatches : [
-                  ['Loser QF1', 'Loser QF2'],
-                  ['Loser QF3', 'Loser QF4']
-                ]).map((match, i) => {
-                  const winner = getBracketWinner(match.score1, match.score2);
-                  const score1 = formatBracketScore(match.score1, match.score2);
-                  const score2 = formatBracketScore(match.score2, match.score1);
-                  const timeLabel = getEliteConsolTime(i);
-                  return (
-                  <div key={i} className="consolation-match">
-                    {timeLabel && <div className="match-time">{timeLabel}</div>}
-                    <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{match.team1 || match[0]}</span>
-                      <span className="match-score-small">{score1}</span>
-                    </div>
-                    <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{match.team2 || match[1]}</span>
-                      <span className="match-score-small">{score2}</span>
-                    </div>
-                  </div>
-                )})}
-
-                {eliteConsolationChampionship && (
-                  (() => {
-                    const winner = getBracketWinner(
-                      eliteConsolationChampionship.score1,
-                      eliteConsolationChampionship.score2
-                    );
-                    const score1 = formatBracketScore(
-                      eliteConsolationChampionship.score1,
-                      eliteConsolationChampionship.score2
-                    );
-                    const score2 = formatBracketScore(
-                      eliteConsolationChampionship.score2,
-                      eliteConsolationChampionship.score1
-                    );
-                    const timeLabel = getEliteConsolChampTime();
-                    return (
-                  <div className="consolation-match">
-                    {timeLabel && <div className="match-time">{timeLabel}</div>}
-                    <div className="small-muted mb-2 text-center font-mono">ELITE CONSOL CHAMPIONSHIP</div>
-                    <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{eliteConsolationChampionship.team1}</span>
-                      <span className="match-score-small">{score1}</span>
-                    </div>
-                    <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{eliteConsolationChampionship.team2}</span>
-                      <span className="match-score-small">{score2}</span>
-                    </div>
-                  </div>
-                    );
-                  })()
-                )}
-              </div>
-            </div>
-            <div className="consolation-section">
-              <h3 className="consolation-title">DEVELOPMENT RANK MATCHES</h3>
-              <div className="space-y-4">
-                {(devPlacementMatches.length > 0 ? devPlacementMatches : [
-                  ['Pool C #2', 'Pool D #2', '2ND PLACE'],
-                  ['Pool C #3', 'Pool D #3', '3RD PLACE'],
-                  ['Pool C #4', 'Pool D #4', '4TH PLACE']
-                ]).map((match, i) => {
-                  const winner = getBracketWinner(match.score1, match.score2);
-                  const score1 = formatBracketScore(match.score1, match.score2);
-                  const score2 = formatBracketScore(match.score2, match.score1);
-                  const timeLabel = getDevConsolTime(i);
-                  return (
-                  <div key={i} className="consolation-match">
-                    {timeLabel && <div className="match-time">{timeLabel}</div>}
-                    <div className="small-muted mb-2 text-center font-mono">{match.place || match[2]}</div>
-                    <div className={`match-team-small ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{match.team1 || match[0]}</span>
-                      <span className="match-score-small">{score1}</span>
-                    </div>
-                    <div className={`match-team-small ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
-                      <span>{match.team2 || match[1]}</span>
-                      <span className="match-score-small">{score2}</span>
-                    </div>
-                  </div>
-                )})}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 };
