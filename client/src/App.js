@@ -1047,7 +1047,7 @@ const Bracket = ({ data, schedule }) => {
             <div className="bracket-final mt-32">
               {finalTime && <div className="match-time">{finalTime}</div>}
               {finalField && <div className="match-field">{finalField}</div>}
-              <div className="final-trophy">TRY</div>
+              <div className="final-trophy">🏆</div>
               <div className={`match-team ${finalWinner === 'team1' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{bracket.final?.team1 || 'Winner SF1'}</span>
                 <span className="match-score">{finalScore1}</span>
