@@ -855,8 +855,8 @@ function generateChampionshipMatchupsFromStandings(standings) {
 
   if (!hasElite && !hasDev) return matchups;
 
-  const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
-  const sfTimes = ['2:03 PM', '2:24 PM'];
+  const qfTimes = ['1:22 PM', '1:43 PM', '2:04 PM', '2:25 PM'];
+  const sfTimes = ['2:46 PM', '3:07 PM'];
 
   const eliteQf = [
     `Elite QF1: ${standings.poolA?.[0] || 'Pool A 1st'} vs ${standings.poolB?.[3] || 'Pool B 4th'}`,
@@ -885,10 +885,10 @@ function generateChampionshipMatchupsFromStandings(standings) {
   });
 
   if (hasElite) {
-    matchups['4:30 PM'] = { ...(matchups['4:30 PM'] || {}), field1: 'Elite Final: Winner SF1 vs Winner SF2' };
+    matchups['4:53 PM'] = { ...(matchups['4:53 PM'] || {}), field1: 'Elite Final: Winner SF1 vs Winner SF2' };
   }
   if (hasDev) {
-    matchups['4:09 PM'] = { ...(matchups['4:09 PM'] || {}), field2: 'Dev Final: Winner SF1 vs Winner SF2' };
+    matchups['4:32 PM'] = { ...(matchups['4:32 PM'] || {}), field2: 'Dev Final: Winner SF1 vs Winner SF2' };
   }
 
   return matchups;
@@ -1031,8 +1031,8 @@ app.get('/api/tournament/schedule', async (req, res) => {
         : 'vs';
 
     if (hasBracketData) {
-      const qfTimes = ['12:39 PM', '1:00 PM', '1:21 PM', '1:42 PM'];
-      const sfTimes = ['2:03 PM', '2:24 PM'];
+      const qfTimes = ['1:22 PM', '1:43 PM', '2:04 PM', '2:25 PM'];
+      const sfTimes = ['2:46 PM', '3:07 PM'];
       const eliteBracket = resolvedBrackets.elite;
       const devBracket = resolvedBrackets.development;
 
@@ -1097,7 +1097,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       if (useEliteBracket && eliteBracket.final) {
         upsertMatch({
           bucket: 'championship',
-          time: '4:30 PM',
+          time: '4:53 PM',
           field: 'Field 1',
           team1: `Elite Final: ${eliteBracket.final.team1}`,
           score: scoreFromMatch(eliteBracket.final),
@@ -1108,7 +1108,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       if (useDevBracket && devBracket.final) {
         upsertMatch({
           bucket: 'championship',
-          time: '4:09 PM',
+          time: '4:32 PM',
           field: 'Field 2',
           team1: `Dev Final: ${devBracket.final.team1}`,
           score: scoreFromMatch(devBracket.final),
@@ -1118,7 +1118,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
 
       const allowConsolations = !useDevBracket;
       if (allowConsolations && eliteBracket.consolation?.elite?.length) {
-        const eliteConsolTimes = ['2:03 PM', '2:24 PM'];
+        const eliteConsolTimes = ['2:46 PM', '3:07 PM'];
         eliteConsolTimes.forEach((time, i) => {
           const m = eliteBracket.consolation.elite[i];
           if (!m) return;
@@ -1137,7 +1137,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
         const m = eliteBracket.eliteConsolationChampionship;
         pushIfMissing({
           bucket: 'championship',
-          time: '4:09 PM',
+          time: '4:52 PM',
           field: 'Field 2',
           team1: `Elite Consol Championship: ${m.team1}`,
           score: scoreFromMatch(m),
@@ -1146,7 +1146,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       }
 
       if (allowConsolations && devBracket.consolation?.development?.length) {
-        const devTimes = ['3:27 PM', '3:48 PM', '4:09 PM'];
+        const devTimes = ['4:10 PM', '4:31 PM', '4:52 PM'];
         const devLabels = ['Dev 2nd Place', 'Dev 3rd Place', 'Dev 4th Place'];
         devTimes.forEach((time, i) => {
           const m = devBracket.consolation.development[i];
