@@ -904,6 +904,11 @@ const Bracket = ({ data, schedule }) => {
     const finalScore1 = formatBracketScore(bracket.final?.score1, bracket.final?.score2);
     const finalScore2 = formatBracketScore(bracket.final?.score2, bracket.final?.score1);
     const finalTime = times.getFinalTime();
+    
+    const thirdPlaceWinner = getBracketWinner(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
+    const thirdPlaceScore1 = formatBracketScore(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
+    const thirdPlaceScore2 = formatBracketScore(bracket.thirdPlace?.score2, bracket.thirdPlace?.score1);
+    const thirdPlaceTime = resolveTime(buildLabelVariants(title.includes('ELITE') ? ['Elite'] : ['Dev', 'Development'], '3rd Place'), title.includes('ELITE') ? '4:32 PM' : '4:53 PM');
 
     return (
       <section>
@@ -976,6 +981,22 @@ const Bracket = ({ data, schedule }) => {
               <div className={`match-team ${finalWinner === 'team2' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{bracket.final?.team2 || 'Winner SF2'}</span>
                 <span className="match-score">{finalScore2}</span>
+              </div>
+            </div>
+            
+            {/* 3rd Place */}
+            <div className="mt-12">
+              <h3 className="bracket-stage-title">3RD PLACE</h3>
+              <div className="bracket-match mt-6">
+                {thirdPlaceTime && <div className="match-time">{thirdPlaceTime}</div>}
+                <div className={`match-team ${thirdPlaceWinner === 'team1' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
+                  <span className="text-sm">{bracket.thirdPlace?.team1 || 'Loser SF1'}</span>
+                  <span className="match-score">{thirdPlaceScore1}</span>
+                </div>
+                <div className={`match-team ${thirdPlaceWinner === 'team2' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
+                  <span className="text-sm">{bracket.thirdPlace?.team2 || 'Loser SF2'}</span>
+                  <span className="match-score">{thirdPlaceScore2}</span>
+                </div>
               </div>
             </div>
           </div>
