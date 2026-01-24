@@ -288,10 +288,24 @@ function App() {
     }
   };
 
+  // Check if pool play is complete to show bracket tab
+  const isPoolPlayComplete = () => {
+    const poolPlayMatches = tournamentData.schedule?.poolPlay || [];
+    if (poolPlayMatches.length === 0) return false;
+    const expectedMatches = 12;
+    if (poolPlayMatches.length < expectedMatches) return false;
+    return poolPlayMatches.every(match => {
+      const score = String(match.score || '').trim().toLowerCase();
+      return score && score !== 'vs' && score !== '0-0' && !isUnplayedScoreText(score);
+    });
+  };
+
+  const poolPlayComplete = isPoolPlayComplete();
+
   const NAV_TABS = [
     { key: 'overview', label: 'Overview', helper: 'Snapshot' },
     { key: 'schedule', label: 'Schedule', helper: 'Matches' },
-    { key: 'bracket', label: 'Bracket', helper: 'Knockouts' },
+    ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
   ];
   const tabOrder = NAV_TABS.map((t) => t.key);
@@ -400,7 +414,15 @@ function App() {
           <>
         {activeTab === 'overview' && <Overview data={tournamentData.overview} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGame={liveGame} />}
-        {activeTab === 'bracket' && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
+        {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
+        {activeTab === 'bracket' && !poolPlayComplete && (
+          <div className="text-center py-16">
+            <div className="info-card max-w-md mx-auto">
+              <h2 className="section-title mb-4">POOL PLAY IN PROGRESS</h2>
+              <p className="text-sm text-secondary">Complete all pool play matches to view brackets and finals.</p>
+            </div>
+          </div>
+        )}
         {activeTab === 'teams' && <Teams data={tournamentData.teams} />}
           </>
         )}
@@ -569,6 +591,22 @@ const renderMatchWithWinner = (matchText) => {
 };
 
 const Schedule = ({ data, liveGame }) => {
+  // Check if all pool play games are completed
+  const isPoolPlayComplete = () => {
+    const poolPlayMatches = data.schedule.poolPlay || [];
+    if (poolPlayMatches.length === 0) return false;
+    // Expected 12 pool play matches (6 per pool, 4 pools)
+    const expectedMatches = 12;
+    if (poolPlayMatches.length < expectedMatches) return false;
+    // Check if all matches have scores (not "vs" or empty)
+    return poolPlayMatches.every(match => {
+      const score = String(match.score || '').trim().toLowerCase();
+      return score && score !== 'vs' && score !== '0-0' && !isUnplayedScoreText(score);
+    });
+  };
+
+  const poolPlayComplete = isPoolPlayComplete();
+
   // Helper to group matches by time
   const matchesByTime = (data.schedule.poolPlay || []).reduce((acc, match) => {
     if (!acc[match.time]) {
@@ -777,65 +815,69 @@ const Schedule = ({ data, liveGame }) => {
           </div>
         </div>
 
-        {/* Phase 2 */}
-        <div className="mb-16">
-          <div className="phase-header">
-            <div className="phase-title-stack">
-              <h3 className="text-sm font-mono tracking-widest">PHASE 2: BRACKETS</h3>
-              <span className="phase-meta">1:22 PM - 4:52 PM</span>
+        {/* Phase 2 - Only show if pool play is complete */}
+        {poolPlayComplete && (
+          <div className="mb-16">
+            <div className="phase-header">
+              <div className="phase-title-stack">
+                <h3 className="text-sm font-mono tracking-widest">PHASE 2: BRACKETS</h3>
+                <span className="phase-meta">1:22 PM - 4:52 PM</span>
+              </div>
             </div>
-          </div>
-          <div className="table-shell compact">
-            <div className="schedule-table w-full max-w-5xl">
-              <table className="w-full">
-                <thead>
-                  <tr className="table-head-row">
-                    <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">TIME</th>
-                    <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 1</th>
-                    {showPhase2Field2 && (
-                      <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 2</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {phase2BaseRows.map((row, i) => (
-                    <tr key={i} className="table-row">
-                      <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
-                      <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{renderMatchWithWinner(row.field1)}</td>
+            <div className="table-shell compact">
+              <div className="schedule-table w-full max-w-5xl">
+                <table className="w-full">
+                  <thead>
+                    <tr className="table-head-row">
+                      <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">TIME</th>
+                      <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 1</th>
                       {showPhase2Field2 && (
-                        <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{renderMatchWithWinner(row.field2 || '')}</td>
+                        <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 2</th>
                       )}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Finals */}
-        <div>
-          <div className={`grid grid-cols-1 ${showDevFinal ? 'lg:grid-cols-2' : ''} gap-6`}>
-            <div className="final-match">
-              <div className="text-center space-y-2">
-                <div className="final-badge">ELITE FINAL</div>
-                <h3 className="text-2xl font-mono tracking-wider final-title">FINAL</h3>
-                <p className="phase-subtext">{eliteFinal.time || 'TBD'} - {(eliteFinal.field || 'Field 1').toUpperCase()}</p>
-                <p className="text-base font-mono final-matchup">{eliteFinalMatchup}</p>
+                  </thead>
+                  <tbody>
+                    {phase2BaseRows.map((row, i) => (
+                      <tr key={i} className="table-row">
+                        <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
+                        <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{renderMatchWithWinner(row.field1)}</td>
+                        {showPhase2Field2 && (
+                          <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{renderMatchWithWinner(row.field2 || '')}</td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-            {showDevFinal && (
+          </div>
+        )}
+
+        {/* Finals - Only show if pool play is complete */}
+        {poolPlayComplete && (
+          <div>
+            <div className={`grid grid-cols-1 ${showDevFinal ? 'lg:grid-cols-2' : ''} gap-6`}>
               <div className="final-match">
                 <div className="text-center space-y-2">
-                  <div className="final-badge">DEVELOPMENT FINAL</div>
+                  <div className="final-badge">ELITE FINAL</div>
                   <h3 className="text-2xl font-mono tracking-wider final-title">FINAL</h3>
-                  <p className="phase-subtext">{devFinal.time || 'TBD'} - {(devFinal.field || 'Field 2').toUpperCase()}</p>
-                  <p className="text-base font-mono final-matchup">{devFinalMatchup}</p>
+                  <p className="phase-subtext">{eliteFinal.time || 'TBD'} - {(eliteFinal.field || 'Field 1').toUpperCase()}</p>
+                  <p className="text-base font-mono final-matchup">{eliteFinalMatchup}</p>
                 </div>
               </div>
-            )}
+              {showDevFinal && (
+                <div className="final-match">
+                  <div className="text-center space-y-2">
+                    <div className="final-badge">DEVELOPMENT FINAL</div>
+                    <h3 className="text-2xl font-mono tracking-wider final-title">FINAL</h3>
+                    <p className="phase-subtext">{devFinal.time || 'TBD'} - {(devFinal.field || 'Field 2').toUpperCase()}</p>
+                    <p className="text-base font-mono final-matchup">{devFinalMatchup}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </section>
     </div>
   );
