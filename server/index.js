@@ -478,6 +478,7 @@ function emptyBracket() {
     quarterfinals: [],
     semifinals: [],
     final: [],
+    thirdPlace: [],
     consolation: { elite: [], development: [] },
     eliteConsolationChampionship: [],
   };
@@ -529,6 +530,10 @@ function parseBracketSheet(bracketRows) {
       section = 'semifinals';
       return;
     }
+    if (t.includes('3rd place') || t.includes('third place')) {
+      section = 'thirdPlace';
+      return;
+    }
     if (t === 'final' || t.includes('final')) {
       section = 'final';
       return;
@@ -575,6 +580,7 @@ function parseBracketSheet(bracketRows) {
 
       if (section === 'quarterfinals') pushMatch(brackets[currentBracket].quarterfinals, match);
       else if (section === 'semifinals') pushMatch(brackets[currentBracket].semifinals, match);
+      else if (section === 'thirdPlace') pushMatch(brackets[currentBracket].thirdPlace, match);
       else if (section === 'final') pushMatch(brackets[currentBracket].final, match);
       else if (section === 'consolationElite') pushMatch(brackets.elite.consolation.elite, match);
       else if (section === 'eliteConsolationChampionship') pushMatch(brackets.elite.eliteConsolationChampionship, match);
@@ -701,6 +707,25 @@ function resolveDivisionBracket({
   });
 
   const sfWinners = semifinals.map((m) => m.winner).filter(Boolean);
+  const sfLosers = semifinals.map((m) => m.loser).filter(Boolean);
+
+  // 3rd Place Match: Loser SF1 vs Loser SF2
+  const thirdPlaceFromSheet = bracket.thirdPlace?.[0];
+  const thirdPlaceBase = {
+    team1: thirdPlaceFromSheet?.team1 || sfLosers[0] || 'Loser SF1',
+    team2: thirdPlaceFromSheet?.team2 || sfLosers[1] || 'Loser SF2',
+    score1: thirdPlaceFromSheet?.score1 || '0',
+    score2: thirdPlaceFromSheet?.score2 || '0',
+    winner: thirdPlaceFromSheet?.winner || null,
+    loser: thirdPlaceFromSheet?.loser || null,
+    time: '',
+    field: '',
+  };
+  const thirdPlace = resolveMatchWithSchedule({
+    base: thirdPlaceBase,
+    scheduleFlat,
+    labels: buildLabelVariants(labelPrefixes, '3rd Place'),
+  });
 
   const finalFromSheet = bracket.final[0];
   const finalBase = {
@@ -811,6 +836,7 @@ function resolveDivisionBracket({
     quarterfinals,
     semifinals,
     final,
+    thirdPlace,
     consolation,
     eliteConsolationChampionship,
   };
@@ -1093,6 +1119,29 @@ app.get('/api/tournament/schedule', async (req, res) => {
           }
         }
       });
+
+      // 3rd Place Matches
+      if (useEliteBracket && eliteBracket.thirdPlace) {
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:32 PM',
+          field: 'Field 1',
+          team1: `Elite 3rd Place: ${eliteBracket.thirdPlace.team1}`,
+          score: scoreFromMatch(eliteBracket.thirdPlace),
+          team2: eliteBracket.thirdPlace.team2,
+        });
+      }
+
+      if (useDevBracket && devBracket.thirdPlace) {
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:53 PM',
+          field: 'Field 2',
+          team1: `Dev 3rd Place: ${devBracket.thirdPlace.team1}`,
+          score: scoreFromMatch(devBracket.thirdPlace),
+          team2: devBracket.thirdPlace.team2,
+        });
+      }
 
       if (useEliteBracket && eliteBracket.final) {
         upsertMatch({

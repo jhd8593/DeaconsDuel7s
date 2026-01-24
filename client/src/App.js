@@ -654,8 +654,8 @@ const Schedule = ({ data, liveGame }) => {
     { time: '2:25 PM', field1: 'Elite QF4: Pool B 2nd vs Pool A 3rd', field2: 'Dev QF4: Pool D 2nd vs Pool C 3rd' },
     { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
     { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
-    { time: '4:32 PM', field2: 'Dev Final: Winner SF1 vs Winner SF2' },
-    { time: '4:53 PM', field1: 'Elite Final: Winner SF1 vs Winner SF2' }
+    { time: '4:32 PM', field1: 'Elite 3rd Place: Loser SF1 vs Loser SF2', field2: 'Dev Final: Winner SF1 vs Winner SF2' },
+    { time: '4:53 PM', field1: 'Elite Final: Winner SF1 vs Winner SF2', field2: 'Dev 3rd Place: Loser SF1 vs Loser SF2' }
   ];
 
   const phase2BaseRows = championshipPlayRows.length > 0 ? championshipPlayRows : sampleChampionshipRows;
