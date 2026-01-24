@@ -444,46 +444,6 @@ const Overview = ({ data }) => (
       </div>
     </section>
 
-    {/* Key Details */}
-    <section className="space-y-8">
-      <h2 className="section-title">CRITICAL INFORMATION</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="info-card">
-          <h3 className="card-title">FIELD ASSIGNMENTS</h3>
-          <ul className="space-y-3 text-sm text-secondary">
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Pool play utilizes both fields simultaneously</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Elite bracket on Field 1</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Development bracket on Field 2</span>
-            </li>
-          </ul>
-        </div>
-        <div className="info-card">
-          <h3 className="card-title">TEAM REQUIREMENTS</h3>
-          <ul className="space-y-3 text-sm text-secondary">
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Arrive 15 minutes before scheduled match</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Bring adequate hydration and nutrition</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1" aria-hidden>{'>'}</span>
-              <span>Monitor schedule board for updates</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
   </div>
 );
 
