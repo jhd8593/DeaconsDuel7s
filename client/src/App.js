@@ -318,8 +318,12 @@ function App() {
           <div className="header-grid">
             <div className="brand-block">
               <div className="crest-badge" aria-label="Deacons Duel crest">
-                <div className="crest-title">DD</div>
-                <div className="crest-sub">7s</div>
+                <img 
+                  src="/Front_Tournament Shirt.png" 
+                  alt="Deacons Duel Tournament Logo" 
+                  className="crest-image"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                />
               </div>
               <div aria-label="Deacons Duel event summary">
                 <div className="kicker">Rugby Sevens Command</div>
@@ -458,10 +462,11 @@ const Overview = ({ data }) => (
       <h2 className="section-title">TOURNAMENT FORMAT</h2>
       <div className="info-card">
         <div className="space-y-6 text-sm text-secondary leading-relaxed">
-          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. Top teams from pool play advance to the Elite bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
-          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. Top teams from pool play advance to the Development bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
+          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. All 8 teams advance to the Elite bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
+          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. All 8 teams advance to the Development bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
           <p><span className="font-semibold text-text">MATCH STRUCTURE</span> - 16-minute matches with 5-minute turnovers between pitches.</p>
           <p><span className="font-semibold text-text">LUNCH BREAK</span> - 30-minute break at 12:52 PM.</p>
+          <p><span className="font-semibold text-text">SCORING SYSTEM</span> - Teams will earn competition points as follows: four points for a win, two for a draw, and zero for a loss. Additionally, teams can secure one bonus point if they score four or more tries in a single match (20+ points), and another bonus point if they lose by seven points or fewer. If teams finish level on points at the end of the tournament, their ranking will be determined by their points differential (total points scored minus total points conceded).</p>
         </div>
       </div>
     </section>
