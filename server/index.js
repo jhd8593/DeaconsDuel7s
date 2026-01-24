@@ -910,11 +910,11 @@ function generateChampionshipMatchupsFromStandings(standings) {
     if (hasDev) matchups[time].field2 = `Dev SF${i + 1}: Winner QF${i * 2 + 1} vs Winner QF${i * 2 + 2}`;
   });
 
+  if (hasDev) {
+    matchups['4:32 PM'] = { ...(matchups['4:32 PM'] || {}), field1: 'Dev Final: Winner SF1 vs Winner SF2' };
+  }
   if (hasElite) {
     matchups['4:53 PM'] = { ...(matchups['4:53 PM'] || {}), field1: 'Elite Final: Winner SF1 vs Winner SF2' };
-  }
-  if (hasDev) {
-    matchups['4:32 PM'] = { ...(matchups['4:32 PM'] || {}), field2: 'Dev Final: Winner SF1 vs Winner SF2' };
   }
 
   return matchups;
@@ -1120,13 +1120,36 @@ app.get('/api/tournament/schedule', async (req, res) => {
         }
       });
 
-      // 3rd Place Matches
+      // Finals - Both on Field 1
+      if (useDevBracket && devBracket.final) {
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:32 PM',
+          field: 'Field 1',
+          team1: `Dev Final: ${devBracket.final.team1}`,
+          score: scoreFromMatch(devBracket.final),
+          team2: devBracket.final.team2,
+        });
+      }
+
+      if (useEliteBracket && eliteBracket.final) {
+        upsertMatch({
+          bucket: 'championship',
+          time: '4:53 PM',
+          field: 'Field 1',
+          team1: `Elite Final: ${eliteBracket.final.team1}`,
+          score: scoreFromMatch(eliteBracket.final),
+          team2: eliteBracket.final.team2,
+        });
+      }
+
+      // 3rd Place Matches - Both on Field 2
       if (useEliteBracket) {
         const eliteThirdPlace = eliteBracket.thirdPlace || {};
         pushIfMissing({
           bucket: 'championship',
           time: '4:32 PM',
-          field: 'Field 1',
+          field: 'Field 2',
           team1: `Elite 3rd Place: ${eliteThirdPlace.team1 || 'Loser SF1'}`,
           score: scoreFromMatch(eliteThirdPlace),
           team2: eliteThirdPlace.team2 || 'Loser SF2',
@@ -1142,28 +1165,6 @@ app.get('/api/tournament/schedule', async (req, res) => {
           team1: `Dev 3rd Place: ${devThirdPlace.team1 || 'Loser SF1'}`,
           score: scoreFromMatch(devThirdPlace),
           team2: devThirdPlace.team2 || 'Loser SF2',
-        });
-      }
-
-      if (useEliteBracket && eliteBracket.final) {
-        upsertMatch({
-          bucket: 'championship',
-          time: '4:53 PM',
-          field: 'Field 1',
-          team1: `Elite Final: ${eliteBracket.final.team1}`,
-          score: scoreFromMatch(eliteBracket.final),
-          team2: eliteBracket.final.team2,
-        });
-      }
-
-      if (useDevBracket && devBracket.final) {
-        upsertMatch({
-          bucket: 'championship',
-          time: '4:32 PM',
-          field: 'Field 2',
-          team1: `Dev Final: ${devBracket.final.team1}`,
-          score: scoreFromMatch(devBracket.final),
-          team2: devBracket.final.team2,
         });
       }
 
