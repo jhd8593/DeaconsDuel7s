@@ -322,7 +322,6 @@ function App() {
                   src="/Front_Tournament Shirt.png" 
                   alt="Deacons Duel Tournament Logo" 
                   className="crest-image"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               </div>
               <div aria-label="Deacons Duel event summary">
