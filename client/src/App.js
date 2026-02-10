@@ -83,6 +83,7 @@ const TAB_KEYS_BY_PATH = Object.entries(TAB_PATH_SEGMENTS).reduce((acc, [tabKey,
 
 const DEFAULT_TAB = 'overview';
 const DEFAULT_LIVE_STREAM_EMBED_URL = 'https://www.youtube.com/embed/uHMuXIa1PVo';
+const DEFAULT_LIVE_STREAM_EMBED_URL_FIELD_2 = 'https://www.youtube.com/embed/gu6YjvkCnOU';
 
 const normalizePathname = (pathname = '') => String(pathname).replace(/^\/+|\/+$/g, '').toLowerCase();
 
@@ -164,6 +165,12 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [liveStreamField, setLiveStreamField] = useState(1);
+
+  const goToLiveStream = (field) => {
+    setLiveStreamField(field === 2 ? 2 : 1);
+    setTab('livestream');
+  };
 
   const isFirstLoadRef = useRef(true);
   const touchStartRef = useRef(null);
@@ -417,9 +424,20 @@ function App() {
                     <div className="live-dot"></div>
                     <div className="flex flex-col">
                       <span className="live-text">LIVE NOW</span>
-                      {liveGames.map((g, i) => (
-                        <span key={i} className="live-match-small">{g.field}: {g.team1} vs {g.team2}</span>
-                      ))}
+                      {liveGames.map((g, i) => {
+                        const fieldNum = g.field === 'Field 2' ? 2 : 1;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            className="live-match-clickable"
+                            onClick={() => goToLiveStream(fieldNum)}
+                            aria-label={`Watch ${g.field}: ${g.team1} vs ${g.team2}`}
+                          >
+                            {g.field}: {g.team1} vs {g.team2}
+                          </button>
+                        );
+                      })}
                       <span className="live-meta">{liveGames[0].phase}</span>
                     </div>
                   </div>
@@ -498,8 +516,8 @@ function App() {
         ) : (
           <>
         {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setTab} />}
-        {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} />}
-        {activeTab === 'livestream' && <LiveStream />}
+        {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} onWatchLive={goToLiveStream} />}
+        {activeTab === 'livestream' && <LiveStream selectedField={liveStreamField} onSelectField={setLiveStreamField} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
           <div className="text-center py-16">
@@ -690,7 +708,7 @@ const renderMatchWithWinner = (matchText) => {
   return <span>{cleanedText}</span>;
 };
 
-const Schedule = ({ data, liveGames = [] }) => {
+const Schedule = ({ data, liveGames = [], onWatchLive }) => {
   // Check if all pool play games are completed
   const isPoolPlayComplete = () => {
     const poolPlayMatches = data.schedule.poolPlay || [];
@@ -836,12 +854,22 @@ const Schedule = ({ data, liveGames = [] }) => {
                 <div className="text-center">
                   <span className="live-banner-text">LIVE NOW</span>
                   <div className="live-game-details live-game-details-multi">
-                    {liveGames.map((g, i) => (
-                      <div key={i} className="live-game-item">
-                        <span className="live-match-text">{g.team1} vs {g.team2}</span>
-                        <span className="live-field-text">{g.field} | {g.phase}</span>
-                      </div>
-                    ))}
+                    {liveGames.map((g, i) => {
+                      const fieldNum = g.field === 'Field 2' ? 2 : 1;
+                      const handleClick = onWatchLive ? () => onWatchLive(fieldNum) : undefined;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          className="live-game-item live-game-item-clickable"
+                          onClick={handleClick}
+                          aria-label={`Watch ${g.field}: ${g.team1} vs ${g.team2}`}
+                        >
+                          <span className="live-match-text">{g.team1} vs {g.team2}</span>
+                          <span className="live-field-text">{g.field} | {g.phase}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div className="live-dot-large"></div>
@@ -1204,9 +1232,12 @@ const Bracket = ({ data, schedule }) => {
   );
 };
 
-const LiveStream = () => {
-  const liveStreamSource = process.env.REACT_APP_LIVE_STREAM_URL || DEFAULT_LIVE_STREAM_EMBED_URL;
-  const embedUrl = toYouTubeEmbedUrl(liveStreamSource);
+const LiveStream = ({ selectedField = 1, onSelectField }) => {
+  const source1 = process.env.REACT_APP_LIVE_STREAM_URL || DEFAULT_LIVE_STREAM_EMBED_URL;
+  const source2 = process.env.REACT_APP_LIVE_STREAM_URL_FIELD_2 || DEFAULT_LIVE_STREAM_EMBED_URL_FIELD_2;
+  const embedUrl1 = toYouTubeEmbedUrl(source1);
+  const embedUrl2 = toYouTubeEmbedUrl(source2);
+  const isField1 = selectedField === 1;
 
   return (
     <div className="space-y-16">
@@ -1218,19 +1249,37 @@ const LiveStream = () => {
           </div>
         </div>
         <div className="live-stream-card">
+          <div className="live-stream-tabs">
+            <button
+              type="button"
+              className={`live-stream-tab ${isField1 ? 'active' : ''}`}
+              onClick={() => onSelectField?.(1)}
+              aria-pressed={isField1}
+              aria-label="Field 1 stream"
+            >
+              Field 1
+            </button>
+            <button
+              type="button"
+              className={`live-stream-tab ${!isField1 ? 'active' : ''}`}
+              onClick={() => onSelectField?.(2)}
+              aria-pressed={!isField1}
+              aria-label="Field 2 stream"
+            >
+              Field 2
+            </button>
+          </div>
           <div className="live-stream-player">
             <iframe
-              src={embedUrl}
-              title="Deacons Duel Live Stream"
+              key={isField1 ? 'field1' : 'field2'}
+              src={isField1 ? embedUrl1 : embedUrl2}
+              title={isField1 ? 'Deacons Duel Live Stream - Field 1' : 'Deacons Duel Live Stream - Field 2'}
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
-          <p className="live-stream-note">
-            To change this feed, set <code>REACT_APP_LIVE_STREAM_URL</code> in your frontend environment.
-          </p>
         </div>
       </section>
     </div>
