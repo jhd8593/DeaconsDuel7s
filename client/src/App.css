@@ -727,6 +727,20 @@
   letter-spacing: 0.01em;
 }
 
+.live-game-details-multi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.live-game-details-multi .live-game-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .live-match-text {
   margin-right: 6px;
 }

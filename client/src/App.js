@@ -143,7 +143,7 @@ function App() {
     return `${h12}:${String(min).padStart(2, '0')} ${ampm}`;
   };
 
-  const getCurrentLiveGame = () => {
+  const getCurrentLiveGames = () => {
     const now = new Date();
     const currentTime = now.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
@@ -152,36 +152,27 @@ function App() {
     });
     
     const currentMinutes = parseTimeToMinutes(currentTime);
-    
-    // Check pool play games
+    const live = [];
+
+    // Check pool play games (2 pitches = up to 2 live at once)
     for (const match of tournamentData.schedule.poolPlay || []) {
       const matchTime = parseTimeToMinutes(match.time);
       const matchEndTime = matchTime + 16; // 16-minute matches
-      
       if (currentMinutes >= matchTime && currentMinutes <= matchEndTime) {
-        return {
-          ...match,
-          phase: 'Pool Play',
-          isLive: true
-        };
+        live.push({ ...match, phase: 'Pool Play', isLive: true });
       }
     }
-    
-    // Check championship games
+
+    // Check championship games (2 pitches = up to 2 live at once)
     for (const match of tournamentData.schedule.championship || []) {
       const matchTime = parseTimeToMinutes(match.time);
       const matchEndTime = matchTime + 16; // 16-minute matches
-      
       if (currentMinutes >= matchTime && currentMinutes <= matchEndTime) {
-        return {
-          ...match,
-          phase: 'Championship',
-          isLive: true
-        };
+        live.push({ ...match, phase: 'Championship', isLive: true });
       }
     }
-    
-    return null;
+
+    return live;
   };
 
   const computeOverviewFromSchedule = (schedule = {}) => {
@@ -206,7 +197,7 @@ function App() {
     };
   };
 
-  const liveGame = getCurrentLiveGame();
+  const liveGames = getCurrentLiveGames();
 
   useEffect(() => {
     fetchTournamentData({ showInitialLoader: true });
@@ -331,14 +322,16 @@ function App() {
               </div>
             </div>
             <div className="live-shell">
-              {liveGame ? (
+              {liveGames.length > 0 ? (
                 <div className="header-live-indicator">
                   <div className="flex items-center gap-2">
                     <div className="live-dot"></div>
                     <div className="flex flex-col">
                       <span className="live-text">LIVE NOW</span>
-                      <span className="live-match-small">{liveGame.team1} vs {liveGame.team2}</span>
-                      <span className="live-meta">{liveGame.field} | {liveGame.phase}</span>
+                      {liveGames.map((g, i) => (
+                        <span key={i} className="live-match-small">{g.field}: {g.team1} vs {g.team2}</span>
+                      ))}
+                      <span className="live-meta">{liveGames[0].phase}</span>
                     </div>
                   </div>
                 </div>
@@ -416,7 +409,7 @@ function App() {
         ) : (
           <>
         {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setActiveTab} />}
-        {activeTab === 'schedule' && <Schedule data={tournamentData} liveGame={liveGame} />}
+        {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
           <div className="text-center py-16">
@@ -607,7 +600,7 @@ const renderMatchWithWinner = (matchText) => {
   return <span>{cleanedText}</span>;
 };
 
-const Schedule = ({ data, liveGame }) => {
+const Schedule = ({ data, liveGames = [] }) => {
   // Check if all pool play games are completed
   const isPoolPlayComplete = () => {
     const poolPlayMatches = data.schedule.poolPlay || [];
@@ -745,16 +738,20 @@ const Schedule = ({ data, liveGame }) => {
         </div>
 
         {/* Live Games Banner */}
-        {liveGame && (
+        {liveGames.length > 0 && (
           <div className="mb-8">
             <div className="live-games-banner">
               <div className="flex items-center justify-center gap-3">
                 <div className="live-dot-large"></div>
                 <div className="text-center">
                   <span className="live-banner-text">LIVE NOW</span>
-                  <div className="live-game-details">
-                    <span className="live-match-text">{liveGame.team1} vs {liveGame.team2}</span>
-                    <span className="live-field-text">{liveGame.field} | {liveGame.phase}</span>
+                  <div className="live-game-details live-game-details-multi">
+                    {liveGames.map((g, i) => (
+                      <div key={i} className="live-game-item">
+                        <span className="live-match-text">{g.team1} vs {g.team2}</span>
+                        <span className="live-field-text">{g.field} | {g.phase}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="live-dot-large"></div>
@@ -796,20 +793,19 @@ const Schedule = ({ data, liveGame }) => {
                     {time: '12:30 PM', field1: 'Pool A: A4 vs A2', field2: 'Pool B: B4 vs B2'},
                     {time: '12:51 PM', field1: 'Pool A: A4 vs A3', field2: 'Pool B: B4 vs B3'}
                   ]).map((row, i) => {
-                    const isLiveGame = liveGame && liveGame.time === row.time && 
-                      ((liveGame.field === 'Field 1' && row.field1 === liveGame.team1 + ' ' + liveGame.score + ' ' + liveGame.team2) ||
-                       (liveGame.field === 'Field 2' && row.field2 === liveGame.team1 + ' ' + liveGame.score + ' ' + liveGame.team2));
-                    
+                    const isLiveField1 = liveGames.some((g) => g.time === row.time && g.field === 'Field 1');
+                    const isLiveField2 = liveGames.some((g) => g.time === row.time && g.field === 'Field 2');
+                    const isLiveRow = isLiveField1 || isLiveField2;
                     return (
-                      <tr key={i} className={`table-row ${isLiveGame ? 'live-game-row' : ''}`}>
+                      <tr key={i} className={`table-row ${isLiveRow ? 'live-game-row' : ''}`}>
                         <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">
                           {row.time}
-                          {isLiveGame && <span className="live-indicator-small ml-2">LIVE</span>}
+                          {isLiveRow && <span className="live-indicator-small ml-2">LIVE</span>}
                         </td>
-                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 1' ? 'is-live' : ''}`} data-label="Field 1">
+                        <td className={`py-4 px-6 text-sm match-cell ${isLiveField1 ? 'is-live' : ''}`} data-label="Field 1">
                           {renderMatchWithWinner(row.field1)}
                         </td>
-                        <td className={`py-4 px-6 text-sm match-cell ${isLiveGame && liveGame.field === 'Field 2' ? 'is-live' : ''}`} data-label="Field 2">
+                        <td className={`py-4 px-6 text-sm match-cell ${isLiveField2 ? 'is-live' : ''}`} data-label="Field 2">
                           {renderMatchWithWinner(row.field2 || '')}
                         </td>
                       </tr>
