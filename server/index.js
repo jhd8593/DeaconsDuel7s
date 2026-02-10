@@ -921,6 +921,58 @@ function generateChampionshipMatchupsFromStandings(standings) {
 }
 
 // -----------------------------
+// Predictions (in-memory; optional: persist to file/DB later)
+// -----------------------------
+const predictionsStore = [];
+
+function getPredictionsStats() {
+  const elite = {};
+  const development = {};
+  predictionsStore.forEach((p) => {
+    if (p.eliteWinner) {
+      elite[p.eliteWinner] = (elite[p.eliteWinner] || 0) + 1;
+    }
+    if (p.developmentWinner) {
+      development[p.developmentWinner] = (development[p.developmentWinner] || 0) + 1;
+    }
+  });
+  const totalVotes = predictionsStore.length;
+  return { elite, development, totalVotes };
+}
+
+app.get('/api/predictions', (req, res) => {
+  try {
+    res.json(getPredictionsStats());
+  } catch (error) {
+    console.error('Error fetching predictions:', error);
+    res.status(500).json({ error: 'Failed to fetch predictions' });
+  }
+});
+
+app.post('/api/predictions', (req, res) => {
+  try {
+    const { eliteWinner, developmentWinner, userName } = req.body || {};
+    const elite = safeStr(eliteWinner);
+    const development = safeStr(developmentWinner);
+    const name = safeStr(userName) || 'Anonymous';
+    if (!elite && !development) {
+      return res.status(400).json({ error: 'Pick at least one winner (Elite and/or Development)' });
+    }
+    predictionsStore.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      eliteWinner: elite || null,
+      developmentWinner: development || null,
+      userName: name,
+      submittedAt: new Date().toISOString(),
+    });
+    res.status(201).json({ ok: true, stats: getPredictionsStats() });
+  } catch (error) {
+    console.error('Error submitting prediction:', error);
+    res.status(500).json({ error: 'Failed to submit prediction' });
+  }
+});
+
+// -----------------------------
 // Routes
 // -----------------------------
 app.get('/api/health', (req, res) => {

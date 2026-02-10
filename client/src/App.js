@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 const Icon = ({ name, size = 18, stroke = 'currentColor', className = '', ariaLabel }) => {
@@ -74,6 +74,7 @@ const TAB_PATH_SEGMENTS = {
   livestream: 'live-stream',
   bracket: 'bracket',
   teams: 'teams',
+  predictions: 'predictions',
 };
 
 const TAB_KEYS_BY_PATH = Object.entries(TAB_PATH_SEGMENTS).reduce((acc, [tabKey, path]) => {
@@ -392,6 +393,7 @@ function App() {
     { key: 'overview', label: 'Website', helper: 'Overview' },
     { key: 'schedule', label: 'Schedule', helper: 'Matches' },
     { key: 'livestream', label: 'Live Stream', helper: 'Watch' },
+    { key: 'predictions', label: 'Predictions', helper: 'Who wins?' },
     ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
   ];
@@ -518,6 +520,7 @@ function App() {
         {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setTab} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} onWatchLive={goToLiveStream} />}
         {activeTab === 'livestream' && <LiveStream selectedField={liveStreamField} onSelectField={setLiveStreamField} />}
+        {activeTab === 'predictions' && <Predictions teams={tournamentData.teams} apiBase={API_BASE} onRefresh={fetchTournamentData} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
           <div className="text-center py-16">
@@ -586,6 +589,224 @@ const Overview = ({ data, onNavigate }) => (
 
   </div>
 );
+
+const Predictions = ({ teams, apiBase = '', onRefresh }) => {
+  const [stats, setStats] = useState({ elite: {}, development: {}, totalVotes: 0 });
+  const [elitePick, setElitePick] = useState('');
+  const [devPick, setDevPick] = useState('');
+  const [userName, setUserName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(null);
+
+  const eliteTeams = useMemo(() => {
+    const a = teams?.elite?.A || [];
+    const b = teams?.elite?.B || [];
+    return [...a, ...b].filter(Boolean);
+  }, [teams]);
+
+  const devTeams = useMemo(() => {
+    const c = teams?.development?.C || [];
+    const d = teams?.development?.D || [];
+    return [...c, ...d].filter(Boolean);
+  }, [teams]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiBase}/api/predictions`);
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch predictions', e);
+    }
+  }, [apiBase]);
+
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(fetchStats, 15000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!elitePick && !devPick) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiBase}/api/predictions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eliteWinner: elitePick || undefined,
+          developmentWinner: devPick || undefined,
+          userName: userName || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Failed to submit');
+        return;
+      }
+      setSubmitted(true);
+      if (data.stats) setStats(data.stats);
+    } catch (e) {
+      setError('Network error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const totalVotes = stats.totalVotes || 0;
+  const eliteEntries = Object.entries(stats.elite || {}).sort((a, b) => b[1] - a[1]);
+  const devEntries = Object.entries(stats.development || {}).sort((a, b) => b[1] - a[1]);
+  const maxElite = eliteEntries.length ? Math.max(...eliteEntries.map(([, n]) => n)) : 0;
+  const maxDev = devEntries.length ? Math.max(...devEntries.map(([, n]) => n)) : 0;
+
+  return (
+    <div className="space-y-16 predictions-page">
+      <section>
+        <div className="section-header">
+          <div className="section-label">
+            <span className="icon-chip" aria-label="Predictions"><Icon name="trophy" size={16} ariaLabel="Trophy" /></span>
+            <h2 className="section-title">WHO&apos;S GONNA WIN?</h2>
+          </div>
+          <p className="text-sm text-secondary mt-2">Pick your Elite and Development champions. See what the crowd thinks.</p>
+        </div>
+
+        {/* Make your pick */}
+        <div className="prediction-form-card">
+          <h3 className="prediction-form-title">Make your pick</h3>
+          <form onSubmit={handleSubmit} className="prediction-form">
+            <div className="prediction-form-grid">
+              <div className="prediction-field">
+                <label htmlFor="pred-elite" className="prediction-label">Elite champion</label>
+                <select
+                  id="pred-elite"
+                  value={elitePick}
+                  onChange={(e) => setElitePick(e.target.value)}
+                  className="prediction-select"
+                  aria-label="Pick Elite division winner"
+                >
+                  <option value="">Select team</option>
+                  {eliteTeams.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="prediction-field">
+                <label htmlFor="pred-dev" className="prediction-label">Development champion</label>
+                <select
+                  id="pred-dev"
+                  value={devPick}
+                  onChange={(e) => setDevPick(e.target.value)}
+                  className="prediction-select"
+                  aria-label="Pick Development division winner"
+                >
+                  <option value="">Select team</option>
+                  {devTeams.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="prediction-field prediction-field-name">
+              <label htmlFor="pred-name" className="prediction-label">Your name (optional)</label>
+              <input
+                id="pred-name"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Anonymous"
+                className="prediction-input"
+                aria-label="Your name"
+              />
+            </div>
+            {error && <div className="prediction-error" role="alert">{error}</div>}
+            {submitted && <div className="prediction-success" role="status">Thanks! Your picks are in.</div>}
+            <button type="submit" className="prediction-submit" disabled={submitting || (!elitePick && !devPick)}>
+              {submitting ? 'Submitting…' : 'Submit my picks'}
+            </button>
+          </form>
+        </div>
+
+        {/* Crowd picks */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
+          <div className="crowd-card crowd-card-elite">
+            <div className="crowd-card-header">
+              <span className="crowd-card-badge">ELITE</span>
+              <span className="crowd-card-votes">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>
+            </div>
+            <h3 className="crowd-card-title">Crowd pick: Elite champion</h3>
+            {eliteEntries.length === 0 ? (
+              <p className="crowd-empty">No picks yet. Be the first!</p>
+            ) : (
+              <ul className="crowd-list" aria-label="Elite division prediction breakdown">
+                {eliteEntries.map(([team, count]) => {
+                  const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
+                  const width = maxElite ? (count / maxElite) * 100 : 0;
+                  return (
+                    <li key={team} className="crowd-item">
+                      <div className="crowd-item-bar-wrap">
+                        <div className="crowd-item-bar" style={{ width: `${width}%` }} aria-hidden />
+                        <span className="crowd-item-label">{team}</span>
+                        <span className="crowd-item-pct">{pct}%</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+          <div className="crowd-card crowd-card-dev">
+            <div className="crowd-card-header">
+              <span className="crowd-card-badge">DEVELOPMENT</span>
+              <span className="crowd-card-votes">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>
+            </div>
+            <h3 className="crowd-card-title">Crowd pick: Development champion</h3>
+            {devEntries.length === 0 ? (
+              <p className="crowd-empty">No picks yet. Be the first!</p>
+            ) : (
+              <ul className="crowd-list" aria-label="Development division prediction breakdown">
+                {devEntries.map(([team, count]) => {
+                  const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
+                  const width = maxDev ? (count / maxDev) * 100 : 0;
+                  return (
+                    <li key={team} className="crowd-item">
+                      <div className="crowd-item-bar-wrap">
+                        <div className="crowd-item-bar" style={{ width: `${width}%` }} aria-hidden />
+                        <span className="crowd-item-label">{team}</span>
+                        <span className="crowd-item-pct">{pct}%</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Our pick - fun "Deacons Duel" pick */}
+        <div className="our-pick-card">
+          <div className="our-pick-glow" aria-hidden />
+          <h3 className="our-pick-title">Deacons Duel pick</h3>
+          <p className="our-pick-sub">Our (totally unscientific) call for the day</p>
+          <div className="our-pick-grid">
+            <div className="our-pick-item">
+              <span className="our-pick-division">Elite</span>
+              <span className="our-pick-team">{eliteTeams[0] || 'Pool A 1st'}</span>
+            </div>
+            <div className="our-pick-item">
+              <span className="our-pick-division">Development</span>
+              <span className="our-pick-team">{devTeams[0] || 'Pool C 1st'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
 
 const normalizeMatchLabel = (matchText = '') => {
   const spaced = matchText
