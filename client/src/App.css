@@ -697,6 +697,49 @@
   padding: 8px 10px;
 }
 
+/* Live stream */
+.live-stream-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%);
+}
+
+.live-stream-player {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #000000;
+}
+
+.live-stream-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.live-stream-note {
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.live-stream-note code {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--ink);
+}
+
 /* Schedule */
 .live-games-banner {
   background: var(--gradient-primary);

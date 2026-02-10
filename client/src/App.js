@@ -68,8 +68,63 @@ const Icon = ({ name, size = 18, stroke = 'currentColor', className = '', ariaLa
   }
 };
 
+const TAB_PATH_SEGMENTS = {
+  overview: 'website',
+  schedule: 'schedule',
+  livestream: 'live-stream',
+  bracket: 'bracket',
+  teams: 'teams',
+};
+
+const TAB_KEYS_BY_PATH = Object.entries(TAB_PATH_SEGMENTS).reduce((acc, [tabKey, path]) => {
+  acc[path] = tabKey;
+  return acc;
+}, {});
+
+const DEFAULT_TAB = 'overview';
+const DEFAULT_LIVE_STREAM_EMBED_URL = 'https://www.youtube.com/embed/uHMuXIa1PVo';
+
+const normalizePathname = (pathname = '') => String(pathname).replace(/^\/+|\/+$/g, '').toLowerCase();
+
+const getTabFromPathname = (pathname = '') => {
+  const normalizedPath = normalizePathname(pathname);
+  if (!normalizedPath) return DEFAULT_TAB;
+  return TAB_KEYS_BY_PATH[normalizedPath] || DEFAULT_TAB;
+};
+
+const getPathForTab = (tabKey = DEFAULT_TAB) => `/${TAB_PATH_SEGMENTS[tabKey] || TAB_PATH_SEGMENTS[DEFAULT_TAB]}`;
+
+const toYouTubeEmbedUrl = (source = '') => {
+  const raw = String(source || '').trim();
+  if (!raw) return DEFAULT_LIVE_STREAM_EMBED_URL;
+  if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return `https://www.youtube.com/embed/${raw}`;
+
+  try {
+    const parsed = new URL(raw);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host === 'youtu.be') {
+      const videoId = parsed.pathname.replace(/\//g, '').trim();
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    if (host.includes('youtube.com')) {
+      if (parsed.pathname.startsWith('/embed/')) return raw;
+      const videoId = parsed.searchParams.get('v');
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+  } catch {
+    return raw;
+  }
+
+  return raw;
+};
+
 function App() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_TAB;
+    return getTabFromPathname(window.location.pathname);
+  });
   const API_BASE = process.env.REACT_APP_API_URL || '';
   const [tournamentData, setTournamentData] = useState({
     overview: {
@@ -112,6 +167,21 @@ function App() {
 
   const isFirstLoadRef = useRef(true);
   const touchStartRef = useRef(null);
+
+  const setTab = (tabKey, { replace = false } = {}) => {
+    const nextTab = TAB_PATH_SEGMENTS[tabKey] ? tabKey : DEFAULT_TAB;
+    setActiveTab(nextTab);
+
+    if (typeof window === 'undefined') return;
+    const nextPath = getPathForTab(nextTab);
+    if (window.location.pathname === nextPath) return;
+
+    if (replace) {
+      window.history.replaceState({ tab: nextTab }, '', nextPath);
+    } else {
+      window.history.pushState({ tab: nextTab }, '', nextPath);
+    }
+  };
 
   const parseTimeToMinutes = (timeStr) => {
     if (!timeStr) return null;
@@ -200,6 +270,24 @@ function App() {
   const liveGames = getCurrentLiveGames();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const tabFromPath = getTabFromPathname(window.location.pathname);
+    const normalizedPath = getPathForTab(tabFromPath);
+    if (window.location.pathname !== normalizedPath) {
+      window.history.replaceState({ tab: tabFromPath }, '', normalizedPath);
+    }
+    setActiveTab(tabFromPath);
+
+    const handlePopState = () => {
+      setActiveTab(getTabFromPathname(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
     fetchTournamentData({ showInitialLoader: true });
     const interval = setInterval(() => fetchTournamentData({ showInitialLoader: false }), 30000);
     return () => clearInterval(interval);
@@ -259,7 +347,7 @@ function App() {
     const idx = tabOrder.indexOf(activeTab);
     if (idx === -1) return;
     const nextIdx = direction === 'next' ? Math.min(tabOrder.length - 1, idx + 1) : Math.max(0, idx - 1);
-    setActiveTab(tabOrder[nextIdx]);
+    setTab(tabOrder[nextIdx]);
   };
 
   const handleTouchStart = (e) => {
@@ -294,8 +382,9 @@ function App() {
   const poolPlayComplete = isPoolPlayComplete();
 
   const NAV_TABS = [
-    { key: 'overview', label: 'Overview', helper: 'Snapshot' },
+    { key: 'overview', label: 'Website', helper: 'Overview' },
     { key: 'schedule', label: 'Schedule', helper: 'Matches' },
+    { key: 'livestream', label: 'Live Stream', helper: 'Watch' },
     ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
   ];
@@ -372,7 +461,7 @@ function App() {
               <button
                 key={tab.key}
                 type="button"
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => setTab(tab.key)}
                 className={`nav-tab ${activeTab === tab.key ? 'active' : ''}`}
                 aria-current={activeTab === tab.key ? 'page' : undefined}
               >
@@ -408,8 +497,9 @@ function App() {
           </div>
         ) : (
           <>
-        {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setActiveTab} />}
+        {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setTab} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} />}
+        {activeTab === 'livestream' && <LiveStream />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
           <div className="text-center py-16">
@@ -1110,6 +1200,39 @@ const Bracket = ({ data, schedule }) => {
         times: devTimes,
         qfDefaults: devQfDefaults,
       })}
+    </div>
+  );
+};
+
+const LiveStream = () => {
+  const liveStreamSource = process.env.REACT_APP_LIVE_STREAM_URL || DEFAULT_LIVE_STREAM_EMBED_URL;
+  const embedUrl = toYouTubeEmbedUrl(liveStreamSource);
+
+  return (
+    <div className="space-y-16">
+      <section>
+        <div className="section-header">
+          <div className="section-label">
+            <span className="icon-chip" aria-label="Live stream"><Icon name="calendar" size={16} ariaLabel="Live stream icon" /></span>
+            <h2 className="section-title">LIVE STREAM</h2>
+          </div>
+        </div>
+        <div className="live-stream-card">
+          <div className="live-stream-player">
+            <iframe
+              src={embedUrl}
+              title="Deacons Duel Live Stream"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <p className="live-stream-note">
+            To change this feed, set <code>REACT_APP_LIVE_STREAM_URL</code> in your frontend environment.
+          </p>
+        </div>
+      </section>
     </div>
   );
 };
