@@ -17,8 +17,8 @@ Your server is authenticated correctly, but it **doesn't have permission** to ac
    ```
 
 4. **Set permission level:**
-   - Choose "Viewer" (read-only access)
-   - Or "Editor" if you want the API to write data in the future
+   - Use **"Editor"** so the API can read and write (required for Predictions to be saved)
+   - "Viewer" is read-only (teams/schedule work; predictions will not save)
 
 5. **Uncheck "Notify people"** (the service account doesn't need an email notification)
 
@@ -80,6 +80,7 @@ https://docs.google.com/spreadsheets/d/1EzqQXzMCO06oBlQmfc0oqunIA8x4_VLSQB-Rs_wQ
 
 4. **Verify sheet names:**
    - Your sheet must have tabs named: Teams, Schedule, Standings, Bracket, Overview
+   - For **Predictions** to save: add a tab named **Predictions** (optional row 1 header: Timestamp | Elite Winner | Development Winner | Name)
    - Names are case-sensitive!
 
 ---
@@ -89,7 +90,7 @@ https://docs.google.com/spreadsheets/d/1EzqQXzMCO06oBlQmfc0oqunIA8x4_VLSQB-Rs_wQ
 - [ ] Opened Google Sheet
 - [ ] Clicked "Share" button
 - [ ] Added service account email
-- [ ] Set permission to "Viewer" or "Editor"
+- [ ] Set permission to "Editor" (needed for saving predictions)
 - [ ] Unchecked "Notify people"
 - [ ] Clicked "Share"
 - [ ] Restarted server

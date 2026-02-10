@@ -69,7 +69,7 @@ if (missingVars.length > 0) {
         client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
         universe_domain: "googleapis.com",
       },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     sheets = google.sheets({ version: 'v4', auth });
@@ -88,6 +88,19 @@ async function getSheetValues(spreadsheetId, range) {
   }
   const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
   return resp.data.values || [];
+}
+
+async function appendSheetRows(spreadsheetId, range, rows) {
+  if (!sheets) {
+    throw new Error('Google Sheets API not initialized');
+  }
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: rows },
+  });
 }
 
 function safeStr(v) {
@@ -921,36 +934,42 @@ function generateChampionshipMatchupsFromStandings(standings) {
 }
 
 // -----------------------------
-// Predictions (in-memory; optional: persist to file/DB later)
+// Predictions (persisted in Google Sheet "Predictions")
+// Sheet columns: A=Timestamp, B=Elite Winner, C=Development Winner, D=Name (row 1 = header)
 // -----------------------------
-const predictionsStore = [];
+const PREDICTIONS_SHEET_RANGE = 'Predictions!A2:D';
 
-function getPredictionsStats() {
+function predictionsRowsToStats(rows) {
   const elite = {};
   const development = {};
-  predictionsStore.forEach((p) => {
-    if (p.eliteWinner) {
-      elite[p.eliteWinner] = (elite[p.eliteWinner] || 0) + 1;
-    }
-    if (p.developmentWinner) {
-      development[p.developmentWinner] = (development[p.developmentWinner] || 0) + 1;
-    }
+  (rows || []).forEach((row) => {
+    const eliteWinner = safeStr(row[1]);
+    const devWinner = safeStr(row[2]);
+    if (eliteWinner) elite[eliteWinner] = (elite[eliteWinner] || 0) + 1;
+    if (devWinner) development[devWinner] = (development[devWinner] || 0) + 1;
   });
-  const totalVotes = predictionsStore.length;
-  return { elite, development, totalVotes };
+  return { elite, development, totalVotes: rows.length };
 }
 
-app.get('/api/predictions', (req, res) => {
+app.get('/api/predictions', async (req, res) => {
   try {
-    res.json(getPredictionsStats());
+    if (!sheets) {
+      return res.status(500).json({ error: 'Google Sheets API not available' });
+    }
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
+    res.json(predictionsRowsToStats(Array.isArray(rows) ? rows : []));
   } catch (error) {
     console.error('Error fetching predictions:', error);
     res.status(500).json({ error: 'Failed to fetch predictions' });
   }
 });
 
-app.post('/api/predictions', (req, res) => {
+app.post('/api/predictions', async (req, res) => {
   try {
+    if (!sheets) {
+      return res.status(500).json({ error: 'Google Sheets API not available' });
+    }
     const { eliteWinner, developmentWinner, userName } = req.body || {};
     const elite = safeStr(eliteWinner);
     const development = safeStr(developmentWinner);
@@ -958,14 +977,12 @@ app.post('/api/predictions', (req, res) => {
     if (!elite && !development) {
       return res.status(400).json({ error: 'Pick at least one winner (Elite and/or Development)' });
     }
-    predictionsStore.push({
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-      eliteWinner: elite || null,
-      developmentWinner: development || null,
-      userName: name,
-      submittedAt: new Date().toISOString(),
-    });
-    res.status(201).json({ ok: true, stats: getPredictionsStats() });
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const newRow = [new Date().toISOString(), elite || '', development || '', name];
+    await appendSheetRows(spreadsheetId, PREDICTIONS_SHEET_RANGE, [newRow]);
+    const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
+    const stats = predictionsRowsToStats(Array.isArray(rows) ? rows : []);
+    res.status(201).json({ ok: true, stats });
   } catch (error) {
     console.error('Error submitting prediction:', error);
     res.status(500).json({ error: 'Failed to submit prediction' });
