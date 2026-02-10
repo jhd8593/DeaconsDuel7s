@@ -1612,14 +1612,61 @@ table {
     font-size: 28px;
   }
 
-  .info-card,
-  .pool-card {
-    padding: 18px;
-  }
-
   .team-input {
     padding: 12px 12px;
     font-size: 14px;
+  }
+
+  /* Uniform card style on mobile: same radius + padding */
+  .stat-card,
+  .info-card,
+  .pool-card,
+  .prediction-form-card,
+  .crowd-card,
+  .our-pick-card,
+  .final-match,
+  .live-stream-card,
+  .bracket-container,
+  .consolation-section,
+  .bracket-match,
+  .bracket-final,
+  .action-card {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .prediction-form-card {
+    max-width: none;
+    width: 100%;
+  }
+
+  .predictions-page .grid {
+    gap: 16px;
+  }
+
+  .crowd-card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .crowd-item-bar-wrap {
+    min-height: 32px;
+  }
+
+  .crowd-item-label {
+    font-size: 0.85rem;
+  }
+
+  .our-pick-card {
+    padding: 18px;
+  }
+
+  .our-pick-item {
+    padding: 12px;
+  }
+
+  .our-pick-team {
+    font-size: 1rem;
   }
 }
 
