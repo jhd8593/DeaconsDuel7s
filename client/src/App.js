@@ -75,6 +75,7 @@ const TAB_PATH_SEGMENTS = {
   bracket: 'bracket',
   teams: 'teams',
   predictions: 'predictions',
+  locations: 'locations',
 };
 
 const TAB_KEYS_BY_PATH = Object.entries(TAB_PATH_SEGMENTS).reduce((acc, [tabKey, path]) => {
@@ -393,6 +394,7 @@ function App() {
     { key: 'overview', label: 'Website', helper: 'Overview' },
     { key: 'schedule', label: 'Schedule', helper: 'Matches' },
     { key: 'livestream', label: 'Live Stream', helper: 'Watch' },
+    { key: 'locations', label: 'Locations', helper: 'Fields & map' },
     { key: 'predictions', label: 'Predictions', helper: 'Who wins?' },
     ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
@@ -520,6 +522,7 @@ function App() {
         {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setTab} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} onWatchLive={goToLiveStream} />}
         {activeTab === 'livestream' && <LiveStream selectedField={liveStreamField} onSelectField={setLiveStreamField} />}
+        {activeTab === 'locations' && <Locations />}
         {activeTab === 'predictions' && <Predictions teams={tournamentData.teams} apiBase={API_BASE} onRefresh={fetchTournamentData} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
         {activeTab === 'bracket' && !poolPlayComplete && (
@@ -1500,6 +1503,81 @@ const LiveStream = ({ selectedField = 1, onSelectField }) => {
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
             />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+const Locations = () => {
+  const field1Address = '1865 Wake Forest Rd. Winston-Salem, NC 27109';
+  const field2Address = '1980 Wake Forest Rd. Winston-Salem, NC 27109';
+  const mapsUrl = (addr) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+
+  const copyAddress = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      /* optional: show brief "Copied!" feedback */
+    }).catch(() => {});
+  };
+
+  return (
+    <div className="space-y-16">
+      <section>
+        <div className="section-header">
+          <div className="section-label">
+            <span className="icon-chip" aria-label="Locations"><Icon name="map" size={16} ariaLabel="Map icon" /></span>
+            <h2 className="section-title">FIELD LOCATIONS</h2>
+          </div>
+        </div>
+        <div className="locations-card">
+          <img src="/Locations.png" alt="Map showing Field 1 and Field 2 locations, parking, and entrance" className="locations-map-image" />
+          <div className="locations-fields">
+            <div className="location-field">
+              <span className="location-field-label">Field 1</span>
+              <div className="location-address-row">
+                <a href={mapsUrl(field1Address)} target="_blank" rel="noopener noreferrer" className="location-link">
+                  {field1Address}
+                </a>
+                <button type="button" className="location-copy-btn" onClick={() => copyAddress(field1Address)} aria-label="Copy Field 1 address">
+                  Copy
+                </button>
+              </div>
+            </div>
+            <div className="location-field">
+              <span className="location-field-label">Field 2</span>
+              <div className="location-address-row">
+                <span className="location-address-text">{field2Address}</span>
+                <button type="button" className="location-copy-btn" onClick={() => copyAddress(field2Address)} aria-label="Copy Field 2 address">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="locations-subtitle">Bathroom Facilities</h3>
+        <div className="info-card locations-info-block">
+          <p className="text-sm text-secondary leading-relaxed">
+            Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong className="text-text">DO NOT WEAR CLEATS!</strong>).
+          </p>
+          <p className="locations-notice text-sm leading-relaxed">
+            Please do not enter the Business and Law school at Wake Forest.
+          </p>
+        </div>
+
+        <h3 className="locations-subtitle">Parking Information</h3>
+        <div className="info-card locations-info-block">
+          <div className="space-y-4 text-sm text-secondary leading-relaxed">
+            <p>
+              <span className="font-semibold text-text">Primary Parking (Lot W1):</span> The main parking area for the event, located conveniently near the tournament fields.
+            </p>
+            <p>
+              <span className="font-semibold text-text">Overflow Parking (Lot W2):</span> Additional parking space available in case Lot W1 reaches capacity. Signage and volunteers will guide you to this area if needed.
+            </p>
+            <p className="font-semibold text-text">
+              We recommend arriving early to secure the most convenient parking spots.
+            </p>
           </div>
         </div>
       </section>

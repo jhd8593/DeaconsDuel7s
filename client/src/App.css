@@ -1220,6 +1220,120 @@
   font-size: 12px;
 }
 
+/* Locations */
+.locations-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.locations-map-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+
+.locations-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.location-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-field-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.location-address-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.location-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s, text-decoration 0.15s;
+}
+
+.location-link:hover {
+  color: var(--primary-strong);
+  text-decoration: underline;
+}
+
+.location-address-text {
+  color: var(--ink);
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.location-copy-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.location-copy-btn:hover {
+  background: var(--card);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.location-copy-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.locations-subtitle {
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 800;
+  margin-top: 24px;
+  margin-bottom: 10px;
+}
+
+.locations-info-block {
+  margin-bottom: 0;
+}
+
+.locations-notice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* Teams */
 .division-title {
   font-size: 18px;
@@ -1626,6 +1740,7 @@ table {
   .our-pick-card,
   .final-match,
   .live-stream-card,
+  .locations-card,
   .bracket-container,
   .consolation-section,
   .bracket-match,
