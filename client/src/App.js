@@ -321,7 +321,7 @@ function App() {
         let msg = 'Failed to fetch tournament data';
         try {
           const body = await failed.json();
-          if (body && body.error) msg = body.error;
+          if (body && body.error) msg = body.detail ? `${body.error}: ${body.detail}` : body.error;
         } catch (_) { /* ignore */ }
         throw new Error(msg);
       }

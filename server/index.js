@@ -1054,7 +1054,7 @@ app.get('/api/tournament/teams', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching teams data:', error);
-    res.status(500).json({ error: 'Failed to fetch teams data' });
+    res.status(500).json({ error: 'Failed to fetch teams data', detail: error?.message || String(error) });
   }
 });
 
@@ -1371,7 +1371,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
     res.json(scheduleData);
   } catch (error) {
     console.error('Error fetching schedule:', error);
-    res.status(500).json({ error: 'Failed to fetch schedule data' });
+    res.status(500).json({ error: 'Failed to fetch schedule data', detail: error?.message || String(error) });
   }
 });
 
@@ -1405,15 +1405,23 @@ app.get('/api/tournament/bracket', async (req, res) => {
     res.json({ standings, ...resolved, eliteConsolationChampionship });
   } catch (error) {
     console.error('Error fetching bracket data:', error);
-    res.status(500).json({ error: 'Failed to fetch bracket data' });
+    res.status(500).json({ error: 'Failed to fetch bracket data', detail: error?.message || String(error) });
   }
 });
 
 // -----------------------------
-// For Vercel: export the app so the platform can invoke it (req, res).
+// For Vercel: wrap the app so we never invoke Express with null req/res
+// (avoids "Cannot read properties of null (reading 'method')" in some runtimes).
 // For local: start the server with listen().
 if (process.env.VERCEL) {
-  module.exports = app;
+  module.exports = (req, res) => {
+    if (!req || !res) {
+      console.error('Vercel handler: req or res is null');
+      if (res && typeof res.status === 'function') res.status(500).json({ error: 'Server received invalid request' });
+      return;
+    }
+    app(req, res);
+  };
 } else {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
