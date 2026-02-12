@@ -680,58 +680,87 @@ const Predictions = ({ teams, apiBase = '', onRefresh }) => {
 
         {/* Make your pick */}
         <div className="prediction-form-card">
-          <h3 className="prediction-form-title">Make your pick</h3>
-          <form onSubmit={handleSubmit} className="prediction-form">
-            <div className="prediction-form-grid">
-              <div className="prediction-field">
-                <label htmlFor="pred-elite" className="prediction-label">Elite champion</label>
-                <select
-                  id="pred-elite"
-                  value={elitePick}
-                  onChange={(e) => setElitePick(e.target.value)}
-                  className="prediction-select"
-                  aria-label="Pick Elite division winner"
-                >
-                  <option value="">Select team</option>
-                  {eliteTeams.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+          {submitted ? (
+            <div className="prediction-success-card" role="status" aria-live="polite">
+              <div className="prediction-success-glow" aria-hidden />
+              <div className="prediction-success-icon-wrap">
+                <Icon name="trophy" size={48} className="prediction-success-icon" ariaLabel="Success" />
               </div>
-              <div className="prediction-field">
-                <label htmlFor="pred-dev" className="prediction-label">Development champion</label>
-                <select
-                  id="pred-dev"
-                  value={devPick}
-                  onChange={(e) => setDevPick(e.target.value)}
-                  className="prediction-select"
-                  aria-label="Pick Development division winner"
-                >
-                  <option value="">Select team</option>
-                  {devTeams.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+              <h3 className="prediction-success-title">You&apos;re in!</h3>
+              <p className="prediction-success-sub">Your picks are locked. See how the crowd voted below.</p>
+              {userName?.trim() && (
+                <p className="prediction-success-name">Thanks, {userName.trim()}!</p>
+              )}
+              <div className="prediction-success-picks">
+                {elitePick && (
+                  <div className="prediction-success-pick-item prediction-success-pick-elite">
+                    <span className="prediction-success-pick-label">Elite</span>
+                    <span className="prediction-success-pick-team">{elitePick}</span>
+                  </div>
+                )}
+                {devPick && (
+                  <div className="prediction-success-pick-item prediction-success-pick-dev">
+                    <span className="prediction-success-pick-label">Development</span>
+                    <span className="prediction-success-pick-team">{devPick}</span>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="prediction-field prediction-field-name">
-              <label htmlFor="pred-name" className="prediction-label">Your name (optional)</label>
-              <input
-                id="pred-name"
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="Anonymous"
-                className="prediction-input"
-                aria-label="Your name"
-              />
-            </div>
-            {error && <div className="prediction-error" role="alert">{error}</div>}
-            {submitted && <div className="prediction-success" role="status">Thanks! Your picks are in.</div>}
-            <button type="submit" className="prediction-submit" disabled={submitting || (!elitePick && !devPick)}>
-              {submitting ? 'Submitting…' : 'Submit my picks'}
-            </button>
-          </form>
+          ) : (
+            <>
+              <h3 className="prediction-form-title">Make your pick</h3>
+              <form onSubmit={handleSubmit} className="prediction-form">
+                <div className="prediction-form-grid">
+                  <div className="prediction-field">
+                    <label htmlFor="pred-elite" className="prediction-label">Elite champion</label>
+                    <select
+                      id="pred-elite"
+                      value={elitePick}
+                      onChange={(e) => setElitePick(e.target.value)}
+                      className="prediction-select"
+                      aria-label="Pick Elite division winner"
+                    >
+                      <option value="">Select team</option>
+                      {eliteTeams.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="prediction-field">
+                    <label htmlFor="pred-dev" className="prediction-label">Development champion</label>
+                    <select
+                      id="pred-dev"
+                      value={devPick}
+                      onChange={(e) => setDevPick(e.target.value)}
+                      className="prediction-select"
+                      aria-label="Pick Development division winner"
+                    >
+                      <option value="">Select team</option>
+                      {devTeams.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="prediction-field prediction-field-name">
+                  <label htmlFor="pred-name" className="prediction-label">Your name (optional)</label>
+                  <input
+                    id="pred-name"
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder="Anonymous"
+                    className="prediction-input"
+                    aria-label="Your name"
+                  />
+                </div>
+                {error && <div className="prediction-error" role="alert">{error}</div>}
+                <button type="submit" className="prediction-submit" disabled={submitting || (!elitePick && !devPick)}>
+                  {submitting ? 'Submitting…' : 'Submit my picks'}
+                </button>
+              </form>
+            </>
+          )}
         </div>
 
         {/* Crowd picks */}
@@ -790,22 +819,6 @@ const Predictions = ({ teams, apiBase = '', onRefresh }) => {
           </div>
         </div>
 
-        {/* Our pick - fun "Deacons Duel" pick */}
-        <div className="our-pick-card">
-          <div className="our-pick-glow" aria-hidden />
-          <h3 className="our-pick-title">Deacons Duel pick</h3>
-          <p className="our-pick-sub">Our (totally unscientific) call for the day</p>
-          <div className="our-pick-grid">
-            <div className="our-pick-item">
-              <span className="our-pick-division">Elite</span>
-              <span className="our-pick-team">{eliteTeams[0] || 'Pool A 1st'}</span>
-            </div>
-            <div className="our-pick-item">
-              <span className="our-pick-division">Development</span>
-              <span className="our-pick-team">{devTeams[0] || 'Pool C 1st'}</span>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
   );
@@ -1515,12 +1528,6 @@ const Locations = () => {
   const field2Address = '1980 Wake Forest Rd. Winston-Salem, NC 27109';
   const mapsUrl = (addr) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
 
-  const copyAddress = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      /* optional: show brief "Copied!" feedback */
-    }).catch(() => {});
-  };
-
   return (
     <div className="space-y-16">
       <section>
@@ -1535,23 +1542,13 @@ const Locations = () => {
           <div className="locations-fields">
             <div className="location-field">
               <span className="location-field-label">Field 1</span>
-              <div className="location-address-row">
-                <a href={mapsUrl(field1Address)} target="_blank" rel="noopener noreferrer" className="location-link">
-                  {field1Address}
-                </a>
-                <button type="button" className="location-copy-btn" onClick={() => copyAddress(field1Address)} aria-label="Copy Field 1 address">
-                  Copy
-                </button>
-              </div>
+              <a href={mapsUrl(field1Address)} target="_blank" rel="noopener noreferrer" className="location-address-text location-address-link">
+                {field1Address}
+              </a>
             </div>
             <div className="location-field">
               <span className="location-field-label">Field 2</span>
-              <div className="location-address-row">
-                <span className="location-address-text">{field2Address}</span>
-                <button type="button" className="location-copy-btn" onClick={() => copyAddress(field2Address)} aria-label="Copy Field 2 address">
-                  Copy
-                </button>
-              </div>
+              <span className="location-address-text">{field2Address}</span>
             </div>
           </div>
         </div>
