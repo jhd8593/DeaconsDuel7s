@@ -935,9 +935,19 @@ function generateChampionshipMatchupsFromStandings(standings) {
 
 // -----------------------------
 // Predictions (persisted in Google Sheet "Predictions")
-// Sheet columns: A=Timestamp, B=Elite Winner, C=Development Winner, D=Name (row 1 = header)
+// Sheet columns: A=Timestamp, B=Elite Winner, C=Development Winner, D=Name, E=IP (row 1 = header)
+// One vote per IP: submissions from the same IP are rejected.
 // -----------------------------
-const PREDICTIONS_SHEET_RANGE = 'Predictions!A2:D';
+const PREDICTIONS_SHEET_RANGE = 'Predictions!A2:E';
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const first = forwarded.split(',')[0];
+    if (first) return first.trim();
+  }
+  return req.ip || req.connection?.remoteAddress || '';
+}
 
 function predictionsRowsToStats(rows) {
   const elite = {};
@@ -970,6 +980,13 @@ app.post('/api/predictions', async (req, res) => {
     if (!sheets) {
       return res.status(500).json({ error: 'Google Sheets API not available' });
     }
+    const clientIp = getClientIp(req);
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const existingRows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
+    const alreadyVoted = Array.isArray(existingRows) && existingRows.some((row) => safeStr(row[4]) === clientIp);
+    if (alreadyVoted) {
+      return res.status(429).json({ error: 'You have already voted from this device or network. Only one vote per IP is allowed.' });
+    }
     const { eliteWinner, developmentWinner, userName } = req.body || {};
     const elite = safeStr(eliteWinner);
     const development = safeStr(developmentWinner);
@@ -977,8 +994,7 @@ app.post('/api/predictions', async (req, res) => {
     if (!elite && !development) {
       return res.status(400).json({ error: 'Pick at least one winner (Elite and/or Development)' });
     }
-    const spreadsheetId = process.env.SPREADSHEET_ID;
-    const newRow = [new Date().toISOString(), elite || '', development || '', name];
+    const newRow = [new Date().toISOString(), elite || '', development || '', name, clientIp];
     await appendSheetRows(spreadsheetId, PREDICTIONS_SHEET_RANGE, [newRow]);
     const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
     const stats = predictionsRowsToStats(Array.isArray(rows) ? rows : []);
