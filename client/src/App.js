@@ -638,7 +638,7 @@ const Overview = ({ data, onNavigate }) => (
       <div className="info-card info-card-blue">
         <div className="space-y-4 text-sm leading-relaxed">
           <p>Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong>DO NOT WEAR CLEATS!</strong>).</p>
-          <p><strong>Please do not enter the Business and Law school at Wake Forest.</strong></p>
+          <p className="locations-notice-red">Please do not enter the Business and Law school at Wake Forest.</p>
         </div>
       </div>
     </section>
@@ -1617,7 +1617,7 @@ const Locations = () => {
           <p className="text-sm leading-relaxed">
             Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong className="text-text">DO NOT WEAR CLEATS!</strong>).
           </p>
-          <p className="locations-notice text-sm leading-relaxed">
+          <p className="locations-notice-red text-sm leading-relaxed">
             Please do not enter the Business and Law school at Wake Forest.
           </p>
         </div>

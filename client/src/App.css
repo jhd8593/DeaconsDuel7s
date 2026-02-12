@@ -1361,6 +1361,13 @@
   font-weight: 600;
 }
 
+.locations-notice-red {
+  margin-top: 14px;
+  font-weight: 700;
+  color: #c41e3a;
+  text-align: center;
+}
+
 /* Teams */
 .division-title {
   font-size: 18px;
