@@ -904,13 +904,14 @@ const renderMatchWithWinner = (matchText) => {
       );
     }
 
-    const winner = score1 > score2 ? team1 : team2;
+    const isTie = score1 === score2;
+    const winner = isTie ? null : (score1 > score2 ? team1 : team2);
 
     return (
       <span>
-        <span className={winner === team1 ? "match-winner" : "match-muted"}>{team1}</span>
+        <span className={isTie ? "match-tie" : (winner === team1 ? "match-winner" : "match-muted")}>{team1}</span>
         <span className="mx-2 match-scoreline">{score1}-{score2}</span>
-        <span className={winner === team2 ? "match-winner" : "match-muted"}>{team2}</span>
+        <span className={isTie ? "match-tie" : (winner === team2 ? "match-winner" : "match-muted")}>{team2}</span>
       </span>
     );
   }

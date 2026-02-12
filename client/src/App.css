@@ -989,6 +989,23 @@
   letter-spacing: 0.08em;
 }
 
+.match-tie {
+  color: var(--primary-strong);
+}
+
+.match-tie::after {
+  content: 'T';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(120, 113, 108, 0.35);
+  color: #ffffff;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
 .phase-header {
   display: flex;
   align-items: center;
