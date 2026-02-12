@@ -86,6 +86,14 @@ const TAB_KEYS_BY_PATH = Object.entries(TAB_PATH_SEGMENTS).reduce((acc, [tabKey,
 const DEFAULT_TAB = 'overview';
 const DEFAULT_LIVE_STREAM_EMBED_URL = 'https://www.youtube.com/embed/uHMuXIa1PVo';
 const DEFAULT_LIVE_STREAM_EMBED_URL_FIELD_2 = 'https://www.youtube.com/embed/gu6YjvkCnOU';
+const TOURNAMENT_POLL_INTERVAL_MS = Math.max(
+  30000,
+  Number.parseInt(process.env.REACT_APP_TOURNAMENT_POLL_INTERVAL_MS || '60000', 10) || 60000
+);
+const PREDICTIONS_POLL_INTERVAL_MS = Math.max(
+  30000,
+  Number.parseInt(process.env.REACT_APP_PREDICTIONS_POLL_INTERVAL_MS || '30000', 10) || 30000
+);
 
 const normalizePathname = (pathname = '') => String(pathname).replace(/^\/+|\/+$/g, '').toLowerCase();
 
@@ -175,6 +183,7 @@ function App() {
   };
 
   const isFirstLoadRef = useRef(true);
+  const isFetchingTournamentRef = useRef(false);
   const touchStartRef = useRef(null);
 
   const setTab = (tabKey, { replace = false } = {}) => {
@@ -298,11 +307,35 @@ function App() {
 
   useEffect(() => {
     fetchTournamentData({ showInitialLoader: true });
-    const interval = setInterval(() => fetchTournamentData({ showInitialLoader: false }), 30000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+      fetchTournamentData({ showInitialLoader: false });
+    }, TOURNAMENT_POLL_INTERVAL_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTournamentData({ showInitialLoader: false });
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
   }, []);
 
   const fetchTournamentData = async ({ showInitialLoader }) => {
+    if (isFetchingTournamentRef.current) return;
+    isFetchingTournamentRef.current = true;
+
     try {
       if (showInitialLoader && isFirstLoadRef.current) {
         setLoading(true);
@@ -341,6 +374,7 @@ function App() {
         bracket
       });
 
+      setError(null);
       setLastUpdated(new Date());
       isFirstLoadRef.current = false;
     } catch (err) {
@@ -350,6 +384,7 @@ function App() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      isFetchingTournamentRef.current = false;
     }
   };
 
@@ -635,7 +670,12 @@ const Predictions = ({ teams, apiBase = '', onRefresh }) => {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 15000);
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+      fetchStats();
+    }, PREDICTIONS_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [fetchStats]);
 

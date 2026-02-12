@@ -90,8 +90,137 @@ if (missingVars.length > 0) {
 }
 
 // -----------------------------
+// Tournament sheet cache (avoids Google Sheets "Read requests per minute" quota).
+// One batch of reads per TTL; all tournament routes share this cache.
+// Single-flight: concurrent requests share one load. 5 min TTL keeps traffic under quota.
+// -----------------------------
+const TOURNAMENT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const TOURNAMENT_SHEET_RANGES = {
+  schedule: 'Schedule!A1:Z200',
+  teams: 'Teams!A1:Z50',
+  bracket: 'Bracket!A1:Z100',
+};
+const TOURNAMENT_EDGE_CACHE_SECONDS = Math.max(0, Number.parseInt(process.env.TOURNAMENT_EDGE_CACHE_SECONDS || '15', 10) || 15);
+const TOURNAMENT_EDGE_STALE_SECONDS = Math.max(0, Number.parseInt(process.env.TOURNAMENT_EDGE_STALE_SECONDS || '45', 10) || 45);
+const PREDICTIONS_EDGE_CACHE_SECONDS = Math.max(0, Number.parseInt(process.env.PREDICTIONS_EDGE_CACHE_SECONDS || '10', 10) || 10);
+const PREDICTIONS_EDGE_STALE_SECONDS = Math.max(0, Number.parseInt(process.env.PREDICTIONS_EDGE_STALE_SECONDS || '30', 10) || 30);
+
+let tournamentSheetCache = { scheduleRows: null, teamRows: null, bracketRows: null, expiresAt: 0 };
+let tournamentSheetLoadPromise = null; // single-flight: one load at a time
+
+function hasTournamentSheetCacheData() {
+  return Array.isArray(tournamentSheetCache.scheduleRows);
+}
+
+function getTournamentSheetResult({ fromStaleCache = false } = {}) {
+  return {
+    scheduleRows: tournamentSheetCache.scheduleRows,
+    teamRows: tournamentSheetCache.teamRows,
+    bracketRows: tournamentSheetCache.bracketRows,
+    fromStaleCache,
+  };
+}
+
+async function getTournamentSheetRows(spreadsheetId) {
+  const now = Date.now();
+  if (tournamentSheetCache.expiresAt > now && hasTournamentSheetCacheData()) {
+    return getTournamentSheetResult({ fromStaleCache: false });
+  }
+  if (tournamentSheetLoadPromise) {
+    return tournamentSheetLoadPromise;
+  }
+  tournamentSheetLoadPromise = (async () => {
+    try {
+      const [scheduleRows, teamRows, bracketRows] = await getSheetValuesBatch(spreadsheetId, [
+        TOURNAMENT_SHEET_RANGES.schedule,
+        TOURNAMENT_SHEET_RANGES.teams,
+        TOURNAMENT_SHEET_RANGES.bracket,
+      ]);
+      tournamentSheetCache = {
+        scheduleRows: Array.isArray(scheduleRows) ? scheduleRows : [],
+        teamRows: Array.isArray(teamRows) ? teamRows : [],
+        bracketRows: Array.isArray(bracketRows) ? bracketRows : [],
+        expiresAt: Date.now() + TOURNAMENT_CACHE_TTL_MS,
+      };
+      return getTournamentSheetResult({ fromStaleCache: false });
+    } catch (error) {
+      if (hasTournamentSheetCacheData()) {
+        console.warn('Google Sheets fetch failed; serving stale tournament cache:', error?.message || String(error));
+        return getTournamentSheetResult({ fromStaleCache: true });
+      }
+      throw error;
+    } finally {
+      tournamentSheetLoadPromise = null;
+    }
+  })();
+  return tournamentSheetLoadPromise;
+}
+
+// -----------------------------
 // Helpers
 // -----------------------------
+const GOOGLE_API_RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+const GOOGLE_API_MAX_RETRIES = 4;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getGoogleApiStatusCode(error) {
+  const directCode = Number(error?.code);
+  if (Number.isFinite(directCode)) return directCode;
+  const responseStatus = Number(error?.response?.status);
+  if (Number.isFinite(responseStatus)) return responseStatus;
+  const status = Number(error?.status);
+  if (Number.isFinite(status)) return status;
+  return null;
+}
+
+function isRetryableGoogleApiError(error) {
+  const code = getGoogleApiStatusCode(error);
+  if (code !== null && GOOGLE_API_RETRYABLE_STATUS_CODES.has(code)) return true;
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes('quota exceeded') || msg.includes('rate limit') || msg.includes('exceeded');
+}
+
+async function withGoogleApiRetry(action, label = 'google-sheets') {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await action();
+    } catch (error) {
+      if (!isRetryableGoogleApiError(error) || attempt >= GOOGLE_API_MAX_RETRIES) {
+        throw error;
+      }
+      const backoffMs = Math.min(4000, (250 * (2 ** attempt)) + Math.floor(Math.random() * 150));
+      const code = getGoogleApiStatusCode(error);
+      console.warn(
+        `[${label}] transient error${code ? ` (${code})` : ''}. ` +
+        `Retrying attempt ${attempt + 1}/${GOOGLE_API_MAX_RETRIES} in ${backoffMs}ms.`
+      );
+      await sleep(backoffMs);
+    }
+  }
+}
+
+function setTournamentCacheHeaders(res, { stale = false } = {}) {
+  if (!res || typeof res.set !== 'function') return;
+  res.set(
+    'Cache-Control',
+    `public, max-age=${TOURNAMENT_EDGE_CACHE_SECONDS}, s-maxage=${TOURNAMENT_EDGE_CACHE_SECONDS}, stale-while-revalidate=${TOURNAMENT_EDGE_STALE_SECONDS}`
+  );
+  if (stale) {
+    res.set('X-Tournament-Data-Stale', '1');
+  }
+}
+
+function setPredictionsCacheHeaders(res) {
+  if (!res || typeof res.set !== 'function') return;
+  res.set(
+    'Cache-Control',
+    `public, max-age=${PREDICTIONS_EDGE_CACHE_SECONDS}, s-maxage=${PREDICTIONS_EDGE_CACHE_SECONDS}, stale-while-revalidate=${PREDICTIONS_EDGE_STALE_SECONDS}`
+  );
+}
+
 function requireSpreadsheetId(res) {
   const id = process.env.SPREADSHEET_ID;
   if (!id || String(id).trim() === '') {
@@ -108,8 +237,29 @@ async function getSheetValues(spreadsheetId, range) {
   if (!spreadsheetId || !range) {
     throw new Error('spreadsheetId and range are required');
   }
-  const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+  const resp = await withGoogleApiRetry(
+    () => sheets.spreadsheets.values.get({ spreadsheetId, range }),
+    `values.get ${range}`
+  );
   return resp.data.values || [];
+}
+
+async function getSheetValuesBatch(spreadsheetId, ranges) {
+  if (!sheets) {
+    throw new Error('Google Sheets API not initialized');
+  }
+  if (!spreadsheetId || !Array.isArray(ranges) || ranges.length === 0) {
+    throw new Error('spreadsheetId and ranges are required');
+  }
+  const resp = await withGoogleApiRetry(
+    () => sheets.spreadsheets.values.batchGet({ spreadsheetId, ranges }),
+    'values.batchGet'
+  );
+  const valueRanges = Array.isArray(resp?.data?.valueRanges) ? resp.data.valueRanges : [];
+  return ranges.map((_, idx) => {
+    const values = valueRanges[idx]?.values;
+    return Array.isArray(values) ? values : [];
+  });
 }
 
 async function appendSheetRows(spreadsheetId, range, rows) {
@@ -961,6 +1111,8 @@ function generateChampionshipMatchupsFromStandings(standings) {
 // One vote per IP: submissions from the same IP are rejected.
 // -----------------------------
 const PREDICTIONS_SHEET_RANGE = 'Predictions!A2:E';
+const PREDICTIONS_CACHE_TTL_MS = 60 * 1000; // 1 minute (reduces reads when many users view predictions)
+let predictionsCache = { data: null, expiresAt: 0 };
 
 function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
@@ -990,8 +1142,16 @@ app.get('/api/predictions', async (req, res) => {
     }
     const spreadsheetId = requireSpreadsheetId(res);
     if (!spreadsheetId) return;
+    const now = Date.now();
+    if (predictionsCache.data !== null && predictionsCache.expiresAt > now) {
+      setPredictionsCacheHeaders(res);
+      return res.json(predictionsCache.data);
+    }
     const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
-    res.json(predictionsRowsToStats(Array.isArray(rows) ? rows : []));
+    const data = predictionsRowsToStats(Array.isArray(rows) ? rows : []);
+    predictionsCache = { data, expiresAt: now + PREDICTIONS_CACHE_TTL_MS };
+    setPredictionsCacheHeaders(res);
+    res.json(data);
   } catch (error) {
     console.error('Error fetching predictions:', error);
     res.status(500).json({ error: 'Failed to fetch predictions' });
@@ -1020,6 +1180,7 @@ app.post('/api/predictions', async (req, res) => {
     }
     const newRow = [new Date().toISOString(), elite || '', development || '', name, clientIp];
     await appendSheetRows(spreadsheetId, PREDICTIONS_SHEET_RANGE, [newRow]);
+    predictionsCache = { data: null, expiresAt: 0 }; // invalidate so next GET sees new vote
     const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
     const stats = predictionsRowsToStats(Array.isArray(rows) ? rows : []);
     res.status(201).json({ ok: true, stats });
@@ -1043,11 +1204,12 @@ app.get('/api/tournament/teams', async (req, res) => {
     }
     const spreadsheetId = requireSpreadsheetId(res);
     if (!spreadsheetId) return;
-    const rows = await getSheetValues(spreadsheetId, 'Teams!A1:Z50');
+    const { teamRows, fromStaleCache } = await getTournamentSheetRows(spreadsheetId);
 
-    const { pools } = parseTeamsFromTeamsSheet(Array.isArray(rows) ? rows : []);
+    const { pools } = parseTeamsFromTeamsSheet(teamRows);
 
     // Return in your previous structure (elite/development A/B/C/D)
+    setTournamentCacheHeaders(res, { stale: fromStaleCache });
     res.json({
       elite: { A: pools.poolA, B: pools.poolB },
       development: { C: pools.poolC, D: pools.poolD }
@@ -1066,14 +1228,10 @@ app.get('/api/tournament/schedule', async (req, res) => {
     const spreadsheetId = requireSpreadsheetId(res);
     if (!spreadsheetId) return;
 
-    const [scheduleRows, teamRows, bracketRows] = await Promise.all([
-      getSheetValues(spreadsheetId, 'Schedule!A1:Z200'),
-      getSheetValues(spreadsheetId, 'Teams!A1:Z50').catch(() => []),
-      getSheetValues(spreadsheetId, 'Bracket!A1:Z100').catch(() => []),
-    ]);
+    const { scheduleRows, teamRows, bracketRows, fromStaleCache } = await getTournamentSheetRows(spreadsheetId);
 
-    const teamsInfo = parseTeamsFromTeamsSheet(Array.isArray(teamRows) ? teamRows : []);
-    const scheduleMatches = parseScheduleRows(Array.isArray(scheduleRows) ? scheduleRows : []);
+    const teamsInfo = parseTeamsFromTeamsSheet(teamRows);
+    const scheduleMatches = parseScheduleRows(scheduleRows);
     const { standings } = computeStandings(teamsInfo, scheduleMatches);
 
     // Split into poolPlay vs "championship" by time heuristics:
@@ -1368,6 +1526,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
     scheduleData.poolPlay = sortScheduleBucket(scheduleData.poolPlay);
     scheduleData.championship = sortScheduleBucket(scheduleData.championship);
 
+    setTournamentCacheHeaders(res, { stale: fromStaleCache });
     res.json(scheduleData);
   } catch (error) {
     console.error('Error fetching schedule:', error);
@@ -1383,17 +1542,13 @@ app.get('/api/tournament/bracket', async (req, res) => {
     const spreadsheetId = requireSpreadsheetId(res);
     if (!spreadsheetId) return;
 
-    const [scheduleRows, bracketRows, teamRows] = await Promise.all([
-      getSheetValues(spreadsheetId, 'Schedule!A1:Z200'),
-      getSheetValues(spreadsheetId, 'Bracket!A1:Z100').catch(() => []),
-      getSheetValues(spreadsheetId, 'Teams!A1:Z50').catch(() => []),
-    ]);
+    const { scheduleRows, teamRows, bracketRows, fromStaleCache } = await getTournamentSheetRows(spreadsheetId);
 
-    const teamsInfo = parseTeamsFromTeamsSheet(Array.isArray(teamRows) ? teamRows : []);
-    const scheduleMatches = parseScheduleRows(Array.isArray(scheduleRows) ? scheduleRows : []);
+    const teamsInfo = parseTeamsFromTeamsSheet(teamRows);
+    const scheduleMatches = parseScheduleRows(scheduleRows);
     const { standings } = computeStandings(teamsInfo, scheduleMatches);
 
-    const bracketFromSheet = parseBracketSheet(Array.isArray(bracketRows) ? bracketRows : []);
+    const bracketFromSheet = parseBracketSheet(bracketRows);
 
     const resolved = resolveBracketsFromStandingsAndSchedule({
       standings,
@@ -1402,6 +1557,7 @@ app.get('/api/tournament/bracket', async (req, res) => {
     });
 
     const eliteConsolationChampionship = resolved?.elite?.eliteConsolationChampionship || null;
+    setTournamentCacheHeaders(res, { stale: fromStaleCache });
     res.json({ standings, ...resolved, eliteConsolationChampionship });
   } catch (error) {
     console.error('Error fetching bracket data:', error);
