@@ -1613,8 +1613,8 @@ const Locations = () => {
         </div>
 
         <h3 className="locations-subtitle">Bathroom Facilities</h3>
-        <div className="info-card locations-info-block">
-          <p className="text-sm text-secondary leading-relaxed">
+        <div className="info-card info-card-baby-blue locations-info-block">
+          <p className="text-sm leading-relaxed">
             Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong className="text-text">DO NOT WEAR CLEATS!</strong>).
           </p>
           <p className="locations-notice text-sm leading-relaxed">

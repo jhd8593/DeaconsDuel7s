@@ -710,6 +710,17 @@
   color: var(--ink);
 }
 
+.info-card-baby-blue {
+  background: linear-gradient(135deg, rgba(137, 207, 240, 0.35) 0%, rgba(176, 224, 230, 0.25) 100%);
+  border: 2px solid rgba(137, 207, 240, 0.6);
+  color: var(--ink);
+  box-shadow: 0 4px 12px rgba(137, 207, 240, 0.2);
+}
+
+.info-card-baby-blue p {
+  color: var(--ink);
+}
+
 .info-card-purple {
   background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(126, 34, 206, 0.12) 100%);
   border: 2px solid rgba(147, 51, 234, 0.5);
