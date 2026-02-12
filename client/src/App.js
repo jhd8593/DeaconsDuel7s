@@ -270,8 +270,8 @@ function App() {
 
     return {
       totalMatches: String(totalMatchesValue),
-      poolPlay: poolPlayCount ? String(poolPlayCount) : '',
-      championship: championshipCount ? String(championshipCount) : '',
+      poolPlay: poolPlayCount ? '24 games' : '',
+      championship: championshipCount ? '2 Elite 8 Brackets' : '',
       estimatedFinish,
     };
   };
