@@ -632,6 +632,17 @@ const Overview = ({ data, onNavigate }) => (
       </div>
     </section>
 
+    {/* Bathroom Facilities */}
+    <section className="space-y-8">
+      <h2 className="section-title">BATHROOM FACILITIES</h2>
+      <div className="info-card info-card-blue">
+        <div className="space-y-4 text-sm leading-relaxed">
+          <p>Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong>DO NOT WEAR CLEATS!</strong>).</p>
+          <p><strong>Please do not enter the Business and Law school at Wake Forest.</strong></p>
+        </div>
+      </div>
+    </section>
+
   </div>
 );
 
@@ -1590,13 +1601,13 @@ const Locations = () => {
           <div className="locations-fields">
             <div className="location-field">
               <span className="location-field-label">Field 1</span>
-              <a href={mapsUrl(field1Address)} target="_blank" rel="noopener noreferrer" className="location-address-text location-address-link">
+              <a href={mapsUrl(field1Address)} target="_blank" rel="noopener noreferrer" className="location-address-text location-address-link location-address-red">
                 {field1Address}
               </a>
             </div>
             <div className="location-field">
               <span className="location-field-label">Field 2</span>
-              <span className="location-address-text">{field2Address}</span>
+              <span className="location-address-text location-address-red">{field2Address}</span>
             </div>
           </div>
         </div>
@@ -1612,7 +1623,7 @@ const Locations = () => {
         </div>
 
         <h3 className="locations-subtitle">Parking Information</h3>
-        <div className="info-card locations-info-block">
+        <div className="info-card info-card-purple locations-info-block">
           <div className="space-y-4 text-sm text-secondary leading-relaxed">
             <p>
               <span className="font-semibold text-text">Primary Parking (Lot W1):</span> The main parking area for the event, located conveniently near the tournament fields.

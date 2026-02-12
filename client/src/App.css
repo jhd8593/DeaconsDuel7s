@@ -699,6 +699,28 @@
   background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%);
 }
 
+.info-card-blue {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.12) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  color: var(--ink);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.info-card-blue p {
+  color: var(--ink);
+}
+
+.info-card-purple {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(126, 34, 206, 0.12) 100%);
+  border: 2px solid rgba(147, 51, 234, 0.5);
+  color: var(--ink);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.15);
+}
+
+.info-card-purple p {
+  color: var(--ink);
+}
+
 .card-title {
   font-size: 13px;
   letter-spacing: 0.12em;
@@ -1292,6 +1314,15 @@
 
 .location-address-link:hover {
   color: var(--primary);
+  text-decoration: underline;
+}
+
+.location-address-red {
+  color: #c41e3a;
+}
+
+.location-address-link.location-address-red:hover {
+  color: #9e1830;
   text-decoration: underline;
 }
 
