@@ -20,6 +20,16 @@ console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID ? 'SET' : 'MISSING');
 app.use(cors());
 app.use(express.json());
 
+// Guard: avoid crashing if request is null (e.g. some serverless invocations)
+app.use((req, res, next) => {
+  if (!req || !res) {
+    console.error('Request or response object missing');
+    if (res && typeof res.status === 'function') res.status(500).json({ error: 'Server configuration error' });
+    return;
+  }
+  next();
+});
+
 // -----------------------------
 // Google Sheets setup
 // -----------------------------
@@ -82,9 +92,21 @@ if (missingVars.length > 0) {
 // -----------------------------
 // Helpers
 // -----------------------------
+function requireSpreadsheetId(res) {
+  const id = process.env.SPREADSHEET_ID;
+  if (!id || String(id).trim() === '') {
+    if (res) res.status(503).json({ error: 'SPREADSHEET_ID not configured', code: 'NO_SPREADSHEET_ID' });
+    return null;
+  }
+  return id;
+}
+
 async function getSheetValues(spreadsheetId, range) {
   if (!sheets) {
     throw new Error('Google Sheets API not initialized');
+  }
+  if (!spreadsheetId || !range) {
+    throw new Error('spreadsheetId and range are required');
   }
   const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
   return resp.data.values || [];
@@ -353,7 +375,7 @@ function parseTeamsFromTeamsSheet(rows) {
     poolD: [],
   };
 
-  rows.forEach((row, idx) => {
+  (rows || []).forEach((row, idx) => {
     // Skip header row
     if (idx === 0) return;
     
@@ -385,7 +407,7 @@ function parseScheduleRows(scheduleRows) {
   // We skip header rows and return normalized matches.
   const out = [];
 
-  scheduleRows.forEach((row, idx) => {
+  (scheduleRows || []).forEach((row, idx) => {
     if (!row || row.length === 0) return;
 
     const time = safeStr(row[0]);
@@ -964,9 +986,10 @@ function predictionsRowsToStats(rows) {
 app.get('/api/predictions', async (req, res) => {
   try {
     if (!sheets) {
-      return res.status(500).json({ error: 'Google Sheets API not available' });
+      return res.status(503).json({ error: 'Google Sheets API not available', code: 'SHEETS_NOT_INIT' });
     }
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const spreadsheetId = requireSpreadsheetId(res);
+    if (!spreadsheetId) return;
     const rows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
     res.json(predictionsRowsToStats(Array.isArray(rows) ? rows : []));
   } catch (error) {
@@ -978,10 +1001,11 @@ app.get('/api/predictions', async (req, res) => {
 app.post('/api/predictions', async (req, res) => {
   try {
     if (!sheets) {
-      return res.status(500).json({ error: 'Google Sheets API not available' });
+      return res.status(503).json({ error: 'Google Sheets API not available', code: 'SHEETS_NOT_INIT' });
     }
+    const spreadsheetId = requireSpreadsheetId(res);
+    if (!spreadsheetId) return;
     const clientIp = getClientIp(req);
-    const spreadsheetId = process.env.SPREADSHEET_ID;
     const existingRows = await getSheetValues(spreadsheetId, PREDICTIONS_SHEET_RANGE).catch(() => []);
     const alreadyVoted = Array.isArray(existingRows) && existingRows.some((row) => safeStr(row[4]) === clientIp);
     if (alreadyVoted) {
@@ -1015,13 +1039,13 @@ app.get('/api/health', (req, res) => {
 app.get('/api/tournament/teams', async (req, res) => {
   try {
     if (!sheets) {
-      return res.status(500).json({ error: 'Google Sheets API not available' });
+      return res.status(503).json({ error: 'Google Sheets API not available', code: 'SHEETS_NOT_INIT' });
     }
-    
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const spreadsheetId = requireSpreadsheetId(res);
+    if (!spreadsheetId) return;
     const rows = await getSheetValues(spreadsheetId, 'Teams!A1:Z50');
 
-    const { pools } = parseTeamsFromTeamsSheet(rows);
+    const { pools } = parseTeamsFromTeamsSheet(Array.isArray(rows) ? rows : []);
 
     // Return in your previous structure (elite/development A/B/C/D)
     res.json({
@@ -1037,20 +1061,19 @@ app.get('/api/tournament/teams', async (req, res) => {
 app.get('/api/tournament/schedule', async (req, res) => {
   try {
     if (!sheets) {
-      return res.status(500).json({ error: 'Google Sheets API not available' });
+      return res.status(503).json({ error: 'Google Sheets API not available', code: 'SHEETS_NOT_INIT' });
     }
-    
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const spreadsheetId = requireSpreadsheetId(res);
+    if (!spreadsheetId) return;
 
     const [scheduleRows, teamRows, bracketRows] = await Promise.all([
       getSheetValues(spreadsheetId, 'Schedule!A1:Z200'),
       getSheetValues(spreadsheetId, 'Teams!A1:Z50').catch(() => []),
-      // Bracket sheet is optional
       getSheetValues(spreadsheetId, 'Bracket!A1:Z100').catch(() => []),
     ]);
 
-    const teamsInfo = parseTeamsFromTeamsSheet(teamRows);
-    const scheduleMatches = parseScheduleRows(scheduleRows);
+    const teamsInfo = parseTeamsFromTeamsSheet(Array.isArray(teamRows) ? teamRows : []);
+    const scheduleMatches = parseScheduleRows(Array.isArray(scheduleRows) ? scheduleRows : []);
     const { standings } = computeStandings(teamsInfo, scheduleMatches);
 
     // Split into poolPlay vs "championship" by time heuristics:
@@ -1355,10 +1378,10 @@ app.get('/api/tournament/schedule', async (req, res) => {
 app.get('/api/tournament/bracket', async (req, res) => {
   try {
     if (!sheets) {
-      return res.status(500).json({ error: 'Google Sheets API not available' });
+      return res.status(503).json({ error: 'Google Sheets API not available', code: 'SHEETS_NOT_INIT' });
     }
-    
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const spreadsheetId = requireSpreadsheetId(res);
+    if (!spreadsheetId) return;
 
     const [scheduleRows, bracketRows, teamRows] = await Promise.all([
       getSheetValues(spreadsheetId, 'Schedule!A1:Z200'),
@@ -1366,11 +1389,11 @@ app.get('/api/tournament/bracket', async (req, res) => {
       getSheetValues(spreadsheetId, 'Teams!A1:Z50').catch(() => []),
     ]);
 
-    const teamsInfo = parseTeamsFromTeamsSheet(teamRows);
-    const scheduleMatches = parseScheduleRows(scheduleRows);
+    const teamsInfo = parseTeamsFromTeamsSheet(Array.isArray(teamRows) ? teamRows : []);
+    const scheduleMatches = parseScheduleRows(Array.isArray(scheduleRows) ? scheduleRows : []);
     const { standings } = computeStandings(teamsInfo, scheduleMatches);
 
-    const bracketFromSheet = parseBracketSheet(bracketRows);
+    const bracketFromSheet = parseBracketSheet(Array.isArray(bracketRows) ? bracketRows : []);
 
     const resolved = resolveBracketsFromStandingsAndSchedule({
       standings,
@@ -1387,6 +1410,12 @@ app.get('/api/tournament/bracket', async (req, res) => {
 });
 
 // -----------------------------
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// For Vercel: export the app so the platform can invoke it (req, res).
+// For local: start the server with listen().
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}

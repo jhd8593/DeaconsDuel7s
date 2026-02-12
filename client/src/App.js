@@ -317,7 +317,13 @@ function App() {
       ]);
 
       if (!scheduleRes.ok || !teamsRes.ok || !bracketRes.ok) {
-        throw new Error('Failed to fetch tournament data');
+        const failed = [scheduleRes, teamsRes, bracketRes].find((r) => !r.ok);
+        let msg = 'Failed to fetch tournament data';
+        try {
+          const body = await failed.json();
+          if (body && body.error) msg = body.error;
+        } catch (_) { /* ignore */ }
+        throw new Error(msg);
       }
 
       const [schedule, teams, bracket] = await Promise.all([
@@ -339,7 +345,8 @@ function App() {
       isFirstLoadRef.current = false;
     } catch (err) {
       console.error('Error fetching tournament data:', err);
-      setError('Failed to load tournament data. Using default data.');
+      const message = err && err.message ? err.message : 'Failed to load tournament data.';
+      setError(message.includes('default') ? message : `${message} Using default data.`);
     } finally {
       setLoading(false);
       setRefreshing(false);
