@@ -275,6 +275,21 @@ async function appendSheetRows(spreadsheetId, range, rows) {
   });
 }
 
+async function updateSheetRange(spreadsheetId, range, values) {
+  if (!sheets) {
+    throw new Error('Google Sheets API not initialized');
+  }
+  await withGoogleApiRetry(
+    () => sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values },
+    }),
+    'values.update'
+  );
+}
+
 function safeStr(v) {
   return (v ?? '').toString().trim();
 }
@@ -1187,6 +1202,64 @@ app.post('/api/predictions', async (req, res) => {
   } catch (error) {
     console.error('Error submitting prediction:', error);
     res.status(500).json({ error: 'Failed to submit prediction' });
+  }
+});
+
+// -----------------------------
+// Visitor count (main page / website visits)
+// Persisted in Google Sheet "VisitorCount" cell A1 if the sheet exists; otherwise in-memory (resets on cold start).
+// To persist: add a sheet named "VisitorCount" to your spreadsheet and put 0 in cell A1.
+// -----------------------------
+const VISITOR_COUNT_RANGE = 'VisitorCount!A1';
+let visitorCountMemory = 0;
+
+app.get('/api/visits', async (req, res) => {
+  try {
+    const record = req.query.record === '1' || req.query.record === 'true';
+    const spreadsheetId = process.env.SPREADSHEET_ID && String(process.env.SPREADSHEET_ID).trim() ? process.env.SPREADSHEET_ID : null;
+
+    const getCountFromSheet = async () => {
+      if (!sheets || !spreadsheetId) return null;
+      const rows = await getSheetValues(spreadsheetId, VISITOR_COUNT_RANGE).catch(() => null);
+      if (!Array.isArray(rows) || rows.length === 0) return null;
+      const val = rows[0][0];
+      const n = Number(val);
+      return Number.isFinite(n) && n >= 0 ? n : null;
+    };
+
+    const setCountInSheet = async (count) => {
+      if (!sheets || !spreadsheetId) return;
+      await updateSheetRange(spreadsheetId, VISITOR_COUNT_RANGE, [[count]]);
+    };
+
+    if (record) {
+      let count = await getCountFromSheet();
+      if (count === null) {
+        visitorCountMemory += 1;
+        count = visitorCountMemory;
+        try {
+          await setCountInSheet(count);
+        } catch (_) {
+          // Sheet may not exist; keep using in-memory
+        }
+      } else {
+        count += 1;
+        visitorCountMemory = count;
+        try {
+          await setCountInSheet(count);
+        } catch (err) {
+          console.warn('Visitor count sheet update failed:', err?.message || err);
+        }
+      }
+      return res.json({ count });
+    }
+
+    let count = await getCountFromSheet();
+    if (count === null) count = visitorCountMemory;
+    res.json({ count });
+  } catch (error) {
+    console.error('Error in /api/visits:', error);
+    res.json({ count: visitorCountMemory });
   }
 });
 

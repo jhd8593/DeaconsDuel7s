@@ -176,6 +176,7 @@ function App() {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [liveStreamField, setLiveStreamField] = useState(1);
+  const [visitorCount, setVisitorCount] = useState(null);
 
   const goToLiveStream = (field) => {
     setLiveStreamField(field === 2 ? 2 : 1);
@@ -331,6 +332,15 @@ function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/api/visits?record=1`)
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && typeof d?.count === 'number') setVisitorCount(d.count); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [API_BASE]);
 
   const fetchTournamentData = async ({ showInitialLoader }) => {
     if (isFetchingTournamentRef.current) return;
@@ -579,6 +589,11 @@ function App() {
           </>
         )}
       </main>
+      {visitorCount != null && (
+        <footer className="visitor-count-footer" aria-label="Page view count">
+          <span className="visitor-count-text">{visitorCount.toLocaleString()} visitor{visitorCount !== 1 ? 's' : ''}</span>
+        </footer>
+      )}
     </div>
   );
 }
