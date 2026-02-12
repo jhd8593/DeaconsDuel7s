@@ -642,18 +642,7 @@ const Overview = ({ data, onNavigate }) => (
           <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. All 8 teams advance to the Development bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
           <p><span className="font-semibold text-text">MATCH STRUCTURE</span> - 16-minute matches with 5-minute turnovers between pitches.</p>
           <p><span className="font-semibold text-text">LUNCH BREAK</span> - 30-minute break at 12:52 PM.</p>
-          <p><span className="font-semibold text-text">SCORING SYSTEM</span> - Teams will earn competition points as follows: four points for a win, two for a draw, and zero for a loss. Additionally, teams can secure one bonus point if they score four or more tries in a single match (20+ points), and another bonus point if they lose by seven points or fewer. If teams finish level on points at the end of the tournament, their ranking will be determined by their points differential (total points scored minus total points conceded).</p>
-        </div>
-      </div>
-    </section>
-
-    {/* Bathroom Facilities */}
-    <section className="space-y-8">
-      <h2 className="section-title">BATHROOM FACILITIES</h2>
-      <div className="info-card info-card-blue">
-        <div className="space-y-4 text-sm leading-relaxed">
-          <p>Main restrooms are located near the tennis courts, easily accessible from the playing fields. There are extra bathrooms at Reynolds Gymnasium (<strong>DO NOT WEAR CLEATS!</strong>).</p>
-          <p className="locations-notice-red">Please do not enter the Business and Law school at Wake Forest.</p>
+          <p><span className="font-semibold text-text">SCORING SYSTEM</span> - Teams will earn competition points as follows: four points for a win, two for a draw, and zero for a loss. Additionally, 20+ points in a single match gives you one bonus point. If teams finish level on points at the end of the tournament, their ranking will be determined by their points differential (total points scored minus total points conceded).</p>
         </div>
       </div>
     </section>
