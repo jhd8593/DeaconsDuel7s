@@ -1049,9 +1049,11 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     if (!acc[match.time]) {
       acc[match.time] = {};
     }
+    const isBreak = (match.team1 || '').toString().trim() === 'BREAK';
     const scoreText = formatScheduleScore(match.score);
     if (match.field === 'Field 1') {
-      acc[match.time].field1 = `${match.team1} ${scoreText} ${match.team2}`;
+      acc[match.time].field1 = isBreak ? 'BREAK' : `${match.team1} ${scoreText} ${match.team2}`;
+      if (isBreak) acc[match.time].isBreakRow = true;
     } else if (match.field === 'Field 2') {
       acc[match.time].field2 = `${match.team1} ${scoreText} ${match.team2}`;
     }
@@ -1060,7 +1062,8 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
 
   const championshipPlayRows = Object.entries(championshipRows).map(([time, matches]) => ({
     time,
-    ...matches
+    ...matches,
+    isBreakRow: matches.isBreakRow || false,
   }));
 
   const sampleChampionshipRows = [
@@ -1271,15 +1274,20 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {phase2BaseRows.map((row, i) => (
-                      <tr key={i} className="table-row">
-                        <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
-                        <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{row.field1 === 'BREAK' ? 'BREAK' : renderMatchWithWinner(row.field1)}</td>
-                        {showPhase2Field2 && (
-                          <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{!row.field2 || row.field2 === '—' ? '—' : renderMatchWithWinner(row.field2)}</td>
-                        )}
-                      </tr>
-                    ))}
+                    {phase2BaseRows.map((row, i) => {
+                      const isBreak = row.isBreakRow || row.field1 === 'BREAK';
+                      return (
+                        <tr key={i} className={`table-row ${isBreak ? 'schedule-break-row' : ''}`}>
+                          <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
+                          <td className={`py-4 px-6 text-sm match-cell ${isBreak ? 'schedule-break-cell' : ''}`} data-label="Field 1">
+                            {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
+                          </td>
+                          {showPhase2Field2 && (
+                            <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{!row.field2 || row.field2 === '—' ? '—' : renderMatchWithWinner(row.field2)}</td>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
