@@ -267,7 +267,10 @@ function App() {
   const computeOverviewFromSchedule = (schedule = {}) => {
     const matchDuration = 20; // 16-minute matches + ~4 minutes turnover
     const poolPlayCount = schedule.poolPlay?.length || 0;
-    const championshipCount = schedule.championship?.length || 0;
+    const championshipCount = (schedule.championship || []).filter((match) => {
+      const team1 = String(match?.team1 || '').trim().toUpperCase();
+      return team1 !== 'BREAK';
+    }).length;
     const totalMatches = poolPlayCount + championshipCount;
 
     const allTimes = [...(schedule.poolPlay || []), ...(schedule.championship || [])]
