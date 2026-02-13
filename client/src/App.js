@@ -1279,11 +1279,19 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                       return (
                         <tr key={i} className={`table-row ${isBreak ? 'schedule-break-row' : ''}`}>
                           <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
-                          <td className={`py-4 px-6 text-sm match-cell ${isBreak ? 'schedule-break-cell' : ''}`} data-label="Field 1">
-                            {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
-                          </td>
-                          {showPhase2Field2 && (
-                            <td className={`py-4 px-6 text-sm match-cell ${!row.field2 ? 'schedule-field2-empty' : ''}`} data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
+                          {isBreak && showPhase2Field2 ? (
+                            <td colSpan={2} className="py-4 px-6 text-sm schedule-break-cell schedule-break-cell-span" data-label="">
+                              <span className="schedule-break-label">BREAK</span>
+                            </td>
+                          ) : (
+                            <>
+                              <td className={`py-4 px-6 text-sm match-cell ${isBreak ? 'schedule-break-cell' : ''}`} data-label="Field 1">
+                                {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
+                              </td>
+                              {showPhase2Field2 && (
+                                <td className={`py-4 px-6 text-sm match-cell ${!row.field2 ? 'schedule-field2-empty' : ''}`} data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
+                              )}
+                            </>
                           )}
                         </tr>
                       );
