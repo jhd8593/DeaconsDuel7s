@@ -805,6 +805,8 @@
   font-weight: 800;
   color: var(--ink);
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .bracket-schematic-track-meta {
@@ -827,6 +829,8 @@
   padding: 8px 10px;
   display: grid;
   gap: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .bracket-schematic-item-top,
@@ -859,6 +863,8 @@
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .bracket-schematic-matchup {
@@ -866,6 +872,8 @@
   color: var(--ink);
   font-weight: 600;
   letter-spacing: 0.02em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .bracket-schematic-field {
@@ -874,6 +882,8 @@
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 1024px) {
@@ -1304,6 +1314,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .bracket-match,
@@ -1338,6 +1349,13 @@
   background: var(--bg);
   border: 1px solid var(--line);
   transition: all 0.2s ease;
+  min-width: 0;
+  gap: 8px;
+}
+
+.match-team > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .match-team.winner {
@@ -1811,6 +1829,18 @@ table {
   .bracket-schematic-item-top,
   .bracket-schematic-item-bottom {
     flex-wrap: wrap;
+  }
+
+  .bracket-schematic-track-title {
+    letter-spacing: 0.08em;
+  }
+
+  .bracket-stage-title {
+    letter-spacing: 0.1em;
+  }
+
+  .bracket-schematic-time {
+    letter-spacing: 0.05em;
   }
 
   .bracket-schematic-field {
