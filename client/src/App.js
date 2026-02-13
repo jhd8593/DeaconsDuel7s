@@ -650,6 +650,55 @@ const Overview = ({ data, onNavigate }) => (
       </div>
     </section>
 
+    {/* Bracket Layout (Placeholder) */}
+    <section className="space-y-8">
+      <div className="section-header">
+        <div className="section-label">
+          <span className="icon-chip" aria-label="Bracket layout"><Icon name="calendar" size={16} ariaLabel="Bracket layout icon" /></span>
+          <h2 className="section-title">BRACKET PLAY LAYOUT</h2>
+        </div>
+      </div>
+      <div className="table-shell compact">
+        <div className="schedule-table w-full max-w-5xl">
+          <table className="w-full">
+            <thead>
+              <tr className="table-head-row">
+                <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">TIME</th>
+                <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 1</th>
+                <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 2</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { time: '1:22 PM', field1: 'Elite QF1', field2: 'Dev QF1' },
+                { time: '1:43 PM', field1: 'Elite QF2', field2: 'Dev QF2' },
+                { time: '2:04 PM', field1: 'Elite QF3', field2: 'Dev QF3' },
+                { time: '2:25 PM', field1: 'Elite QF4', field2: 'Dev QF4' },
+                { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
+                { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
+                { time: '3:28 PM', field1: 'BREAK', field2: '' },
+                { time: '3:49 PM', field1: 'Elite Consol 1', field2: 'Dev Consol 1' },
+                { time: '4:10 PM', field1: 'Elite Consol 2', field2: 'Dev Consol 2' },
+                { time: '4:31 PM', field1: 'Dev Final: Winner SF1 vs Winner SF2', field2: '' },
+                { time: '4:52 PM', field1: 'Elite Final: Winner SF1 vs Winner SF2', field2: '' },
+              ].map((row, i) => {
+                const isBreak = row.field1 === 'BREAK';
+                return (
+                  <tr key={i} className={`table-row ${isBreak ? 'schedule-break-row' : ''}`}>
+                    <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
+                    <td className={`py-4 px-6 text-sm match-cell ${isBreak ? 'schedule-break-cell' : ''}`} data-label="Field 1">
+                      {isBreak ? <span className="schedule-break-label">BREAK</span> : row.field1}
+                    </td>
+                    <td className="py-4 px-6 text-sm match-cell schedule-field2-empty" data-label="Field 2">{row.field2}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </div>
 );
 
