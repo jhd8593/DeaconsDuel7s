@@ -284,7 +284,7 @@ function App() {
     return {
       totalMatches: String(totalMatchesValue),
       poolPlay: poolPlayCount ? '24 games' : '',
-      championship: championshipCount ? '2 Elite 8 Brackets' : '',
+      championship: championshipCount ? '2 Brackets + Consolation' : '',
       estimatedFinish,
     };
   };
@@ -641,8 +641,8 @@ const Overview = ({ data, onNavigate }) => (
       <h2 className="section-title">TOURNAMENT FORMAT</h2>
       <div className="info-card">
         <div className="space-y-6 text-sm text-secondary leading-relaxed">
-          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. All 8 teams advance to the Elite bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
-          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. All 8 teams advance to the Development bracket playoffs (quarterfinals, semifinals, 3rd place, and final).</p>
+          <p><span className="font-semibold text-text">ELITE DIVISION</span> - Two pools of four teams. All 8 teams advance to the Elite bracket playoffs (quarterfinals, semifinals, consolation, and final).</p>
+          <p><span className="font-semibold text-text">DEVELOPMENT DIVISION</span> - Two pools of four teams. All 8 teams advance to the Development bracket playoffs (quarterfinals, semifinals, consolation, and final).</p>
           <p><span className="font-semibold text-text">MATCH STRUCTURE</span> - 16-minute matches with 5-minute turnovers between pitches.</p>
           <p><span className="font-semibold text-text">LUNCH BREAK</span> - 30-minute break at 12:52 PM.</p>
           <p><span className="font-semibold text-text">SCORING SYSTEM</span> - Teams will earn competition points as follows: four points for a win, two for a draw, and zero for a loss. Additionally, 20+ points in a single match gives you one bonus point. If teams finish level on points at the end of the tournament, their ranking will be determined by their points differential (total points scored minus total points conceded).</p>
@@ -1351,6 +1351,7 @@ const Bracket = ({ data, schedule }) => {
 
   const qfTimes = ['1:22 PM', '1:43 PM', '2:04 PM', '2:25 PM'];
   const sfTimes = ['2:46 PM', '3:07 PM'];
+  const consolationTimes = ['3:49 PM', '4:10 PM'];
   const eliteFinalTimeFallback = '4:52 PM';
   const devFinalTimeFallback = '4:31 PM';
 
@@ -1395,6 +1396,11 @@ const Bracket = ({ data, schedule }) => {
       const time = finalFallback;
       return resolveField(buildLabelVariants(prefixes, 'Final'), time, 'Field 1');
     },
+    getConsolTime: (index) => resolveTime(buildLabelVariants(prefixes, `Consol ${index + 1}`), consolationTimes[index]),
+    getConsolField: (index) => {
+      const time = consolationTimes[index];
+      return resolveField(buildLabelVariants(prefixes, `Consol ${index + 1}`), time, prefixes.includes('Elite') ? 'Field 1' : 'Field 2');
+    },
   });
 
   const eliteTimes = makeBracketTimes(['Elite'], eliteFinalTimeFallback);
@@ -1416,13 +1422,25 @@ const Bracket = ({ data, schedule }) => {
     ['Winner QF1', 'Winner QF2'],
     ['Winner QF3', 'Winner QF4']
   ];
+  const eliteConsolDefaults = [
+    ['Loser QF1', 'Loser QF2'],
+    ['Loser QF3', 'Loser QF4']
+  ];
+  const devConsolDefaults = [
+    ['Loser QF1', 'Loser QF2'],
+    ['Loser QF3', 'Loser QF4']
+  ];
 
-  const renderBracketSection = ({ title, bracket, times, qfDefaults }) => {
+  const renderBracketSection = ({ title, bracket, times, qfDefaults, consolationMatches, consolationDefaults }) => {
     const finalWinner = getBracketWinner(bracket.final?.score1, bracket.final?.score2);
     const finalScore1 = formatBracketScore(bracket.final?.score1, bracket.final?.score2);
     const finalScore2 = formatBracketScore(bracket.final?.score2, bracket.final?.score1);
     const finalTime = times.getFinalTime();
     const finalField = times.getFinalField();
+    const consolations =
+      Array.isArray(consolationMatches) && consolationMatches.length > 0
+        ? consolationMatches
+        : consolationDefaults;
 
     return (
       <section>
@@ -1500,6 +1518,31 @@ const Bracket = ({ data, schedule }) => {
                 {finalScore2 !== 'vs' && <span className="match-score">{finalScore2}</span>}
               </div>
             </div>
+
+            <div className="mt-12 space-y-6">
+              <h3 className="bracket-stage-title">CONSOLATION</h3>
+              {consolations.slice(0, 2).map((match, i) => {
+                const winner = getBracketWinner(match.score1, match.score2);
+                const score1 = formatBracketScore(match.score1, match.score2);
+                const score2 = formatBracketScore(match.score2, match.score1);
+                const timeLabel = times.getConsolTime(i);
+                const fieldLabel = times.getConsolField(i);
+                return (
+                  <div key={i} className="bracket-match">
+                    {timeLabel && <div className="match-time">{timeLabel}</div>}
+                    {fieldLabel && <div className="match-field">{fieldLabel}</div>}
+                    <div className={`match-team ${winner === 'team1' ? 'winner' : winner ? 'loser' : ''}`}>
+                      <span className="text-sm">{match.team1 || match[0]}</span>
+                      {score1 !== 'vs' && <span className="match-score">{score1}</span>}
+                    </div>
+                    <div className={`match-team ${winner === 'team2' ? 'winner' : winner ? 'loser' : ''}`}>
+                      <span className="text-sm">{match.team2 || match[1]}</span>
+                      {score2 !== 'vs' && <span className="match-score">{score2}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -1515,6 +1558,8 @@ const Bracket = ({ data, schedule }) => {
         bracket: eliteBracket,
         times: eliteTimes,
         qfDefaults: eliteQfDefaults,
+        consolationMatches: eliteBracket?.consolation?.elite,
+        consolationDefaults: eliteConsolDefaults,
       })}
 
       {renderBracketSection({
@@ -1522,6 +1567,8 @@ const Bracket = ({ data, schedule }) => {
         bracket: devBracket,
         times: devTimes,
         qfDefaults: devQfDefaults,
+        consolationMatches: devBracket?.consolation?.development,
+        consolationDefaults: devConsolDefaults,
       })}
     </div>
   );
