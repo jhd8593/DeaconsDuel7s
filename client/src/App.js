@@ -611,28 +611,31 @@ const Overview = ({ data, onNavigate }) => (
           { label: 'POOL PLAY', value: data.poolPlay, icon: 'flag', tab: 'schedule' },
           { label: 'BRACKETS', value: data.championship, icon: 'trophy', tab: 'bracket' },
           { label: 'EST. FINISH', value: data.estimatedFinish, icon: 'clock', tab: null }
-        ].filter((stat) => stat.value).map((stat, i) => (
-          <div 
-            key={i} 
-            className={`stat-card ${stat.tab ? 'stat-card-interactive' : ''}`}
-            onClick={() => stat.tab && onNavigate && onNavigate(stat.tab)}
-            role={stat.tab ? 'button' : undefined}
-            tabIndex={stat.tab ? 0 : undefined}
-            onKeyDown={(e) => {
-              if (stat.tab && onNavigate && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                onNavigate(stat.tab);
-              }
-            }}
-            aria-label={stat.tab ? `Click to view ${stat.label.toLowerCase()}` : undefined}
-          >
-            <div className="stat-icon">
-              <Icon name={stat.icon} size={18} ariaLabel={stat.label} />
+        ].filter((stat) => stat.value).map((stat, i) => {
+          const isLongValue = String(stat.value).length > 14;
+          return (
+            <div 
+              key={i} 
+              className={`stat-card ${stat.tab ? 'stat-card-interactive' : ''}`}
+              onClick={() => stat.tab && onNavigate && onNavigate(stat.tab)}
+              role={stat.tab ? 'button' : undefined}
+              tabIndex={stat.tab ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (stat.tab && onNavigate && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  onNavigate(stat.tab);
+                }
+              }}
+              aria-label={stat.tab ? `Click to view ${stat.label.toLowerCase()}` : undefined}
+            >
+              <div className="stat-icon">
+                <Icon name={stat.icon} size={18} ariaLabel={stat.label} />
+              </div>
+              <div className={`stat-value ${isLongValue ? 'long-value' : ''}`}>{stat.value}</div>
+              <div className="stat-label">{stat.label}</div>
             </div>
-            <div className="stat-value">{stat.value}</div>
-            <div className="stat-label">{stat.label}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
 
