@@ -997,7 +997,25 @@ function resolveDivisionBracket({
       bracket.semifinals.length > 0 ||
       bracket.final.length > 0;
 
-    if (!hasDevBracket && allowPlacementFallback) {
+    if (hasDevBracket) {
+      const consolationDevelopment = [0, 1].map((i) => {
+        const from = bracket.consolation?.development?.[i];
+        const base = {
+          team1: from?.team1 || qfLosers[i * 2] || (i === 0 ? 'Loser QF1' : 'Loser QF3'),
+          team2: from?.team2 || qfLosers[i * 2 + 1] || (i === 0 ? 'Loser QF2' : 'Loser QF4'),
+          score1: from?.score1 || '0',
+          score2: from?.score2 || '0',
+          winner: from?.winner || null,
+          loser: from?.loser || null,
+        };
+        return resolveMatchWithSchedule({
+          base,
+          scheduleFlat,
+          labels: buildLabelVariants(['Dev', 'Development'], `Consol ${i + 1}`),
+        });
+      });
+      consolation.development = consolationDevelopment;
+    } else if (allowPlacementFallback) {
       const devPlaceLabels = ['2nd Place', '3rd Place', '4th Place'];
       const consolationDevelopmentSeeds = [
         { team1: standings.poolC?.[1] || 'Pool C 2nd', team2: standings.poolD?.[1] || 'Pool D 2nd' },
@@ -1469,28 +1487,36 @@ app.get('/api/tournament/schedule', async (req, res) => {
         team2: '',
       });
 
-      // 3rd Place & Finals - All on Field 1 only (3:49, 4:10, 4:31, 4:52)
-      if (useDevBracket) {
-        const devThirdPlace = devBracket.thirdPlace || {};
-        pushIfMissing({
-          bucket: 'championship',
-          time: '3:49 PM',
-          field: 'Field 1',
-          team1: `Dev 3rd Place: ${devThirdPlace.team1 || 'Loser SF1'}`,
-          score: scoreFromMatch(devThirdPlace),
-          team2: devThirdPlace.team2 || 'Loser SF2',
-        });
-      }
+      // Replace both 3rd-place matches with four consolation matches across both fields.
+      if (useEliteBracket && useDevBracket) {
+        const consolationTimes = ['3:49 PM', '4:10 PM'];
 
-      if (useEliteBracket) {
-        const eliteThirdPlace = eliteBracket.thirdPlace || {};
-        pushIfMissing({
-          bucket: 'championship',
-          time: '4:10 PM',
-          field: 'Field 1',
-          team1: `Elite 3rd Place: ${eliteThirdPlace.team1 || 'Loser SF1'}`,
-          score: scoreFromMatch(eliteThirdPlace),
-          team2: eliteThirdPlace.team2 || 'Loser SF2',
+        consolationTimes.forEach((time, i) => {
+          const eliteConsol = eliteBracket.consolation?.elite?.[i];
+          if (eliteConsol) {
+            upsertMatch({
+              bucket: 'championship',
+              time,
+              field: 'Field 1',
+              team1: `Elite Consol ${i + 1}: ${eliteConsol.team1}`,
+              score: scoreFromMatch(eliteConsol),
+              team2: eliteConsol.team2,
+            });
+          }
+        });
+
+        consolationTimes.forEach((time, i) => {
+          const devConsol = devBracket.consolation?.development?.[i];
+          if (devConsol) {
+            upsertMatch({
+              bucket: 'championship',
+              time,
+              field: 'Field 2',
+              team1: `Dev Consol ${i + 1}: ${devConsol.team1}`,
+              score: scoreFromMatch(devConsol),
+              team2: devConsol.team2,
+            });
+          }
         });
       }
 
@@ -1516,8 +1542,8 @@ app.get('/api/tournament/schedule', async (req, res) => {
         });
       }
 
-      const allowConsolations = !useDevBracket;
-      if (allowConsolations && eliteBracket.consolation?.elite?.length) {
+      const allowLegacyConsolations = !useDevBracket;
+      if (allowLegacyConsolations && eliteBracket.consolation?.elite?.length) {
         const eliteConsolTimes = ['2:46 PM', '3:07 PM'];
         eliteConsolTimes.forEach((time, i) => {
           const m = eliteBracket.consolation.elite[i];
@@ -1533,7 +1559,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
         });
       }
 
-      if (allowConsolations && eliteBracket.eliteConsolationChampionship) {
+      if (allowLegacyConsolations && eliteBracket.eliteConsolationChampionship) {
         const m = eliteBracket.eliteConsolationChampionship;
         pushIfMissing({
           bucket: 'championship',
@@ -1545,7 +1571,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
         });
       }
 
-      if (allowConsolations && devBracket.consolation?.development?.length) {
+      if (allowLegacyConsolations && devBracket.consolation?.development?.length) {
         const devTimes = ['4:10 PM', '4:31 PM', '4:52 PM'];
         const devLabels = ['Dev 2nd Place', 'Dev 3rd Place', 'Dev 4th Place'];
         devTimes.forEach((time, i) => {

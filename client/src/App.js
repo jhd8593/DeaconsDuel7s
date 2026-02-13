@@ -1077,8 +1077,8 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
     { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
     { time: '3:28 PM', field1: 'BREAK', field2: '' },
-    { time: '3:49 PM', field1: 'Dev 3rd Place', field2: '' },
-    { time: '4:10 PM', field1: 'Elite 3rd Place', field2: '' },
+    { time: '3:49 PM', field1: 'Elite Consol 1', field2: 'Dev Consol 1' },
+    { time: '4:10 PM', field1: 'Elite Consol 2', field2: 'Dev Consol 2' },
     { time: '4:31 PM', field1: 'Dev Final', field2: '' },
     { time: '4:52 PM', field1: 'Elite Final', field2: '' }
   ];
@@ -1395,10 +1395,6 @@ const Bracket = ({ data, schedule }) => {
       const time = finalFallback;
       return resolveField(buildLabelVariants(prefixes, 'Final'), time, 'Field 1');
     },
-    getThirdPlaceField: () => {
-      const time = prefixes.includes('Elite') ? '4:10 PM' : '3:49 PM';
-      return resolveField(buildLabelVariants(prefixes, '3rd Place'), time, 'Field 1');
-    },
   });
 
   const eliteTimes = makeBracketTimes(['Elite'], eliteFinalTimeFallback);
@@ -1427,12 +1423,6 @@ const Bracket = ({ data, schedule }) => {
     const finalScore2 = formatBracketScore(bracket.final?.score2, bracket.final?.score1);
     const finalTime = times.getFinalTime();
     const finalField = times.getFinalField();
-    
-    const thirdPlaceWinner = getBracketWinner(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
-    const thirdPlaceScore1 = formatBracketScore(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
-    const thirdPlaceScore2 = formatBracketScore(bracket.thirdPlace?.score2, bracket.thirdPlace?.score1);
-    const thirdPlaceTime = resolveTime(buildLabelVariants(title.includes('ELITE') ? ['Elite'] : ['Dev', 'Development'], '3rd Place'), title.includes('ELITE') ? '4:10 PM' : '3:49 PM');
-    const thirdPlaceField = times.getThirdPlaceField();
 
     return (
       <section>
@@ -1508,23 +1498,6 @@ const Bracket = ({ data, schedule }) => {
               <div className={`match-team ${finalWinner === 'team2' ? 'winner' : finalWinner ? 'loser' : ''}`}>
                 <span className="text-sm">{bracket.final?.team2 || 'Winner SF2'}</span>
                 {finalScore2 !== 'vs' && <span className="match-score">{finalScore2}</span>}
-              </div>
-            </div>
-            
-            {/* 3rd Place */}
-            <div className="mt-12">
-              <h3 className="bracket-stage-title">3RD PLACE</h3>
-              <div className="bracket-match mt-6">
-                {thirdPlaceTime && <div className="match-time">{thirdPlaceTime}</div>}
-                {thirdPlaceField && <div className="match-field">{thirdPlaceField}</div>}
-                <div className={`match-team ${thirdPlaceWinner === 'team1' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
-                  <span className="text-sm">{bracket.thirdPlace?.team1 || 'Loser SF1'}</span>
-                  {thirdPlaceScore1 !== 'vs' && <span className="match-score">{thirdPlaceScore1}</span>}
-                </div>
-                <div className={`match-team ${thirdPlaceWinner === 'team2' ? 'winner' : thirdPlaceWinner ? 'loser' : ''}`}>
-                  <span className="text-sm">{bracket.thirdPlace?.team2 || 'Loser SF2'}</span>
-                  {thirdPlaceScore2 !== 'vs' && <span className="match-score">{thirdPlaceScore2}</span>}
-                </div>
               </div>
             </div>
           </div>
