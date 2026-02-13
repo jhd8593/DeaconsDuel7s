@@ -1283,7 +1283,7 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                             {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
                           </td>
                           {showPhase2Field2 && (
-                            <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
+                            <td className={`py-4 px-6 text-sm match-cell ${!row.field2 ? 'schedule-field2-empty' : ''}`} data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
                           )}
                         </tr>
                       );

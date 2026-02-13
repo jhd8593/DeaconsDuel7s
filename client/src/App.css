@@ -1706,6 +1706,10 @@ table {
     margin-bottom: 2px;
   }
 
+  .schedule-table td.schedule-field2-empty {
+    display: none;
+  }
+
   .schedule-table tbody tr:nth-child(even) {
     background: #ffffff;
   }
