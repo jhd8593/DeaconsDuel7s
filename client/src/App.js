@@ -1073,11 +1073,11 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     { time: '2:25 PM', field1: 'Elite QF4: Pool B 2nd vs Pool A 3rd', field2: 'Dev QF4: Pool D 2nd vs Pool C 3rd' },
     { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
     { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
-    { time: '3:28 PM', field1: 'BREAK', field2: '—' },
-    { time: '3:49 PM', field1: 'Dev 3rd Place', field2: '—' },
-    { time: '4:10 PM', field1: 'Elite 3rd Place', field2: '—' },
-    { time: '4:31 PM', field1: 'Dev Final', field2: '—' },
-    { time: '4:52 PM', field1: 'Elite Final', field2: '—' }
+    { time: '3:28 PM', field1: 'BREAK', field2: '' },
+    { time: '3:49 PM', field1: 'Dev 3rd Place', field2: '' },
+    { time: '4:10 PM', field1: 'Elite 3rd Place', field2: '' },
+    { time: '4:31 PM', field1: 'Dev Final', field2: '' },
+    { time: '4:52 PM', field1: 'Elite Final', field2: '' }
   ];
 
   const phase2BaseRows = championshipPlayRows.length > 0 ? championshipPlayRows : sampleChampionshipRows;
@@ -1283,7 +1283,7 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                             {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
                           </td>
                           {showPhase2Field2 && (
-                            <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{!row.field2 || row.field2 === '—' ? '—' : renderMatchWithWinner(row.field2)}</td>
+                            <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
                           )}
                         </tr>
                       );
