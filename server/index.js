@@ -1459,11 +1459,45 @@ app.get('/api/tournament/schedule', async (req, res) => {
         }
       });
 
-      // Finals - Both on Field 1
+      // BREAK (Field 1 only)
+      pushIfMissing({
+        bucket: 'championship',
+        time: '3:28 PM',
+        field: 'Field 1',
+        team1: 'BREAK',
+        score: '',
+        team2: '',
+      });
+
+      // 3rd Place & Finals - All on Field 1 only (3:49, 4:10, 4:31, 4:52)
+      if (useDevBracket) {
+        const devThirdPlace = devBracket.thirdPlace || {};
+        pushIfMissing({
+          bucket: 'championship',
+          time: '3:49 PM',
+          field: 'Field 1',
+          team1: `Dev 3rd Place: ${devThirdPlace.team1 || 'Loser SF1'}`,
+          score: scoreFromMatch(devThirdPlace),
+          team2: devThirdPlace.team2 || 'Loser SF2',
+        });
+      }
+
+      if (useEliteBracket) {
+        const eliteThirdPlace = eliteBracket.thirdPlace || {};
+        pushIfMissing({
+          bucket: 'championship',
+          time: '4:10 PM',
+          field: 'Field 1',
+          team1: `Elite 3rd Place: ${eliteThirdPlace.team1 || 'Loser SF1'}`,
+          score: scoreFromMatch(eliteThirdPlace),
+          team2: eliteThirdPlace.team2 || 'Loser SF2',
+        });
+      }
+
       if (useDevBracket && devBracket.final) {
         upsertMatch({
           bucket: 'championship',
-          time: '4:32 PM',
+          time: '4:31 PM',
           field: 'Field 1',
           team1: `Dev Final: ${devBracket.final.team1}`,
           score: scoreFromMatch(devBracket.final),
@@ -1474,36 +1508,11 @@ app.get('/api/tournament/schedule', async (req, res) => {
       if (useEliteBracket && eliteBracket.final) {
         upsertMatch({
           bucket: 'championship',
-          time: '4:53 PM',
+          time: '4:52 PM',
           field: 'Field 1',
           team1: `Elite Final: ${eliteBracket.final.team1}`,
           score: scoreFromMatch(eliteBracket.final),
           team2: eliteBracket.final.team2,
-        });
-      }
-
-      // 3rd Place Matches - Both on Field 2
-      if (useEliteBracket) {
-        const eliteThirdPlace = eliteBracket.thirdPlace || {};
-        pushIfMissing({
-          bucket: 'championship',
-          time: '4:32 PM',
-          field: 'Field 2',
-          team1: `Elite 3rd Place: ${eliteThirdPlace.team1 || 'Loser SF1'}`,
-          score: scoreFromMatch(eliteThirdPlace),
-          team2: eliteThirdPlace.team2 || 'Loser SF2',
-        });
-      }
-
-      if (useDevBracket) {
-        const devThirdPlace = devBracket.thirdPlace || {};
-        pushIfMissing({
-          bucket: 'championship',
-          time: '4:53 PM',
-          field: 'Field 2',
-          team1: `Dev 3rd Place: ${devThirdPlace.team1 || 'Loser SF1'}`,
-          score: scoreFromMatch(devThirdPlace),
-          team2: devThirdPlace.team2 || 'Loser SF2',
         });
       }
 
