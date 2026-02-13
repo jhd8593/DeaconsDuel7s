@@ -1070,8 +1070,11 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     { time: '2:25 PM', field1: 'Elite QF4: Pool B 2nd vs Pool A 3rd', field2: 'Dev QF4: Pool D 2nd vs Pool C 3rd' },
     { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
     { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
-    { time: '4:32 PM', field1: 'Dev Final: Winner SF1 vs Winner SF2', field2: 'Elite 3rd Place: Loser SF1 vs Loser SF2' },
-    { time: '4:53 PM', field1: 'Elite Final: Winner SF1 vs Winner SF2', field2: 'Dev 3rd Place: Loser SF1 vs Loser SF2' }
+    { time: '3:28 PM', field1: 'BREAK', field2: '—' },
+    { time: '3:49 PM', field1: 'Dev 3rd Place: Loser SF1 vs Loser SF2 (Field 1 only)', field2: '—' },
+    { time: '4:10 PM', field1: 'Elite 3rd Place: Loser SF1 vs Loser SF2 (Field 1 only)', field2: '—' },
+    { time: '4:31 PM', field1: 'Dev Final: Winner SF1 vs Winner SF2 (Field 1 only)', field2: '—' },
+    { time: '4:52 PM', field1: 'Elite Final: Winner SF1 vs Winner SF2 (Field 1 only)', field2: '—' }
   ];
 
   const phase2BaseRows = championshipPlayRows.length > 0 ? championshipPlayRows : sampleChampionshipRows;
@@ -1109,7 +1112,7 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
   const eliteFinal = buildFinal({
     labels: ['Elite Final', 'Final'],
     fallbackFinal: eliteFinalFallback,
-    fallbackTime: '4:53 PM',
+    fallbackTime: '4:52 PM',
     fallbackField: 'Field 1',
     defaultTeam1: 'WINNER SF1',
     defaultTeam2: 'WINNER SF2',
@@ -1118,8 +1121,8 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
   const devFinal = buildFinal({
     labels: ['Dev Final', 'Development Final'],
     fallbackFinal: devFinalFallback,
-    fallbackTime: '4:32 PM',
-    fallbackField: 'Field 2',
+    fallbackTime: '4:31 PM',
+    fallbackField: 'Field 1',
     defaultTeam1: 'WINNER DEV SF1',
     defaultTeam2: 'WINNER DEV SF2',
   });
@@ -1271,9 +1274,9 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                     {phase2BaseRows.map((row, i) => (
                       <tr key={i} className="table-row">
                         <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
-                        <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{renderMatchWithWinner(row.field1)}</td>
+                        <td className="py-4 px-6 text-sm match-cell" data-label="Field 1">{row.field1 === 'BREAK' ? 'BREAK' : renderMatchWithWinner(row.field1)}</td>
                         {showPhase2Field2 && (
-                          <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{renderMatchWithWinner(row.field2 || '')}</td>
+                          <td className="py-4 px-6 text-sm match-cell" data-label="Field 2">{row.field2 === '—' ? '—' : renderMatchWithWinner(row.field2 || '')}</td>
                         )}
                       </tr>
                     ))}
@@ -1301,7 +1304,7 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                   <div className="text-center space-y-2">
                     <div className="final-badge">DEVELOPMENT FINAL</div>
                     <h3 className="text-2xl font-mono tracking-wider final-title">FINAL</h3>
-                    <p className="phase-subtext">{devFinal.time || 'TBD'} - {(devFinal.field || 'Field 2').toUpperCase()}</p>
+                    <p className="phase-subtext">{devFinal.time || 'TBD'} - {(devFinal.field || 'Field 1').toUpperCase()}</p>
                     <p className="text-base font-mono final-matchup">{devFinalMatchup}</p>
                   </div>
                 </div>
@@ -1329,8 +1332,8 @@ const Bracket = ({ data, schedule }) => {
 
   const qfTimes = ['1:22 PM', '1:43 PM', '2:04 PM', '2:25 PM'];
   const sfTimes = ['2:46 PM', '3:07 PM'];
-  const eliteFinalTimeFallback = '4:53 PM';
-  const devFinalTimeFallback = '4:32 PM';
+  const eliteFinalTimeFallback = '4:52 PM';
+  const devFinalTimeFallback = '4:31 PM';
 
   const buildLabelVariants = (prefixes, label) => {
     const out = [];
@@ -1374,8 +1377,8 @@ const Bracket = ({ data, schedule }) => {
       return resolveField(buildLabelVariants(prefixes, 'Final'), time, 'Field 1');
     },
     getThirdPlaceField: () => {
-      const time = prefixes.includes('Elite') ? '4:32 PM' : '4:53 PM';
-      return resolveField(buildLabelVariants(prefixes, '3rd Place'), time, prefixes.includes('Elite') ? 'Field 1' : 'Field 2');
+      const time = prefixes.includes('Elite') ? '4:10 PM' : '3:49 PM';
+      return resolveField(buildLabelVariants(prefixes, '3rd Place'), time, 'Field 1');
     },
   });
 
@@ -1409,7 +1412,7 @@ const Bracket = ({ data, schedule }) => {
     const thirdPlaceWinner = getBracketWinner(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
     const thirdPlaceScore1 = formatBracketScore(bracket.thirdPlace?.score1, bracket.thirdPlace?.score2);
     const thirdPlaceScore2 = formatBracketScore(bracket.thirdPlace?.score2, bracket.thirdPlace?.score1);
-    const thirdPlaceTime = resolveTime(buildLabelVariants(title.includes('ELITE') ? ['Elite'] : ['Dev', 'Development'], '3rd Place'), title.includes('ELITE') ? '4:32 PM' : '4:53 PM');
+    const thirdPlaceTime = resolveTime(buildLabelVariants(title.includes('ELITE') ? ['Elite'] : ['Dev', 'Development'], '3rd Place'), title.includes('ELITE') ? '4:10 PM' : '3:49 PM');
     const thirdPlaceField = times.getThirdPlaceField();
 
     return (
