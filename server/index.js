@@ -99,13 +99,14 @@ const TOURNAMENT_SHEET_RANGES = {
   schedule: 'Schedule!A1:Z200',
   teams: 'Teams!A1:Z50',
   bracket: 'Bracket!A1:Z100',
+  overview: 'Overview!A1:B100',
 };
 const TOURNAMENT_EDGE_CACHE_SECONDS = Math.max(0, Number.parseInt(process.env.TOURNAMENT_EDGE_CACHE_SECONDS || '15', 10) || 15);
 const TOURNAMENT_EDGE_STALE_SECONDS = Math.max(0, Number.parseInt(process.env.TOURNAMENT_EDGE_STALE_SECONDS || '45', 10) || 45);
 const PREDICTIONS_EDGE_CACHE_SECONDS = Math.max(0, Number.parseInt(process.env.PREDICTIONS_EDGE_CACHE_SECONDS || '10', 10) || 10);
 const PREDICTIONS_EDGE_STALE_SECONDS = Math.max(0, Number.parseInt(process.env.PREDICTIONS_EDGE_STALE_SECONDS || '30', 10) || 30);
 
-let tournamentSheetCache = { scheduleRows: null, teamRows: null, bracketRows: null, expiresAt: 0 };
+let tournamentSheetCache = { scheduleRows: null, teamRows: null, bracketRows: null, overviewRows: null, expiresAt: 0 };
 let tournamentSheetLoadPromise = null; // single-flight: one load at a time
 
 function hasTournamentSheetCacheData() {
@@ -117,6 +118,7 @@ function getTournamentSheetResult({ fromStaleCache = false } = {}) {
     scheduleRows: tournamentSheetCache.scheduleRows,
     teamRows: tournamentSheetCache.teamRows,
     bracketRows: tournamentSheetCache.bracketRows,
+    overviewRows: tournamentSheetCache.overviewRows,
     fromStaleCache,
   };
 }
@@ -131,15 +133,17 @@ async function getTournamentSheetRows(spreadsheetId) {
   }
   tournamentSheetLoadPromise = (async () => {
     try {
-      const [scheduleRows, teamRows, bracketRows] = await getSheetValuesBatch(spreadsheetId, [
+      const [scheduleRows, teamRows, bracketRows, overviewRows] = await getSheetValuesBatch(spreadsheetId, [
         TOURNAMENT_SHEET_RANGES.schedule,
         TOURNAMENT_SHEET_RANGES.teams,
         TOURNAMENT_SHEET_RANGES.bracket,
+        TOURNAMENT_SHEET_RANGES.overview,
       ]);
       tournamentSheetCache = {
         scheduleRows: Array.isArray(scheduleRows) ? scheduleRows : [],
         teamRows: Array.isArray(teamRows) ? teamRows : [],
         bracketRows: Array.isArray(bracketRows) ? bracketRows : [],
+        overviewRows: Array.isArray(overviewRows) ? overviewRows : [],
         expiresAt: Date.now() + TOURNAMENT_CACHE_TTL_MS,
       };
       return getTournamentSheetResult({ fromStaleCache: false });
@@ -527,6 +531,41 @@ function buildLabelVariants(prefixes, label) {
   list.filter(Boolean).forEach((prefix) => out.push(`${prefix} ${label}`));
   out.push(label);
   return out;
+}
+
+function parseLiveStreamsFromOverviewRows(rows) {
+  const streams = { field1: '', field2: '' };
+  const normalize = (value) => safeStr(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  (rows || []).forEach((row) => {
+    const label = normalize(row?.[0]);
+    const value = safeStr(row?.[1]);
+    if (!label || !value) return;
+
+    const looksLikeStream = label.includes('stream') || label.includes('livestream') || label.includes('youtube');
+    if (!looksLikeStream) return;
+
+    const isField1 =
+      label.includes('field1') ||
+      label.includes('stream1') ||
+      label.includes('live1') ||
+      label.includes('video1') ||
+      label.includes('youtube1') ||
+      label.includes('url1');
+
+    const isField2 =
+      label.includes('field2') ||
+      label.includes('stream2') ||
+      label.includes('live2') ||
+      label.includes('video2') ||
+      label.includes('youtube2') ||
+      label.includes('url2');
+
+    if (isField1) streams.field1 = value;
+    if (isField2) streams.field2 = value;
+  });
+
+  return streams;
 }
 
 function parseTeamsFromTeamsSheet(rows) {
@@ -1319,7 +1358,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
     const spreadsheetId = requireSpreadsheetId(res);
     if (!spreadsheetId) return;
 
-    const { scheduleRows, teamRows, bracketRows, fromStaleCache } = await getTournamentSheetRows(spreadsheetId);
+    const { scheduleRows, teamRows, bracketRows, overviewRows, fromStaleCache } = await getTournamentSheetRows(spreadsheetId);
 
     const teamsInfo = parseTeamsFromTeamsSheet(teamRows);
     const scheduleMatches = parseScheduleRows(scheduleRows);
@@ -1333,6 +1372,7 @@ app.get('/api/tournament/schedule', async (req, res) => {
       championship: [],
       generated: [],
       standings,
+      liveStreams: parseLiveStreamsFromOverviewRows(overviewRows),
     };
     let didAutoInject = false;
 

@@ -149,7 +149,8 @@ function App() {
       championship: [],
       quarterfinals: [],
       semifinals: [],
-      final: {}
+      final: {},
+      liveStreams: { field1: '', field2: '' },
     },
     teams: {
       elite: { A: [], B: [] },
@@ -546,7 +547,7 @@ function App() {
           <>
         {activeTab === 'overview' && <Overview data={tournamentData.overview} onNavigate={setTab} />}
         {activeTab === 'schedule' && <Schedule data={tournamentData} liveGames={liveGames} onWatchLive={goToLiveStream} />}
-        {activeTab === 'livestream' && <LiveStream selectedField={liveStreamField} onSelectField={setLiveStreamField} />}
+        {activeTab === 'livestream' && <LiveStream selectedField={liveStreamField} onSelectField={setLiveStreamField} streams={tournamentData.schedule?.liveStreams} />}
         {activeTab === 'locations' && <Locations />}
         {activeTab === 'predictions' && <Predictions teams={tournamentData.teams} apiBase={API_BASE} onRefresh={fetchTournamentData} />}
         {activeTab === 'bracket' && poolPlayComplete && <Bracket data={tournamentData.bracket} schedule={tournamentData.schedule} />}
@@ -1086,6 +1087,21 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     buildSchematicSlot({ labels: ['Dev Final', 'Development Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:31 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
   ];
 
+  const insertBreakAfterSf2 = (slots, breakField) => {
+    const sf2Index = slots.findIndex((slot) => slot.round === 'SF2');
+    if (sf2Index < 0) return slots;
+    const breakSlot = {
+      round: 'BREAK',
+      matchup: 'Interval',
+      time: breakTime,
+      field: breakField,
+    };
+    return [...slots.slice(0, sf2Index + 1), breakSlot, ...slots.slice(sf2Index + 1)];
+  };
+
+  const eliteSchematicSlotsWithBreak = insertBreakAfterSf2(eliteSchematicSlots, 'Field 1');
+  const devSchematicSlotsWithBreak = insertBreakAfterSf2(devSchematicSlots, 'Field 2');
+
   const eliteFinalFallback = data?.bracket?.elite?.final || data?.bracket?.final || {};
   const devFinalFallback = data?.bracket?.development?.final || {};
 
@@ -1263,10 +1279,6 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
             </div>
           </div>
           <div className="info-card bracket-schematic-card">
-            <div className="bracket-schematic-break">
-              <span className="bracket-schematic-break-label">BREAK</span>
-              <span className="bracket-schematic-break-time">{breakTime}</span>
-            </div>
             <div className="bracket-schematic-grid">
               <article className="bracket-schematic-track">
                 <div className="bracket-schematic-track-head">
@@ -1274,14 +1286,16 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                   <span className="bracket-schematic-track-meta">Primary: Field 1</span>
                 </div>
                 <div className="bracket-schematic-list">
-                  {eliteSchematicSlots.map((slot) => (
+                  {eliteSchematicSlotsWithBreak.map((slot) => (
                     <div key={`${slot.round}-${slot.time}`} className="bracket-schematic-item">
                       <div className="bracket-schematic-item-top">
                         <span className="bracket-schematic-round">{slot.round}</span>
                         <span className="bracket-schematic-time">{slot.time}</span>
                       </div>
                       <div className="bracket-schematic-item-bottom">
-                        <span className="bracket-schematic-matchup">{slot.matchup}</span>
+                        <span className="bracket-schematic-matchup">
+                          {slot.round === 'BREAK' ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(slot.matchup)}
+                        </span>
                         <span className="bracket-schematic-field">{slot.field}</span>
                       </div>
                     </div>
@@ -1295,14 +1309,16 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                   <span className="bracket-schematic-track-meta">Primary: Field 2</span>
                 </div>
                 <div className="bracket-schematic-list">
-                  {devSchematicSlots.map((slot) => (
+                  {devSchematicSlotsWithBreak.map((slot) => (
                     <div key={`${slot.round}-${slot.time}`} className="bracket-schematic-item">
                       <div className="bracket-schematic-item-top">
                         <span className="bracket-schematic-round">{slot.round}</span>
                         <span className="bracket-schematic-time">{slot.time}</span>
                       </div>
                       <div className="bracket-schematic-item-bottom">
-                        <span className="bracket-schematic-matchup">{slot.matchup}</span>
+                        <span className="bracket-schematic-matchup">
+                          {slot.round === 'BREAK' ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(slot.matchup)}
+                        </span>
                         <span className="bracket-schematic-field">{slot.field}</span>
                       </div>
                     </div>
@@ -1581,9 +1597,11 @@ const Bracket = ({ data, schedule }) => {
   );
 };
 
-const LiveStream = ({ selectedField = 1, onSelectField }) => {
-  const source1 = process.env.REACT_APP_LIVE_STREAM_URL || DEFAULT_LIVE_STREAM_EMBED_URL;
-  const source2 = process.env.REACT_APP_LIVE_STREAM_URL_FIELD_2 || DEFAULT_LIVE_STREAM_EMBED_URL_FIELD_2;
+const LiveStream = ({ selectedField = 1, onSelectField, streams }) => {
+  const sheetSource1 = String(streams?.field1 || '').trim();
+  const sheetSource2 = String(streams?.field2 || '').trim();
+  const source1 = sheetSource1 || process.env.REACT_APP_LIVE_STREAM_URL || DEFAULT_LIVE_STREAM_EMBED_URL;
+  const source2 = sheetSource2 || process.env.REACT_APP_LIVE_STREAM_URL_FIELD_2 || DEFAULT_LIVE_STREAM_EMBED_URL_FIELD_2;
   const embedUrl1 = toYouTubeEmbedUrl(source1);
   const embedUrl2 = toYouTubeEmbedUrl(source2);
   const isField1 = selectedField === 1;
