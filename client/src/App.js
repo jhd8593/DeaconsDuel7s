@@ -1059,14 +1059,28 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
     return breakMatch?.time || '3:28 PM';
   })();
 
-  const buildSchematicSlot = ({ labels, round, fallbackMatchup, fallbackTime, fallbackField }) => {
+  const isMatchPlayed = (match) => {
+    if (!match) return false;
+    return !isUnplayedScoreText(match.score);
+  };
+
+  const eliteQfComplete = [1, 2, 3, 4].every((n) =>
+    isMatchPlayed(findUniqueMatchByLabels(scheduleChampionship, [`Elite QF${n}`]))
+  );
+
+  const devQfComplete = [1, 2, 3, 4].every((n) =>
+    isMatchPlayed(findUniqueMatchByLabels(scheduleChampionship, [`Dev QF${n}`, `Development QF${n}`]))
+  );
+
+  const buildSchematicSlot = ({ labels, round, fallbackMatchup, fallbackTime, fallbackField, revealResolved = true }) => {
     const fromSchedule = findUniqueMatchByLabels(scheduleChampionship, labels);
     const parsedTeam1 = stripMatchLabel(fromSchedule?.team1 || '');
     const parsedTeam2 = stripMatchLabel(fromSchedule?.team2 || '');
     const scoreText = formatScheduleScore(fromSchedule?.score || '');
+    const shouldShowResolvedMatchup = revealResolved;
     let matchup = fallbackMatchup;
 
-    if (parsedTeam1 || parsedTeam2) {
+    if (shouldShowResolvedMatchup && (parsedTeam1 || parsedTeam2)) {
       matchup = parsedTeam1 && parsedTeam2 ? `${parsedTeam1} ${scoreText} ${parsedTeam2}` : (parsedTeam1 || parsedTeam2);
     }
 
@@ -1079,27 +1093,27 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
   };
 
   const eliteSchematicSlots = [
-    buildSchematicSlot({ labels: ['Elite QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 1' }),
-    buildSchematicSlot({ labels: ['Elite Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:52 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Elite Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 1', revealResolved: eliteQfComplete }),
+    buildSchematicSlot({ labels: ['Elite Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 1', revealResolved: eliteQfComplete }),
+    buildSchematicSlot({ labels: ['Elite Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:52 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
   ];
 
   const devSchematicSlots = [
-    buildSchematicSlot({ labels: ['Dev QF1', 'Development QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev QF2', 'Development QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev QF3', 'Development QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev QF4', 'Development QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev SF1', 'Development SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev SF2', 'Development SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev Consol 1', 'Development Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev Consol 2', 'Development Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 2' }),
-    buildSchematicSlot({ labels: ['Dev Final', 'Development Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:31 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Dev QF1', 'Development QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev QF2', 'Development QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev QF3', 'Development QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev QF4', 'Development QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev SF1', 'Development SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev SF2', 'Development SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 2', revealResolved: poolPlayComplete }),
+    buildSchematicSlot({ labels: ['Dev Consol 1', 'Development Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 2', revealResolved: devQfComplete }),
+    buildSchematicSlot({ labels: ['Dev Consol 2', 'Development Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 2', revealResolved: devQfComplete }),
+    buildSchematicSlot({ labels: ['Dev Final', 'Development Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:31 PM', fallbackField: 'Field 1', revealResolved: poolPlayComplete }),
   ];
 
   const eliteFinalFallback = data?.bracket?.elite?.final || data?.bracket?.final || {};
