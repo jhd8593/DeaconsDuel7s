@@ -185,7 +185,6 @@ function App() {
 
   const isFirstLoadRef = useRef(true);
   const isFetchingTournamentRef = useRef(false);
-  const touchStartRef = useRef(null);
 
   const setTab = (tabKey, { replace = false } = {}) => {
     const nextTab = TAB_PATH_SEGMENTS[tabKey] ? tabKey : DEFAULT_TAB;
@@ -407,30 +406,6 @@ function App() {
     return `Updated ${t}`;
   }, [lastUpdated]);
 
-  const goToAdjacentTab = (direction) => {
-    const idx = tabOrder.indexOf(activeTab);
-    if (idx === -1) return;
-    const nextIdx = direction === 'next' ? Math.min(tabOrder.length - 1, idx + 1) : Math.max(0, idx - 1);
-    setTab(tabOrder[nextIdx]);
-  };
-
-  const handleTouchStart = (e) => {
-    if (!e.touches?.length) return;
-    touchStartRef.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e) => {
-    if (touchStartRef.current == null || !e.changedTouches?.length) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartRef.current;
-    touchStartRef.current = null;
-    const threshold = 45;
-    if (deltaX > threshold) {
-      goToAdjacentTab('prev');
-    } else if (deltaX < -threshold) {
-      goToAdjacentTab('next');
-    }
-  };
-
   // Check if pool play is complete to show bracket tab
   const isPoolPlayComplete = () => {
     const poolPlayMatches = tournamentData.schedule?.poolPlay || [];
@@ -454,7 +429,6 @@ function App() {
     ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
   ];
-  const tabOrder = NAV_TABS.map((t) => t.key);
 
   return (
     <div className="min-h-screen app-shell">
@@ -551,11 +525,7 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main
-        className="content-shell max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <main className="content-shell max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {error && (
           <div className="error-banner">
             <div className="text-xs font-mono">{error}</div>
@@ -1253,7 +1223,7 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
                     const isLiveField2 = liveGames.some((g) => g.time === row.time && g.field === 'Field 2');
                     const isLiveRow = isLiveField1 || isLiveField2;
                     return (
-                      <tr key={i} className={`table-row ${isLiveRow ? 'live-game-row' : ''}`}>
+                      <tr key={i} className={`table-row pool-play-card-row ${isLiveRow ? 'live-game-row' : ''}`}>
                         <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">
                           {row.time}
                           {isLiveRow && <span className="live-indicator-small ml-2">LIVE</span>}
