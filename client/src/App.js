@@ -427,7 +427,6 @@ function App() {
     { key: 'livestream', label: 'Live Stream', helper: 'Watch' },
     { key: 'locations', label: 'Locations', helper: 'Fields & map' },
     { key: 'predictions', label: 'Predictions', helper: 'Who wins?' },
-    ...(poolPlayComplete ? [{ key: 'bracket', label: 'Bracket', helper: 'Knockouts' }] : []),
     { key: 'teams', label: 'Teams', helper: 'Registration' }
   ];
 
