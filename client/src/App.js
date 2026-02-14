@@ -653,85 +653,6 @@ const Overview = ({ data, onNavigate }) => (
       </div>
     </section>
 
-    {/* Bracket Layout (Placeholder) */}
-    <section className="space-y-8">
-      <div className="section-header">
-        <div className="section-label">
-          <span className="icon-chip" aria-label="Bracket layout"><Icon name="calendar" size={16} ariaLabel="Bracket layout icon" /></span>
-          <h2 className="section-title">BRACKET PLAY LAYOUT</h2>
-        </div>
-      </div>
-      <div className="info-card bracket-schematic-card">
-        <div className="bracket-schematic-break">
-          <span className="bracket-schematic-break-label">BREAK</span>
-          <span className="bracket-schematic-break-time">3:28 PM</span>
-        </div>
-        <div className="bracket-schematic-grid">
-          <article className="bracket-schematic-track">
-            <div className="bracket-schematic-track-head">
-              <h3 className="bracket-schematic-track-title">ELITE BRACKET</h3>
-              <span className="bracket-schematic-track-meta">Primary: Field 1</span>
-            </div>
-            <div className="bracket-schematic-list">
-              {[
-                { round: 'QF1', matchup: '#1 vs #4', time: '1:22 PM', field: 'Field 1' },
-                { round: 'QF2', matchup: '#2 vs #3', time: '1:43 PM', field: 'Field 1' },
-                { round: 'QF3', matchup: '#1 vs #4', time: '2:04 PM', field: 'Field 1' },
-                { round: 'QF4', matchup: '#2 vs #3', time: '2:25 PM', field: 'Field 1' },
-                { round: 'SF1', matchup: 'W-QF1 vs W-QF2', time: '2:46 PM', field: 'Field 1' },
-                { round: 'SF2', matchup: 'W-QF3 vs W-QF4', time: '3:07 PM', field: 'Field 1' },
-                { round: 'Consol 1', matchup: 'L-QF1 vs L-QF2', time: '3:49 PM', field: 'Field 1' },
-                { round: 'Consol 2', matchup: 'L-QF3 vs L-QF4', time: '4:10 PM', field: 'Field 1' },
-                { round: 'Final', matchup: 'W-SF1 vs W-SF2', time: '4:52 PM', field: 'Field 1' },
-              ].map((slot) => (
-                <div key={slot.round} className="bracket-schematic-item">
-                  <div className="bracket-schematic-item-top">
-                    <span className="bracket-schematic-round">{slot.round}</span>
-                    <span className="bracket-schematic-time">{slot.time}</span>
-                  </div>
-                  <div className="bracket-schematic-item-bottom">
-                    <span className="bracket-schematic-matchup">{slot.matchup}</span>
-                    <span className="bracket-schematic-field">{slot.field}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="bracket-schematic-track">
-            <div className="bracket-schematic-track-head">
-              <h3 className="bracket-schematic-track-title">DEVELOPMENT BRACKET</h3>
-              <span className="bracket-schematic-track-meta">Primary: Field 2</span>
-            </div>
-            <div className="bracket-schematic-list">
-              {[
-                { round: 'QF1', matchup: '#1 vs #4', time: '1:22 PM', field: 'Field 2' },
-                { round: 'QF2', matchup: '#2 vs #3', time: '1:43 PM', field: 'Field 2' },
-                { round: 'QF3', matchup: '#1 vs #4', time: '2:04 PM', field: 'Field 2' },
-                { round: 'QF4', matchup: '#2 vs #3', time: '2:25 PM', field: 'Field 2' },
-                { round: 'SF1', matchup: 'W-QF1 vs W-QF2', time: '2:46 PM', field: 'Field 2' },
-                { round: 'SF2', matchup: 'W-QF3 vs W-QF4', time: '3:07 PM', field: 'Field 2' },
-                { round: 'Consol 1', matchup: 'L-QF1 vs L-QF2', time: '3:49 PM', field: 'Field 2' },
-                { round: 'Consol 2', matchup: 'L-QF3 vs L-QF4', time: '4:10 PM', field: 'Field 2' },
-                { round: 'Final', matchup: 'W-SF1 vs W-SF2', time: '4:31 PM', field: 'Field 1' },
-              ].map((slot) => (
-                <div key={slot.round} className="bracket-schematic-item">
-                  <div className="bracket-schematic-item-top">
-                    <span className="bracket-schematic-round">{slot.round}</span>
-                    <span className="bracket-schematic-time">{slot.time}</span>
-                  </div>
-                  <div className="bracket-schematic-item-bottom">
-                    <span className="bracket-schematic-matchup">{slot.matchup}</span>
-                    <span className="bracket-schematic-field">{slot.field}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
   </div>
 );
 
@@ -1130,45 +1051,57 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
   }));
 
 
-  const championshipRows = (data.schedule.championship || []).reduce((acc, match) => {
-    if (!acc[match.time]) {
-      acc[match.time] = {};
-    }
-    const isBreak = (match.team1 || '').toString().trim() === 'BREAK';
-    const scoreText = formatScheduleScore(match.score);
-    if (match.field === 'Field 1') {
-      acc[match.time].field1 = isBreak ? 'BREAK' : `${match.team1} ${scoreText} ${match.team2}`;
-      if (isBreak) acc[match.time].isBreakRow = true;
-    } else if (match.field === 'Field 2') {
-      acc[match.time].field2 = `${match.team1} ${scoreText} ${match.team2}`;
-    }
-    return acc;
-  }, {});
+  const scheduleChampionship = data?.schedule?.championship || [];
+  const breakTime = (() => {
+    const breakMatch = scheduleChampionship.find(
+      (m) => String(m?.team1 || '').trim().toUpperCase() === 'BREAK'
+    );
+    return breakMatch?.time || '3:28 PM';
+  })();
 
-  const championshipPlayRows = Object.entries(championshipRows).map(([time, matches]) => ({
-    time,
-    ...matches,
-    isBreakRow: matches.isBreakRow || false,
-  }));
+  const buildSchematicSlot = ({ labels, round, fallbackMatchup, fallbackTime, fallbackField }) => {
+    const fromSchedule = findUniqueMatchByLabels(scheduleChampionship, labels);
+    const parsedTeam1 = stripMatchLabel(fromSchedule?.team1 || '');
+    const parsedTeam2 = stripMatchLabel(fromSchedule?.team2 || '');
+    const scoreText = formatScheduleScore(fromSchedule?.score || '');
+    let matchup = fallbackMatchup;
 
-  const sampleChampionshipRows = [
-    { time: '1:22 PM', field1: 'Elite QF1: Pool A 1st vs Pool B 4th', field2: 'Dev QF1: Pool C 1st vs Pool D 4th' },
-    { time: '1:43 PM', field1: 'Elite QF2: Pool A 2nd vs Pool B 3rd', field2: 'Dev QF2: Pool C 2nd vs Pool D 3rd' },
-    { time: '2:04 PM', field1: 'Elite QF3: Pool B 1st vs Pool A 4th', field2: 'Dev QF3: Pool D 1st vs Pool C 4th' },
-    { time: '2:25 PM', field1: 'Elite QF4: Pool B 2nd vs Pool A 3rd', field2: 'Dev QF4: Pool D 2nd vs Pool C 3rd' },
-    { time: '2:46 PM', field1: 'Elite SF1: Winner QF1 vs Winner QF2', field2: 'Dev SF1: Winner QF1 vs Winner QF2' },
-    { time: '3:07 PM', field1: 'Elite SF2: Winner QF3 vs Winner QF4', field2: 'Dev SF2: Winner QF3 vs Winner QF4' },
-    { time: '3:28 PM', field1: 'BREAK', field2: '' },
-    { time: '3:49 PM', field1: 'Elite Consol 1', field2: 'Dev Consol 1' },
-    { time: '4:10 PM', field1: 'Elite Consol 2', field2: 'Dev Consol 2' },
-    { time: '4:31 PM', field1: 'Dev Final', field2: '' },
-    { time: '4:52 PM', field1: 'Elite Final', field2: '' }
+    if (parsedTeam1 || parsedTeam2) {
+      matchup = parsedTeam1 && parsedTeam2 ? `${parsedTeam1} ${scoreText} ${parsedTeam2}` : (parsedTeam1 || parsedTeam2);
+    }
+
+    return {
+      round,
+      matchup,
+      time: fromSchedule?.time || fallbackTime,
+      field: fromSchedule?.field || fallbackField,
+    };
+  };
+
+  const eliteSchematicSlots = [
+    buildSchematicSlot({ labels: ['Elite QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 1' }),
+    buildSchematicSlot({ labels: ['Elite Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:52 PM', fallbackField: 'Field 1' }),
   ];
 
-  const phase2BaseRows = championshipPlayRows.length > 0 ? championshipPlayRows : sampleChampionshipRows;
-  const showPhase2Field2 = phase2BaseRows.some((row) => row.field2);
+  const devSchematicSlots = [
+    buildSchematicSlot({ labels: ['Dev QF1', 'Development QF1'], round: 'QF1', fallbackMatchup: '#1 vs #4', fallbackTime: '1:22 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev QF2', 'Development QF2'], round: 'QF2', fallbackMatchup: '#2 vs #3', fallbackTime: '1:43 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev QF3', 'Development QF3'], round: 'QF3', fallbackMatchup: '#1 vs #4', fallbackTime: '2:04 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev QF4', 'Development QF4'], round: 'QF4', fallbackMatchup: '#2 vs #3', fallbackTime: '2:25 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev SF1', 'Development SF1'], round: 'SF1', fallbackMatchup: 'W-QF1 vs W-QF2', fallbackTime: '2:46 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev SF2', 'Development SF2'], round: 'SF2', fallbackMatchup: 'W-QF3 vs W-QF4', fallbackTime: '3:07 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev Consol 1', 'Development Consol 1'], round: 'Consol 1', fallbackMatchup: 'L-QF1 vs L-QF2', fallbackTime: '3:49 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev Consol 2', 'Development Consol 2'], round: 'Consol 2', fallbackMatchup: 'L-QF3 vs L-QF4', fallbackTime: '4:10 PM', fallbackField: 'Field 2' }),
+    buildSchematicSlot({ labels: ['Dev Final', 'Development Final'], round: 'Final', fallbackMatchup: 'W-SF1 vs W-SF2', fallbackTime: '4:31 PM', fallbackField: 'Field 1' }),
+  ];
 
-  const scheduleChampionship = data?.schedule?.championship || [];
   const eliteFinalFallback = data?.bracket?.elite?.final || data?.bracket?.final || {};
   const devFinalFallback = data?.bracket?.development?.final || {};
 
@@ -1337,56 +1270,64 @@ const Schedule = ({ data, liveGames = [], onWatchLive }) => {
           </div>
         </div>
 
-        {/* Phase 2 - Only show if pool play is complete */}
-        {poolPlayComplete && (
-          <div className="mb-16">
-            <div className="phase-header">
-              <div className="phase-title-stack">
-                <h3 className="text-sm font-mono tracking-widest">PHASE 2: BRACKETS</h3>
-                <span className="phase-meta">1:22 PM - 4:52 PM</span>
-              </div>
-            </div>
-            <div className="table-shell compact">
-              <div className="schedule-table w-full max-w-5xl">
-                <table className="w-full">
-                  <thead>
-                    <tr className="table-head-row">
-                      <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">TIME</th>
-                      <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 1</th>
-                      {showPhase2Field2 && (
-                        <th className="text-left py-4 px-6 text-xs font-mono table-head-cell uppercase tracking-wider">FIELD 2</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {phase2BaseRows.map((row, i) => {
-                      const isBreak = row.isBreakRow || row.field1 === 'BREAK';
-                      return (
-                        <tr key={i} className={`table-row ${isBreak ? 'schedule-break-row' : ''}`}>
-                          <td className="py-4 px-6 text-sm font-mono time-cell" data-label="Time">{row.time}</td>
-                          {isBreak && showPhase2Field2 ? (
-                            <td colSpan={2} className="py-4 px-6 text-sm schedule-break-cell schedule-break-cell-span" data-label="">
-                              <span className="schedule-break-label">BREAK</span>
-                            </td>
-                          ) : (
-                            <>
-                              <td className={`py-4 px-6 text-sm match-cell ${isBreak ? 'schedule-break-cell' : ''}`} data-label="Field 1">
-                                {isBreak ? <span className="schedule-break-label">BREAK</span> : renderMatchWithWinner(row.field1)}
-                              </td>
-                              {showPhase2Field2 && (
-                                <td className={`py-4 px-6 text-sm match-cell ${!row.field2 ? 'schedule-field2-empty' : ''}`} data-label="Field 2">{row.field2 ? renderMatchWithWinner(row.field2) : ''}</td>
-                              )}
-                            </>
-                          )}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+        {/* Phase 2 */}
+        <div className="mb-16">
+          <div className="phase-header">
+            <div className="phase-title-stack">
+              <h3 className="text-sm font-mono tracking-widest">PHASE 2: BRACKETS</h3>
+              <span className="phase-meta">1:22 PM - 4:52 PM</span>
             </div>
           </div>
-        )}
+          <div className="info-card bracket-schematic-card">
+            <div className="bracket-schematic-break">
+              <span className="bracket-schematic-break-label">BREAK</span>
+              <span className="bracket-schematic-break-time">{breakTime}</span>
+            </div>
+            <div className="bracket-schematic-grid">
+              <article className="bracket-schematic-track">
+                <div className="bracket-schematic-track-head">
+                  <h3 className="bracket-schematic-track-title">ELITE BRACKET</h3>
+                  <span className="bracket-schematic-track-meta">Primary: Field 1</span>
+                </div>
+                <div className="bracket-schematic-list">
+                  {eliteSchematicSlots.map((slot) => (
+                    <div key={`${slot.round}-${slot.time}`} className="bracket-schematic-item">
+                      <div className="bracket-schematic-item-top">
+                        <span className="bracket-schematic-round">{slot.round}</span>
+                        <span className="bracket-schematic-time">{slot.time}</span>
+                      </div>
+                      <div className="bracket-schematic-item-bottom">
+                        <span className="bracket-schematic-matchup">{slot.matchup}</span>
+                        <span className="bracket-schematic-field">{slot.field}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              <article className="bracket-schematic-track">
+                <div className="bracket-schematic-track-head">
+                  <h3 className="bracket-schematic-track-title">DEVELOPMENT BRACKET</h3>
+                  <span className="bracket-schematic-track-meta">Primary: Field 2</span>
+                </div>
+                <div className="bracket-schematic-list">
+                  {devSchematicSlots.map((slot) => (
+                    <div key={`${slot.round}-${slot.time}`} className="bracket-schematic-item">
+                      <div className="bracket-schematic-item-top">
+                        <span className="bracket-schematic-round">{slot.round}</span>
+                        <span className="bracket-schematic-time">{slot.time}</span>
+                      </div>
+                      <div className="bracket-schematic-item-bottom">
+                        <span className="bracket-schematic-matchup">{slot.matchup}</span>
+                        <span className="bracket-schematic-field">{slot.field}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
 
         {/* Finals - Only show if pool play is complete */}
         {poolPlayComplete && (
